@@ -28,7 +28,7 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <main className="flex-grow">
+      <main className="grow">
         <section className="bg-gray-50 py-16 px-6 sm:px-12 lg:py-24 flex flex-col items-center">
           <div className="max-w-4xl w-full">
             <div className="bg-white rounded-2xl shadow-xl shadow-blue-100 overflow-hidden border border-blue-50">

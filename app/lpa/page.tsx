@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function LPAStepOne() {
@@ -10,7 +9,7 @@ export default function LPAStepOne() {
 
   const [stepNumber, setStepNumber] = useState(1);
 
-  //   To check answers:
+  //   To check answers (this is not used for now later we will use it to get user preferrence):
   const [answers, setAnswers] = useState<Record<string, string>>({});
 
   type OptionType = {
@@ -23,9 +22,23 @@ export default function LPAStepOne() {
     question: string;
     description?: string;
     options?: OptionType[];
-    type?: "normal" | "info";
+    type?: "normal" | "info" | "lastStep";
   };
 
+  const CheckIcon = () => {
+    return (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-5 w-5"
+        viewBox="0 0 24 24"
+        width="24"
+        height="24"
+        fill="currentColor"
+      >
+        <path d="M9.9997 15.1709L19.1921 5.97852L20.6063 7.39273L9.9997 17.9993L3.63574 11.6354L5.04996 10.2212L9.9997 15.1709Z"></path>
+      </svg>
+    );
+  };
   const renderIcon = (icon?: string) => {
     switch (icon) {
       case "user":
@@ -117,8 +130,8 @@ export default function LPAStepOne() {
       description:
         "If you are creating these documents as an attorney or doing these documents for someone else, then please choose 'Someone else'.",
       options: [
-        { label: "Myself", next: "over18", icon: "user" },
-        { label: "Your partner", next: "over18", icon: "partner" },
+        { label: "Myself", next: "mentalCapacitySingle", icon: "user" },
+        { label: "Your partner", next: "mentalCapacityTwo", icon: "partner" },
         { label: "Someone else", next: "someoneElseCount", icon: "group" },
       ],
     },
@@ -138,7 +151,7 @@ export default function LPAStepOne() {
       question:
         "Is the person who these documents are for over 18 years old and has mental capacity to make decisions?",
       options: [
-        { label: "Yes", next: "over18", icon: "check" },
+        { label: "Yes", next: "englandCheck", icon: "check" },
         { label: "No", next: "notEligible", icon: "cross" },
       ],
     },
@@ -147,7 +160,7 @@ export default function LPAStepOne() {
       question:
         "Are the persons who these documents are for over 18 years old and have mental capacity to make decisions?",
       options: [
-        { label: "Yes", next: "over18", icon: "check" },
+        { label: "Yes", next: "englandCheck", icon: "check" },
         { label: "No", next: "notEligible", icon: "cross" },
       ],
     },
@@ -159,18 +172,18 @@ export default function LPAStepOne() {
       type: "info",
     },
 
-    over18: {
-      question: "Are you over 18?",
-      options: [
-        { label: "Yes", next: "englandCheck", icon: "check" },
-        { label: "No", next: "notEligible", icon: "cross" },
-      ],
-    },
+    // over18: {
+    //   question: "Are you over 18?",
+    //   options: [
+    //     { label: "Yes", next: "englandCheck", icon: "check" },
+    //     { label: "No", next: "notEligible", icon: "cross" },
+    //   ],
+    // },
 
     englandCheck: {
       question: "Do you live in England or Wales?",
       options: [
-        { label: "Yes", next: "success", icon: "check" },
+        { label: "Yes", next: "end", icon: "check" },
         { label: "No", next: "notEligible", icon: "cross" },
       ],
     },
@@ -180,6 +193,11 @@ export default function LPAStepOne() {
       description:
         "Unfortunately this means that you can't use our online service to get a Lasting Power of Attorney in place.",
       type: "info",
+    },
+
+    end: {
+      question: "Create a Power of Attorney",
+      type: "lastStep",
     },
   };
 
@@ -213,7 +231,7 @@ export default function LPAStepOne() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow flex items-center justify-center p-6 sm:p-12">
+      <main className="grow flex items-center justify-center p-6 sm:p-12">
         <div className="max-w-2xl w-full bg-white rounded-2xl shadow-lg p-8 sm:p-12 border border-blue-50">
           <button
             onClick={handleBack}
@@ -249,6 +267,58 @@ export default function LPAStepOne() {
             <p className="text-gray-600 mb-10 leading-relaxed">
               {currentQuestion.description}
             </p>
+          )}
+          {currentQuestion.type === "lastStep" && (
+            <>
+              <div className="my-9 bg-blue-50 border border-blue-100 rounded-2xl p-6">
+                <div className="space-y-3 text-sm text-gray-700">
+                  <div className="flex gap-3">
+                    <div className="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center text-zenco-blue mb-4 group-hover:scale-110 transition-transform duration-200">
+                      {CheckIcon()}
+                    </div>
+                    <p>
+                      <strong> Protect yourself and your family.</strong>
+                      <br />
+                      Ensure everything is in place before it is needed.
+                      <br />
+                    </p>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center text-zenco-blue mb-4 group-hover:scale-110 transition-transform duration-200">
+                      {CheckIcon()}
+                    </div>
+                    <p>
+                      <strong> Secure your family's future.</strong>
+                      <br />
+                      Guarantee access to finance when most needed and make
+                      important health decisions. <br />
+                    </p>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center text-zenco-blue mb-4 group-hover:scale-110 transition-transform duration-200">
+                      {CheckIcon()}
+                    </div>
+                    <p>
+                      <strong> It only takes 15 minutes.</strong>
+                      <br />
+                      Easy to use system. Designed for all ages. Save your
+                      progress as you go. <br />
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <button
+              onClick={() => {routePage.push("/register")}}
+              className="flex flex-col items-center justify-center p-8 rounded-2xl border-2 border-gray-100 hover:border-zenco-blue hover:bg-blue-50/50 transition-all duration-200 group">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-zenco-blue mb-4 group-hover:scale-110 transition-transform duration-200">
+                  {CheckIcon()}
+                </div>
+
+                <span className="font-bold text-lg text-zenco-dark text-center">
+                  Continue Online
+                </span>
+              </button>
+            </>
           )}
           {currentQuestion.type === "info" && (
             <div className="mt-8 bg-blue-50 border border-blue-100 rounded-2xl p-6">
