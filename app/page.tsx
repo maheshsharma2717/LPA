@@ -44,7 +44,7 @@ export default function Home() {
                   
                   <div className="flex flex-col sm:flex-row gap-4 mb-8">
                     <Link 
-                      href="/start/lpa" 
+                      href="/lpa" 
                       className="bg-zenco-blue hover:bg-opacity-90 text-white font-bold py-4 px-10 rounded-full text-lg transition-all transform hover:scale-105 shadow-lg shadow-blue-200 text-center"
                     >
                       Let’s get started
