@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 export default function RegisterUser() {
 
@@ -18,51 +19,86 @@ export default function RegisterUser() {
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleDetailsContinue = () => {
     if (!formData.name || !formData.email) return;
     setStage("password");
   };
 
-  const handleRegister = () => {
-    // console.log("Final Data:", formData);
-    // Later: call API
-    routePage.push("/details");
+  const handleRegister = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (authError) throw authError;
+
+      if (authData.user) {
+        
+        const nameParts = formData.name.trim().split(" ");
+        const firstName = nameParts[0];
+        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+
+        const { error: leadError } = await supabase.from("leads").insert({
+          id: authData.user.id,
+          first_name: firstName,
+          last_name: lastName || "Unknown",
+          preferred_name: formData.name,
+        });
+
+        if (leadError) throw leadError;
+
+        routePage.push("/details");
+      }
+    } catch (err: any) {
+      console.error("Registration error:", err);
+      setError(err.message || "An error occurred during registration");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      
+    <div className="min-h-screen bg-gray-100 flex flex-col">
+
       {/* Header */}
-      <header className="w-full bg-white border-b border-gray-200 py-4 px-6 sm:px-12 flex justify-between items-center">
+      <header className="max-w-7xl container mx-auto   py-4 px-6 sm:px-12 flex justify-between items-center">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 bg-zenco-blue rounded-full"></div>
-          <span className="text-lg font-bold text-zenco-dark tracking-tight">
-            ZENCO<span className="text-zenco-blue">LEGAL</span>
-          </span>
+         <img src="zen_logo.png" className="w-20" alt="" />
         </div>
       </header>
 
       {/* Main */}
       <main className="grow flex items-center justify-center p-6 sm:p-12">
-        <div className="max-w-2xl w-full bg-white rounded-2xl shadow-lg p-8 sm:p-12 border border-blue-50">
+        
+
+        
+        <div className=" max-w-2xl w-full bg-transparent  p-8 sm:p-12  ">
+        <img src="signup-email.png" className="w-40 mb-6 mx-auto " alt=""  />
 
           {/*  NAME & EMAIL */}
           {stage === "details" && (
             <>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-zenco-dark mb-4 leading-tight">
+              <h2 className="text-2xl sm:text-4xl font-bold text-zenco-dark mb-2 text-center leading-tight" style={{lineHeight: 1.2}}>
                 Let's start with the basics
               </h2>
 
-              <p className="text-gray-600 mb-8">
+              <p className="text-green-800 font-bold text-center mt-4 my-2" style={{lineHeight: 1.5}}>
                 People in your situation usually finish their documents in 15 minutes
               </p>
 
-              <div className="space-y-6">
+              <div className="row w-[75%]  space-y-6 mx-auto">
+                <h2 className="font-bold text-xl my-4"> Sign Up with Email</h2>
 
                 {/* Name */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                <div className="row ">
+                  <label className="block text-md font-medium text-gray-700 mb-2">
                     Your preferred name e.g. Jim
                   </label>
                   <input
@@ -71,13 +107,13 @@ export default function RegisterUser() {
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
-                    className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:ring-2 focus:ring-zenco-blue focus:outline-none"
+                    className="w-full rounded-sm border-2 border-gray-300 px-4 py-3  focus:ring-2 focus:ring-zenco-blue focus:outline-none"
                   />
                 </div>
 
                 {/* Email */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-md font-medium text-gray-700 mb-2">
                     Your email
                   </label>
                   <input
@@ -86,7 +122,7 @@ export default function RegisterUser() {
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:ring-2 focus:ring-zenco-blue focus:outline-none"
+                    className="w-full rounded-sm border-2 border-gray-300 px-4 py-3 focus:ring-2 focus:ring-zenco-blue focus:outline-none"
                   />
                 </div>
 
@@ -98,9 +134,9 @@ export default function RegisterUser() {
                     onChange={(e) =>
                       setFormData({ ...formData, marketing: e.target.checked })
                     }
-                    className="mt-1"
+                    className="w-5 h-5 mt-0.5 cursor-pointer accent-zenco-blue"
                   />
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm  text-gray-600">
                     Email me occasional tips, offers and updates from Zenco
                   </p>
                 </div>
@@ -108,7 +144,7 @@ export default function RegisterUser() {
                 {/* Continue */}
                 <button
                   onClick={handleDetailsContinue}
-                  className="w-full bg-zenco-blue text-white py-3 rounded-xl font-semibold hover:opacity-90 transition"
+                  className="w-full bg-[#08B9ED] text-white cursor-pointer py-3 rounded-sm font-semibold hover:opacity-90 transition"
                 >
                   Continue
                 </button>
@@ -142,6 +178,12 @@ export default function RegisterUser() {
                 You can come back later if you don't have time to finish your documents now
               </p>
 
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6">
+                  {error}
+                </div>
+              )}
+
               <div className="space-y-6">
 
                 {/* Password */}
@@ -171,9 +213,10 @@ export default function RegisterUser() {
                 {/* Continue */}
                 <button
                   onClick={handleRegister}
-                  className="w-full bg-zenco-blue text-white py-3 rounded-xl font-semibold hover:opacity-90 transition"
+                  disabled={loading}
+                  className="w-full bg-zenco-blue text-white py-3 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50"
                 >
-                  Continue
+                  {loading ? "Creating account..." : "Continue"}
                 </button>
 
                 <p className="text-xs text-gray-500 text-center">
