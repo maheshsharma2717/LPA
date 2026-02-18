@@ -1,7 +1,7 @@
 export const steps = [
   { label: "Who", key: "who" },
   { label: "Which Document", key: "which-document" },
-  { label: "The Donor", key: "which-donor" },
+  { label: "About You (The Donor)", key: "which-donor" },
   { label: "Attorneys", key: "attorneys" },
   { label: "Health & Finance Decisions", key: "health-&-finances" },
   { label: "People to Notify", key: "people-to-Notify" },
