@@ -14,10 +14,11 @@ import { supabase } from "@/lib/supabase";
 
 type Props = {
   lead?: any;
+  userId?: string;
   onComplete: () => void;
 };
 
-export default function InitialDetailsForm({ lead, onComplete }: Props) {
+export default function InitialDetailsForm({ lead, userId, onComplete }: Props) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
@@ -69,7 +70,9 @@ export default function InitialDetailsForm({ lead, onComplete }: Props) {
     formData.mobile;
 
   const handleContinue = async () => {
-    if (!lead?.id) {
+    const activeUserId = lead?.id || userId;
+
+    if (!activeUserId) {
       onComplete();
       return;
     }
@@ -82,7 +85,7 @@ export default function InitialDetailsForm({ lead, onComplete }: Props) {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: lead.id,
+          userId: activeUserId,
           title: formData.title,
           first_name: formData.firstName,
           last_name: formData.lastName,
@@ -227,7 +230,7 @@ export default function InitialDetailsForm({ lead, onComplete }: Props) {
           <Button
             variant="contained"
             sx={{
-              backgroundColor: "#2563eb",
+              backgroundColor: "#08B9ED",
               "&:hover": { backgroundColor: "#1d4ed8" },
             }}
           >
@@ -274,7 +277,7 @@ export default function InitialDetailsForm({ lead, onComplete }: Props) {
           disabled={!isValid || loading}
           onClick={handleContinue}
           sx={{
-            backgroundColor: "#2563eb",
+            backgroundColor: "#08B9ED",
             "&:hover": { backgroundColor: "#1d4ed8" },
             paddingY: 1.5,
           }}

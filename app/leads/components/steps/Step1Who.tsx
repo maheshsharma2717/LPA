@@ -54,6 +54,30 @@ export default function Step1Who({ data, updateData }: Props) {
   });
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const targetType = sessionStorage.getItem("lpa_target_type");
+      const personCount = sessionStorage.getItem("lpa_person_count");
+
+      if (targetType === "me" && personCount === "1") {
+        setSelected("You");
+        setMorePeople(false);
+      } else if (targetType === "partner" && personCount === "2") {
+        setSelected("You and your partner");
+        setMorePeople(true);
+      } else if (targetType === "other") {
+        setMorePeople(true);
+        if (personCount === "1") {
+          setSelected("Just one of your parents"); // Or map to a more generic default
+        } else if (personCount === "2") {
+          setSelected("Your mum and dad");
+        } else {
+          setSelected("Someone else");
+        }
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     updateData({
       selection: selected,
       people,
@@ -131,8 +155,8 @@ export default function Step1Who({ data, updateData }: Props) {
             variant="outlined"
             onClick={() => setOpenModal(true)}
             sx={{
-              borderColor: "#2563eb",
-              color: "#2563eb",
+              borderColor: "#08B9ED",
+              color: "#08B9ED",
               "&:hover": {
                 borderColor: "#1d4ed8",
                 backgroundColor: "#eff6ff",
@@ -207,7 +231,7 @@ export default function Step1Who({ data, updateData }: Props) {
             variant="contained"
             onClick={handleAddPerson}
             sx={{
-              backgroundColor: "#2563eb",
+              backgroundColor: "#08B9ED",
               "&:hover": { backgroundColor: "#1d4ed8" },
             }}
           >

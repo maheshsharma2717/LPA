@@ -83,10 +83,10 @@ export default function WizardLayout({
         alternativeLabel
         sx={{
           "& .MuiStepIcon-root.Mui-active": {
-            color: "#2563eb", // zenco-blue
+            color: "#08B9ED", // zenco-blue
           },
           "& .MuiStepIcon-root.Mui-completed": {
-            color: "#2563eb",
+            color: "#08B9ED",
           },
           "& .MuiStepLabel-label.Mui-active": {
             fontWeight: 600,
@@ -118,9 +118,9 @@ export default function WizardLayout({
 
       {/* Navigation Buttons */}
       <div className="flex justify-between pt-6">
-        <Button 
-        // disabled={activeStep === 0} 
-        onClick={handleBack}>
+        <Button
+          // disabled={activeStep === 0} 
+          onClick={handleBack}>
           Back
         </Button>
 
@@ -128,7 +128,7 @@ export default function WizardLayout({
           variant="contained"
           onClick={handleNext}
           sx={{
-            backgroundColor: "#2563eb",
+            backgroundColor: "#08B9ED",
             "&:hover": { backgroundColor: "#1d4ed8" },
           }}
         >

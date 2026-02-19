@@ -40,20 +40,34 @@ export default function DetailsPage() {
                 }
                 setUser(user);
 
-                // Fetch lead profile and applications via API
-                const response = await fetch(`/api/leads?userId=${user.id}`);
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || "Failed to load data");
+                // Fetch lead profile directly from Supabase
+                const { data: leadData, error: leadError } = await supabase
+                    .from('leads')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+
+                if (leadError && leadError.code !== 'PGRST116') {
+                    throw leadError;
                 }
 
-                const { lead: leadData, applications: appsData } = await response.json();
+                // Fetch applications directly from Supabase
+                const { data: appsData, error: appsError } = await supabase
+                    .from('applications')
+                    .select('*')
+                    .eq('lead_id', user.id)
+                    .is('deleted_at', null);
+
+                if (appsError) {
+                    throw appsError;
+                }
+
                 setLead(leadData);
                 setApplications(appsData || []);
 
-            } catch (err) {
+            } catch (err: any) {
                 console.error("Unexpected error:", err);
-                setError("An unexpected error occurred");
+                setError(err.message || "An unexpected error occurred");
             } finally {
                 setLoading(false);
             }
@@ -99,6 +113,7 @@ export default function DetailsPage() {
                     {!initialCompleted ? (
                         <InitialDetailsForm
                             lead={lead}
+                            userId={user?.id}
                             onComplete={() => setInitialCompleted(true)}
                         />
                     ) : (

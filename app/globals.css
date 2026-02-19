@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-zenco-blue: #0086c4;
+  --color-zenco-blue: #08B9ED;
   --color-zenco-dark: #1a1a1a;
   --font-sans: 'Roboto' !important;
 }
@@ -13,7 +13,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #ffffff; /* Zenco site seems to prefer light theme even in dark mode for LPA journey */
+    --background: #ffffff;
     --foreground: #1a1a1a;
   }
 }

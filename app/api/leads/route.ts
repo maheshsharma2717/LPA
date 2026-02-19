@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin';
 
 export async function GET(request: Request) {
     try {
@@ -27,6 +27,13 @@ export async function GET(request: Request) {
             .eq('lead_id', userId)
             .is('deleted_at', null);
 
+        console.log(`Leads API Debug [${userId}]:`, {
+            leadFound: !!leadData,
+            appsCount: appsData?.length || 0,
+            leadError,
+            appsError
+        });
+
         if (appsError) {
             console.error('Error fetching applications:', appsError);
             return NextResponse.json({ error: appsError.message }, { status: 500 });
@@ -52,14 +59,20 @@ export async function PATCH(request: Request) {
 
         const { data, error } = await supabase
             .from('leads')
-            .update(updateData)
-            .eq('id', userId)
+            .upsert({
+                id: userId,
+                ...updateData
+            })
             .select()
-            .single();
+            .maybeSingle();
 
         if (error) {
             console.error('Error updating lead:', error);
             return NextResponse.json({ error: error.message }, { status: 500 });
+        }
+
+        if (!data) {
+            return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
         }
 
         return NextResponse.json({ data });
