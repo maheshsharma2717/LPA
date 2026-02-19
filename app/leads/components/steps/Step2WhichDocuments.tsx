@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
 import { useState } from "react";
 
 export default function WhichDoucmentsTab() {
