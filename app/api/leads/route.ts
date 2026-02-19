@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin';
+import { supabase, getServerSupabase, supabaseAdmin } from '@/lib/supabase';
 
 export async function GET(request: Request) {
     try {
@@ -10,7 +10,11 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
         }
 
-        const { data: leadData, error: leadError } = await supabase
+        const authHeader = request.headers.get('Authorization');
+        const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
+        const db = getServerSupabase(token);
+
+        const { data: leadData, error: leadError } = await db
             .from('leads')
             .select('*')
             .eq('id', userId)
@@ -57,7 +61,19 @@ export async function PATCH(request: Request) {
             return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
         }
 
-        const { data, error } = await supabase
+        const authHeader = request.headers.get('Authorization');
+        const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
+        console.log('PATCH /api/leads hit...', { hasToken: !!token });
+
+        // Use admin client if configured, otherwise use request-scoped client with user token
+        const db = supabaseAdmin || getServerSupabase(token);
+
+        if (!db) {
+            console.error('CRITICAL: db client not initialized');
+            return NextResponse.json({ error: 'Database client not configured. [ERR_DB_NULL]' }, { status: 500 });
+        }
+
+        const { data, error } = await db
             .from('leads')
             .upsert({
                 id: userId,
@@ -72,7 +88,7 @@ export async function PATCH(request: Request) {
         }
 
         if (!data) {
-            return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
+            return NextResponse.json({ error: 'Lead not found or update failed' }, { status: 404 });
         }
 
         return NextResponse.json({ data });

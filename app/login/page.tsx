@@ -41,10 +41,7 @@ export default function LoginPage() {
     const handleGoogleLogin = async () => {
         try {
             const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: `${window.location.origin}/leads`,
-                },
+                provider: 'google'
             });
             if (error) throw error;
         } catch (err: any) {
