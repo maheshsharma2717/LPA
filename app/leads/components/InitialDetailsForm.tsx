@@ -24,6 +24,7 @@ export default function InitialDetailsForm({ lead, userId, onComplete }: Props) 
     title: "",
     firstName: "",
     lastName: "",
+    middleName: "",
     knownByOtherNames: "",
     preferredName: "",
     day: "",
@@ -262,13 +263,16 @@ export default function InitialDetailsForm({ lead, userId, onComplete }: Props) 
             Search
           </Button>
         </div>
+<div className="flex gap-4">
 
         <TextField
           label="Address Line 1"
           value={formData.address}
           onChange={(e) => handleChange("address", e.target.value)}
           fullWidth
-        />
+          />
+          </div>
+<div className="flex gap-4">
 
         <TextField
           label="Address Line 2 (Optional)"
@@ -276,6 +280,7 @@ export default function InitialDetailsForm({ lead, userId, onComplete }: Props) 
           onChange={(e) => handleChange("addressLine2", e.target.value)}
           fullWidth
         />
+          </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <TextField
