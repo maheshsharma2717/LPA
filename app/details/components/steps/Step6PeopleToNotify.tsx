@@ -1,5 +1,5 @@
 "use client";
-
+import "../styles/Step6PeopleToNotify.module.css";
 import Link from "next/link";
 import {
   SquarePen,
@@ -106,11 +106,10 @@ export default function PeopleToNotifyTab() {
 
               <button
                 onClick={() => setHasPeople(true)}
-                className="w-full mb-5 bg-[#35495e] text-white py-3 rounded-sm font-semibold"
+                className={`btnPrimaryZenco w-full mb-5 text-white py-3 rounded-sm font-semibold`}
               >
                 Yes, there are people to notify
               </button>
-
               {/* IF NO → simulate move to step 7 */}
               {/* {hasPeople === false && (
               <div className="p-4 bg-green-50 border border-green-300 rounded">
