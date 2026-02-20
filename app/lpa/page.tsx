@@ -130,8 +130,12 @@ export default function LPAStepOne() {
       description:
         "If you are creating these documents as an attorney or doing these documents for someone else, then please choose 'Someone else'.",
       options: [
-        { label: "Myself", next: "mentalCapacitySingle", icon: "user" },
-        { label: "Your partner", next: "mentalCapacityTwo", icon: "partner" },
+        { label: "Me", next: "areYouOver18", icon: "user" },
+        {
+          label: "Me and my partner",
+          next: "mentalCapacityBoth",
+          icon: "partner",
+        },
         { label: "Someone else", next: "someoneElseCount", icon: "group" },
       ],
     },
@@ -142,8 +146,25 @@ export default function LPAStepOne() {
         "You have said that you want documents for someone else, please tell us how many other people do you want these for?",
       options: [
         { label: "1 person", next: "mentalCapacitySingle", icon: "user" },
-        { label: "2 people", next: "mentalCapacityTwo", icon: "partner" },
+        { label: "2 person", next: "mentalCapacityTwo", icon: "partner" },
         { label: "More than 2 people", next: "moreThanTwo", icon: "group" },
+      ],
+    },
+
+    areYouOver18: {
+      question: "Are you over 18?",
+      options: [
+        { label: "Yes", next: "englandCheck", icon: "check" },
+        { label: "No", next: "notEligible", icon: "cross" },
+      ],
+    },
+
+    mentalCapacityBoth: {
+      question:
+        "Are you and your partner both over 18 and have mental capacity to make decisions?",
+      options: [
+        { label: "Yes", next: "englandCheck", icon: "check" },
+        { label: "No", next: "notEligible", icon: "cross" },
       ],
     },
 
@@ -184,7 +205,17 @@ export default function LPAStepOne() {
       question: "Do you live in England or Wales?",
       options: [
         { label: "Yes", next: "end", icon: "check" },
-        { label: "No", next: "notEligible", icon: "cross" },
+        { label: "No", next: "outsideEnglandWalesConfirm", icon: "cross" },
+      ],
+    },
+
+    outsideEnglandWalesConfirm: {
+      question: "Confirm you wish to continue outside of England or Wales?",
+      description:
+        "Some countries will accept a notarised power of attorney.\n\nYou will need to regsiter the power of attorney with the Office of the Public Guardian first, which takes approx 16-20 weeks.\n\nYou can then take the document to be notarised.\n\nIf you wish to continue, it will be at your own risk. We cannot guarantee success.",
+      options: [
+        { label: "I understand and wish to proceed", next: "end" },
+        { label: "I do not want to proceed", next: "notEligible" },
       ],
     },
 
@@ -260,13 +291,20 @@ export default function LPAStepOne() {
           </pre> */}
 
           <h2 className="text-2xl sm:text-3xl font-extrabold text-zenco-dark mb-4 leading-tight">
-            {/* Who are the Lasting Power of Attorney documents for? */}
-            {currentQuestion.question}
+            {currentQuestion.question.includes("England or Wales") ? (
+              <>
+                {currentQuestion.question.split("England or Wales")[0]}
+                <span className="text-zenco-blue">England or Wales</span>
+                {currentQuestion.question.split("England or Wales")[1]}
+              </>
+            ) : (
+              currentQuestion.question
+            )}
           </h2>
           {currentQuestion.description && (
-            <p className="text-gray-600 mb-10 leading-relaxed">
+            <div className="text-gray-600 mb-10 leading-relaxed whitespace-pre-line">
               {currentQuestion.description}
-            </p>
+            </div>
           )}
           {currentQuestion.type === "lastStep" && (
             <>
@@ -308,8 +346,8 @@ export default function LPAStepOne() {
                 </div>
               </div>
               <button
-              onClick={() => {routePage.push("/register")}}
-              className="flex flex-col items-center justify-center p-8 rounded-2xl border-2 border-gray-100 hover:border-zenco-blue hover:bg-blue-50/50 transition-all duration-200 group">
+                onClick={() => { routePage.push("/register") }}
+                className="flex flex-col items-center justify-center p-8 rounded-2xl border-2 border-gray-100 hover:border-zenco-blue hover:bg-blue-50/50 transition-all duration-200 group">
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-zenco-blue mb-4 group-hover:scale-110 transition-transform duration-200">
                   {CheckIcon()}
                 </div>
@@ -351,11 +389,37 @@ export default function LPAStepOne() {
           )}
 
           {currentQuestion.options && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div
+              className={`grid grid-cols-1 ${currentStep === "outsideEnglandWalesConfirm"
+                ? ""
+                : "sm:grid-cols-2"
+                } gap-6`}
+            >
               {currentQuestion.options.map((option, index) => (
                 <button
                   key={index}
                   onClick={() => {
+                    // Save to sessionStorage for wizard pre-population
+                    if (currentStep === "start") {
+                      if (option.label === "Me") {
+                        sessionStorage.setItem("lpa_target_type", "me");
+                        sessionStorage.setItem("lpa_person_count", "1");
+                      } else if (option.label === "Me and my partner") {
+                        sessionStorage.setItem("lpa_target_type", "partner");
+                        sessionStorage.setItem("lpa_person_count", "2");
+                      } else if (option.label === "Someone else") {
+                        sessionStorage.setItem("lpa_target_type", "other");
+                      }
+                    } else if (currentStep === "someoneElseCount") {
+                      if (option.label === "1 person") {
+                        sessionStorage.setItem("lpa_person_count", "1");
+                      } else if (option.label === "2 person") {
+                        sessionStorage.setItem("lpa_person_count", "2");
+                      } else if (option.label === "More than 2 people") {
+                        sessionStorage.setItem("lpa_person_count", "many");
+                      }
+                    }
+
                     // Store answer
                     setAnswers((prev) => {
                       const updated = { ...prev };
@@ -372,9 +436,11 @@ export default function LPAStepOne() {
                   }}
                   className="flex flex-col items-center justify-center p-8 rounded-2xl border-2 border-gray-100 hover:border-zenco-blue hover:bg-blue-50/50 transition-all duration-200 group"
                 >
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-zenco-blue mb-4 group-hover:scale-110 transition-transform duration-200">
-                    {renderIcon(option.icon)}
-                  </div>
+                  {option.icon && (
+                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-zenco-blue mb-4 group-hover:scale-110 transition-transform duration-200">
+                      {renderIcon(option.icon)}
+                    </div>
+                  )}
 
                   <span className="font-bold text-lg text-zenco-dark text-center">
                     {option.label}

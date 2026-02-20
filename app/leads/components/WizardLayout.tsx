@@ -1,6 +1,7 @@
 "use client";
 
-import { Stepper, Step, StepLabel, Button } from "@mui/material";
+import { useState } from "react";
+import { Stepper, Step, StepLabel, Button, CircularProgress } from "@mui/material";
 import { steps } from "../step-config";
 import WhoTab from "./steps/Step1Who";
 import WhichDoucmentsTab from "./steps/Step2WhichDocuments";
@@ -21,6 +22,8 @@ type Props = {
   formData: any;
   setFormData: React.Dispatch<React.SetStateAction<any>>;
   onExitWizard: () => void;
+  onFinish: () => void;
+
 };
 
 export default function WizardLayout({
@@ -30,7 +33,8 @@ export default function WizardLayout({
   setCompletedSteps,
   formData,
   setFormData,
-  onExitWizard
+  onExitWizard,
+  onFinish
 }: Props) {
   // Map step key to component
   const stepComponentMap: Record<string, any> = {
@@ -47,13 +51,22 @@ export default function WizardLayout({
 
   const CurrentStepComponent = stepComponentMap[steps[activeStep].key];
 
-  const handleNext = () => {
-    setCompletedSteps((prev) =>
-      prev.includes(activeStep) ? prev : [...prev, activeStep],
-    );
+  const [isSaving, setIsSaving] = useState(false);
 
-    if (activeStep < steps.length - 1) {
-      setActiveStep(activeStep + 1);
+  const handleNext = async () => {
+    setIsSaving(true);
+    try {
+      // If the component handles its own next (like Step1Who might eventually do)
+      // we could pass handleNext down. For now, we'll just move forward.
+      setCompletedSteps((prev) =>
+        prev.includes(activeStep) ? prev : [...prev, activeStep],
+      );
+
+      if (activeStep < steps.length - 1) {
+        setActiveStep(activeStep + 1);
+      }
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -63,10 +76,6 @@ export default function WizardLayout({
       return;
     }
     setActiveStep(activeStep - 1);
-
-    if (activeStep > 0) {
-      setActiveStep(activeStep - 1);
-    }
   };
 
   const handleStepClick = (index: number) => {
@@ -76,6 +85,7 @@ export default function WizardLayout({
   };
 
   return (
+    <>
     <div className="space-y-10">
       {/* Horizontal Stepper */}
       <Stepper
@@ -83,10 +93,10 @@ export default function WizardLayout({
         alternativeLabel
         sx={{
           "& .MuiStepIcon-root.Mui-active": {
-            color: "#2563eb", // zenco-blue
+            color: "#08B9ED", // zenco-blue
           },
           "& .MuiStepIcon-root.Mui-completed": {
-            color: "#2563eb",
+            color: "#08B9ED",
           },
           "& .MuiStepLabel-label.Mui-active": {
             fontWeight: 600,
@@ -96,7 +106,10 @@ export default function WizardLayout({
       >
         {steps.map((step, index) => (
           <Step key={step.key} completed={completedSteps.includes(index)}>
-            <StepLabel onClick={() => handleStepClick(index)}>
+            <StepLabel
+              onClick={() => handleStepClick(index)}
+              sx={{ cursor: (completedSteps.includes(index) || index === activeStep) ? 'pointer' : 'default' }}
+            >
               {step.label}
             </StepLabel>
           </Step>
@@ -113,28 +126,37 @@ export default function WizardLayout({
               [steps[activeStep].key]: data,
             }))
           }
+          onNext={handleNext} // Allow component to trigger next
+          isSaving={isSaving}
+          allFormData={formData}
         />
       </div>
 
       {/* Navigation Buttons */}
       <div className="flex justify-between pt-6">
-        <Button 
-        // disabled={activeStep === 0} 
-        onClick={handleBack}>
+        <Button
+          onClick={handleBack}
+          sx={{ color: '#6b7280', textTransform: 'none' }}
+        >
           Back
         </Button>
 
         <Button
           variant="contained"
+          disabled={isSaving}
           onClick={handleNext}
           sx={{
-            backgroundColor: "#2563eb",
+            backgroundColor: "#08B9ED",
+            textTransform: "none",
+            borderRadius: "8px",
+            padding: "8px 32px",
             "&:hover": { backgroundColor: "#1d4ed8" },
           }}
         >
-          {activeStep === steps.length - 1 ? "Finish" : "Next"}
+          {isSaving ? <CircularProgress size={24} color="inherit" /> : (activeStep === steps.length - 1 ? "Finish" : "Next")}
         </Button>
       </div>
-    </div>
+    </div></>
+    
   );
 }

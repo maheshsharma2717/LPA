@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   TextField,
   Select,
@@ -8,27 +8,60 @@ import {
   Button,
   FormControl,
   InputLabel,
+  CircularProgress
 } from "@mui/material";
+import { supabase } from "@/lib/supabase";
 
 type Props = {
+  lead?: any;
+  userId?: string;
   onComplete: () => void;
 };
 
-export default function InitialDetailsForm({ onComplete }: Props) {
+export default function InitialDetailsForm({ lead, userId, onComplete }: Props) {
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     firstName: "",
     lastName: "",
     middleName: "",
+    knownByOtherNames: "",
     preferredName: "",
     day: "",
     month: "",
     year: "",
     postcode: "",
     address: "",
+    addressLine2: "",
+    city: "",
+    county: "",
     mobile: "",
     landline: "",
   });
+
+  useEffect(() => {
+    if (lead) {
+      const dob = lead.date_of_birth ? new Date(lead.date_of_birth) : null;
+      setFormData({
+        title: lead.title || "",
+        firstName: lead.first_name || "",
+        lastName: lead.last_name || "",
+        middleName: lead.middle_name || "",
+        knownByOtherNames: lead.known_by_other_names || "",
+        preferredName: lead.preferred_name || "",
+        day: dob ? dob.getDate().toString() : "",
+        month: dob ? (dob.getMonth() + 1).toString() : "",
+        year: dob ? dob.getFullYear().toString() : "",
+        postcode: lead.postcode || "",
+        address: lead.address_line_1 || "",
+        addressLine2: lead.address_line_2 || "",
+        city: lead.city || "",
+        county: lead.county || "",
+        mobile: lead.mobile || "",
+        landline: lead.landline || "",
+      });
+    }
+  }, [lead]);
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -42,7 +75,62 @@ export default function InitialDetailsForm({ onComplete }: Props) {
     formData.month &&
     formData.year &&
     formData.postcode &&
+    formData.address &&
+    formData.city &&
     formData.mobile;
+
+  const handleContinue = async () => {
+    const activeUserId = lead?.id || userId;
+
+    if (!activeUserId) {
+      onComplete();
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      const dob = `${formData.year}-${formData.month.padStart(2, '0')}-${formData.day.padStart(2, '0')}`;
+
+      const response = await fetch("/api/leads", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          userId: activeUserId,
+          title: formData.title,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          middle_name: formData.middleName,
+          known_by_other_names: formData.knownByOtherNames,
+          preferred_name: formData.preferredName,
+          date_of_birth: dob,
+          postcode: formData.postcode,
+          address_line_1: formData.address,
+          address_line_2: formData.addressLine2,
+          city: formData.city,
+          county: formData.county,
+          mobile: formData.mobile,
+          landline: formData.landline,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update lead details");
+      }
+      onComplete();
+    } catch (err) {
+      console.error("Error saving lead details:", err);
+      // Fallback to next step even if save fails, but log it
+      onComplete();
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -113,6 +201,13 @@ export default function InitialDetailsForm({ onComplete }: Props) {
           />
 
           <TextField
+            label="Have you ever been known by any other names? (Optional)"
+            value={formData.knownByOtherNames}
+            onChange={(e) => handleChange("knownByOtherNames", e.target.value)}
+            fullWidth
+          />
+
+          <TextField
             label="Preferred Name (Optional)"
             value={formData.preferredName}
             onChange={(e) => handleChange("preferredName", e.target.value)}
@@ -161,20 +256,47 @@ export default function InitialDetailsForm({ onComplete }: Props) {
           <Button
             variant="contained"
             sx={{
-              backgroundColor: "#2563eb",
-              "&:hover": { backgroundColor: "#1d4ed8" },
+              backgroundColor: "#08B9ED",
+              "&:hover": { backgroundColor: "#07bdf5ff" },
             }}
           >
             Search
           </Button>
         </div>
+<div className="flex gap-4">
 
         <TextField
-          label="Select address"
+          label="Address Line 1"
           value={formData.address}
           onChange={(e) => handleChange("address", e.target.value)}
           fullWidth
+          />
+          </div>
+<div className="flex gap-4">
+
+        <TextField
+          label="Address Line 2 (Optional)"
+          value={formData.addressLine2}
+          onChange={(e) => handleChange("addressLine2", e.target.value)}
+          fullWidth
         />
+          </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <TextField
+            label="Town / City"
+            value={formData.city}
+            onChange={(e) => handleChange("city", e.target.value)}
+            fullWidth
+          />
+
+          <TextField
+            label="County (Optional)"
+            value={formData.county}
+            onChange={(e) => handleChange("county", e.target.value)}
+            fullWidth
+          />
+        </div>
       </div>
 
       {/* Contact */}
@@ -205,15 +327,15 @@ export default function InitialDetailsForm({ onComplete }: Props) {
         <Button
           fullWidth
           variant="contained"
-          disabled={!isValid}
-          onClick={onComplete}
+          disabled={!isValid || loading}
+          onClick={handleContinue}
           sx={{
-            backgroundColor: "#2563eb",
+            backgroundColor: "#08B9ED",
             "&:hover": { backgroundColor: "#1d4ed8" },
             paddingY: 1.5,
           }}
         >
-          Continue
+          {loading ? <CircularProgress size={24} color="inherit" /> : "Continue"}
         </Button>
       </div>
     </div>
