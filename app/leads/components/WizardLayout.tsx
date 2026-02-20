@@ -52,19 +52,18 @@ export default function WizardLayout({
 
   const handleNext = async () => {
     setIsSaving(true);
-    try {
-      // If the component handles its own next (like Step1Who might eventually do)
-      // we could pass handleNext down. For now, we'll just move forward.
-      setCompletedSteps((prev) =>
-        prev.includes(activeStep) ? prev : [...prev, activeStep],
-      );
+    // This triggers the useEffect [isSaving] in Child components
+  };
 
-      if (activeStep < steps.length - 1) {
-        setActiveStep(activeStep + 1);
-      }
-    } finally {
-      setIsSaving(false);
+  const onNavigateNext = () => {
+    setCompletedSteps((prev) =>
+      prev.includes(activeStep) ? prev : [...prev, activeStep],
+    );
+
+    if (activeStep < steps.length - 1) {
+      setActiveStep(activeStep + 1);
     }
+    setIsSaving(false);
   };
 
   const handleBack = () => {
@@ -122,36 +121,38 @@ export default function WizardLayout({
               [steps[activeStep].key]: data,
             }))
           }
-          onNext={handleNext} // Allow component to trigger next
+          onNext={onNavigateNext} // Successful completion of save triggers navigation
           isSaving={isSaving}
           allFormData={formData}
         />
       </div>
 
-      {/* Navigation Buttons */}
-      <div className="flex justify-between pt-6">
-        <Button
-          onClick={handleBack}
-          sx={{ color: '#6b7280', textTransform: 'none' }}
-        >
-          Back
-        </Button>
+      {/* Navigation Buttons - Show only if not hidden by step config */}
+      {!steps[activeStep].hideNext && (
+        <div className="flex justify-between pt-6">
+          <Button
+            onClick={handleBack}
+            sx={{ color: '#6b7280', textTransform: 'none' }}
+          >
+            Back
+          </Button>
 
-        <Button
-          variant="contained"
-          disabled={isSaving}
-          onClick={handleNext}
-          sx={{
-            backgroundColor: "#08B9ED",
-            textTransform: "none",
-            borderRadius: "8px",
-            padding: "8px 32px",
-            "&:hover": { backgroundColor: "#1d4ed8" },
-          }}
-        >
-          {isSaving ? <CircularProgress size={24} color="inherit" /> : (activeStep === steps.length - 1 ? "Finish" : "Next")}
-        </Button>
-      </div>
+          <Button
+            variant="contained"
+            disabled={isSaving}
+            onClick={handleNext}
+            sx={{
+              backgroundColor: "#08B9ED",
+              textTransform: "none",
+              borderRadius: "8px",
+              padding: "8px 32px",
+              "&:hover": { backgroundColor: "#1d4ed8" },
+            }}
+          >
+            {isSaving ? <CircularProgress size={24} color="inherit" /> : (activeStep === steps.length - 1 ? "Finish" : "Next")}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

@@ -25,7 +25,7 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: leadError.message }, { status: 500 });
         }
 
-        const { data: appsData, error: appsError } = await supabase
+        const { data: appsData, error: appsError } = await db
             .from('applications')
             .select('*')
             .eq('lead_id', userId)

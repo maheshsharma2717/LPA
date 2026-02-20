@@ -104,6 +104,8 @@ export default function Step2WhichDocuments({
 
         await Promise.all(
           activeDonors.map(async (donor: Donor) => {
+
+
             const lpasRes = await fetch(`/api/lpa-documents?donorId=${donor.id}`, {
               headers: { Authorization: `Bearer ${token}` },
             });
@@ -172,26 +174,29 @@ export default function Step2WhichDocuments({
 
         // Health & Welfare
         if (needsHealth && !existingHealth) {
-          await fetch("/api/lpa-documents", {
+          console.log("Creating Health & Welfare document for", donor.id);
+          const res = await fetch("/api/lpa-documents", {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ donor_id: donor.id, lpa_type: "health_and_welfare" }),
+            body: JSON.stringify({ donor_id: donor.id, lpa_type: "health_and_welfare", status: "draft" }),
           });
+          const result = await res.json();
+          if (result.error) {
+            console.error("Failed to create Health document:", result.error);
+            setError(`Failed to create Health document for ${donor.first_name}`);
+            return;
+          }
         } else if (!needsHealth && existingHealth) {
-          await fetch(`/api/lpa-documents?lpaDocId=${existingHealth.id}`, { // The API route supports DELETE?
-            // Check API Reference or Route.
-            // Route.ts doesn't show DELETE explicitly in the snippet I saw!
-            // I need to check if PATCH deleted_at or DELETE method exists.
-            // The snippet showed GET, POST, PATCH.
-            // I might need to PATCH { deleted_at: new Date() } if DELETE isn't implemented.
-            // Checking Route.ts content again from memory: It had GET, POST, PATCH.
-            // I will use PATCH to soft delete as per schema "deleted_at".
+          console.log("Soft-deleting Health & Welfare document", existingHealth.id);
+          const res = await fetch(`/api/lpa-documents`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
             body: JSON.stringify({ id: existingHealth.id, deleted_at: new Date().toISOString() }),
           });
+          const result = await res.json();
+          if (result.error) console.error("Failed to delete Health document:", result.error);
         } else if (needsHealth && existingHealth && existingHealth.deleted_at) {
-          // Reactivate if soft-deleted
+          console.log("Reactivating Health & Welfare document", existingHealth.id);
           await fetch("/api/lpa-documents", {
             method: "PATCH",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -199,22 +204,31 @@ export default function Step2WhichDocuments({
           });
         }
 
-
         // Property & Finance
         if (needsFinance && !existingFinance) {
-          await fetch("/api/lpa-documents", {
+          console.log("Creating Property & Finance document for", donor.id);
+          const res = await fetch("/api/lpa-documents", {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ donor_id: donor.id, lpa_type: "property_and_finance" }),
+            body: JSON.stringify({ donor_id: donor.id, lpa_type: "property_and_finance", status: "draft" }),
           });
+          const result = await res.json();
+          if (result.error) {
+            console.error("Failed to create Finance document:", result.error);
+            setError(`Failed to create Finance document for ${donor.first_name}`);
+            return;
+          }
         } else if (!needsFinance && existingFinance) {
-          await fetch(`/api/lpa-documents?lpaDocId=${existingFinance.id}`, { // Using PATCH for soft delete
+          console.log("Soft-deleting Property & Finance document", existingFinance.id);
+          const res = await fetch(`/api/lpa-documents`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
             body: JSON.stringify({ id: existingFinance.id, deleted_at: new Date().toISOString() }),
           });
+          const result = await res.json();
+          if (result.error) console.error("Failed to delete Finance document:", result.error);
         } else if (needsFinance && existingFinance && existingFinance.deleted_at) {
-          // Reactivate
+          console.log("Reactivating Property & Finance document", existingFinance.id);
           await fetch("/api/lpa-documents", {
             method: "PATCH",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },

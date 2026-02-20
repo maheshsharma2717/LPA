@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getServerSupabase } from '@/lib/supabase';
 
 export async function GET(request: Request) {
     try {
@@ -7,8 +7,12 @@ export async function GET(request: Request) {
         const donorId = searchParams.get('donorId');
         const lpaDocId = searchParams.get('lpaDocId');
 
+        const authHeader = request.headers.get('Authorization');
+        const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
+        const db = getServerSupabase(token);
+
         if (lpaDocId) {
-            const { data, error } = await supabase
+            const { data, error } = await db
                 .from('lpa_documents')
                 .select(`
           *,
@@ -29,7 +33,7 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'Donor ID or LPA Doc ID is required' }, { status: 400 });
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from('lpa_documents')
             .select('*')
             .eq('donor_id', donorId)
@@ -45,7 +49,11 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { data, error } = await supabase
+        const authHeader = request.headers.get('Authorization');
+        const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
+        const db = getServerSupabase(token);
+
+        const { data, error } = await db
             .from('lpa_documents')
             .insert(body)
             .select()
@@ -63,7 +71,11 @@ export async function PATCH(request: Request) {
         const { id, ...updateData } = await request.json();
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
 
-        const { data, error } = await supabase
+        const authHeader = request.headers.get('Authorization');
+        const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
+        const db = getServerSupabase(token);
+
+        const { data, error } = await db
             .from('lpa_documents')
             .update(updateData)
             .eq('id', id)

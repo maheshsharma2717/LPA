@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getServerSupabase } from '@/lib/supabase';
 
 export async function POST(request: Request) {
     try {
@@ -8,8 +8,12 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'lpa_document_id is required' }, { status: 400 });
         }
 
-      
-        const { data: lpaDoc, error: lpaError } = await supabase
+
+        const authHeader = request.headers.get('Authorization');
+        const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
+        const db = getServerSupabase(token);
+
+        const { data: lpaDoc, error: lpaError } = await db
             .from('lpa_documents')
             .select(`
         *,
@@ -33,26 +37,26 @@ export async function POST(request: Request) {
         const donor = lpaDoc.donors as any;
         const application = donor.applications as any;
 
-       
-        const { data: docAttorneys } = await supabase
+
+        const { data: docAttorneys } = await db
             .from('lpa_document_attorneys')
             .select('role, sort_order, attorneys!inner (*)')
             .eq('lpa_document_id', lpa_document_id)
             .is('deleted_at', null)
             .order('sort_order');
 
-        const { data: applicants } = await supabase
+        const { data: applicants } = await db
             .from('lpa_document_applicants')
             .select('applicant_role, attorney_id, attorneys (*)')
             .eq('lpa_document_id', lpa_document_id);
 
-        const { data: peopleToNotify } = await supabase
+        const { data: peopleToNotify } = await db
             .from('people_to_notify')
             .select('*')
             .eq('lpa_document_id', lpa_document_id)
             .is('deleted_at', null);
 
-        const { data: certProvider } = await supabase
+        const { data: certProvider } = await db
             .from('certificate_providers')
             .select('*')
             .eq('lpa_document_id', lpa_document_id)
@@ -74,7 +78,7 @@ export async function POST(request: Request) {
         const pdfContent = new TextEncoder().encode(JSON.stringify(pdfData, null, 2));
 
         const storagePath = `${application.id}/${lpa_document_id}/${lpaDoc.lpa_type}.pdf`;
-        const { error: uploadError } = await supabase.storage
+        const { error: uploadError } = await db.storage
             .from('lpa-pdfs')
             .upload(storagePath, pdfContent, {
                 contentType: 'application/pdf',
@@ -85,7 +89,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: `Upload failed: ${uploadError.message}` }, { status: 500 });
         }
 
-        await supabase
+        await db
             .from('lpa_documents')
             .update({
                 pdf_storage_path: storagePath,
@@ -93,7 +97,7 @@ export async function POST(request: Request) {
             })
             .eq('id', lpa_document_id);
 
-        const { data: signedUrl } = await supabase.storage
+        const { data: signedUrl } = await db.storage
             .from('lpa-pdfs')
             .createSignedUrl(storagePath, 3600);
 

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getServerSupabase } from '@/lib/supabase';
 
 export async function GET(request: Request) {
     try {
@@ -10,7 +10,11 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'LPA Doc ID is required' }, { status: 400 });
         }
 
-        const { data, error } = await supabase
+        const authHeader = request.headers.get('Authorization');
+        const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
+        const db = getServerSupabase(token);
+
+        const { data, error } = await db
             .from('people_to_notify')
             .select('*')
             .eq('lpa_document_id', lpaDocId)
@@ -26,7 +30,11 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { data, error } = await supabase
+        const authHeader = request.headers.get('Authorization');
+        const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
+        const db = getServerSupabase(token);
+
+        const { data, error } = await db
             .from('people_to_notify')
             .insert(body)
             .select()
@@ -44,7 +52,11 @@ export async function PATCH(request: Request) {
         const { id, ...updateData } = await request.json();
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
 
-        const { data, error } = await supabase
+        const authHeader = request.headers.get('Authorization');
+        const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
+        const db = getServerSupabase(token);
+
+        const { data, error } = await db
             .from('people_to_notify')
             .update(updateData)
             .eq('id', id)
@@ -64,7 +76,11 @@ export async function DELETE(request: Request) {
         const id = searchParams.get('id');
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
 
-        const { error } = await supabase
+        const authHeader = request.headers.get('Authorization');
+        const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
+        const db = getServerSupabase(token);
+
+        const { error } = await db
             .from('people_to_notify')
             .update({ deleted_at: new Date().toISOString() })
             .eq('id', id);
