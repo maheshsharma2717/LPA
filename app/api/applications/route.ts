@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, getServerSupabase } from '@/lib/supabase';
 
 export async function GET(request: Request) {
     try {
@@ -10,7 +10,11 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
         }
 
-        const { data, error } = await supabase
+        const authHeader = request.headers.get('Authorization');
+        const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
+        const db = getServerSupabase(token);
+
+        const { data, error } = await db
             .from('applications')
             .select('*')
             .eq('lead_id', userId)
@@ -36,7 +40,11 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
         }
 
-        const { data, error } = await supabase
+        const authHeader = request.headers.get('Authorization');
+        const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
+        const db = getServerSupabase(token);
+
+        const { data, error } = await db
             .from('applications')
             .insert({
                 ...applicationData,
@@ -65,7 +73,11 @@ export async function PATCH(request: Request) {
             return NextResponse.json({ error: 'Application ID is required' }, { status: 400 });
         }
 
-        const { data, error } = await supabase
+        const authHeader = request.headers.get('Authorization');
+        const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
+        const db = getServerSupabase(token);
+
+        const { data, error } = await db
             .from('applications')
             .update(updateData)
             .eq('id', id)

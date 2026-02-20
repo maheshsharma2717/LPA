@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, getServerSupabase, supabaseAdmin } from '@/lib/supabase';
 
 export async function GET(request: Request) {
     try {
@@ -10,7 +10,11 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
         }
 
-        const { data: leadData, error: leadError } = await supabase
+        const authHeader = request.headers.get('Authorization');
+        const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
+        const db = getServerSupabase(token);
+
+        const { data: leadData, error: leadError } = await db
             .from('leads')
             .select('*')
             .eq('id', userId)
@@ -26,6 +30,13 @@ export async function GET(request: Request) {
             .select('*')
             .eq('lead_id', userId)
             .is('deleted_at', null);
+
+        console.log(`Leads API Debug [${userId}]:`, {
+            leadFound: !!leadData,
+            appsCount: appsData?.length || 0,
+            leadError,
+            appsError
+        });
 
         if (appsError) {
             console.error('Error fetching applications:', appsError);
@@ -50,16 +61,34 @@ export async function PATCH(request: Request) {
             return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
         }
 
-        const { data, error } = await supabase
+        const authHeader = request.headers.get('Authorization');
+        const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
+        console.log('PATCH /api/leads hit...', { hasToken: !!token });
+
+        // Use admin client if configured, otherwise use request-scoped client with user token
+        const db = supabaseAdmin || getServerSupabase(token);
+
+        if (!db) {
+            console.error('CRITICAL: db client not initialized');
+            return NextResponse.json({ error: 'Database client not configured. [ERR_DB_NULL]' }, { status: 500 });
+        }
+
+        const { data, error } = await db
             .from('leads')
-            .update(updateData)
-            .eq('id', userId)
+            .upsert({
+                id: userId,
+                ...updateData
+            })
             .select()
-            .single();
+            .maybeSingle();
 
         if (error) {
             console.error('Error updating lead:', error);
             return NextResponse.json({ error: error.message }, { status: 500 });
+        }
+
+        if (!data) {
+            return NextResponse.json({ error: 'Lead not found or update failed' }, { status: 404 });
         }
 
         return NextResponse.json({ data });

@@ -51,10 +51,14 @@ export default function RegisterUser() {
           const nameParts = formData.name.trim().split(" ");
           const firstName = nameParts[0];
           const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+          const token = session.access_token;
 
           const response = await fetch("/api/register", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
+            },
             body: JSON.stringify({
               userId: authData.user.id,
               firstName: firstName,

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getServerSupabase, supabaseAdmin } from '@/lib/supabase';
 
 export async function POST(request: Request) {
     try {
@@ -9,7 +9,17 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
         }
 
-        const { data, error } = await supabase
+        const authHeader = request.headers.get('Authorization');
+        const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
+
+        // Use admin if available (bypasses RLS), otherwise use token-based client (respects RLS)
+        const db = supabaseAdmin || getServerSupabase(token);
+
+        if (!db) {
+            return NextResponse.json({ error: 'Database client not configured.' }, { status: 500 });
+        }
+
+        const { data, error } = await db
             .from('leads')
             .insert({
                 id: userId,
