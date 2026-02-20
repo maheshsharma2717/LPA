@@ -45,39 +45,38 @@ export default function DetailsPage() {
           return;
         }
         setUser(user);
+        debugger;
+        // Fetch lead profile directly from Supabase
+        const { data: leadData, error: leadError } = await supabase
+          .from("leads")
+          .select("*")
+          .eq("id", user.id)
+          .single();
 
-                // Fetch lead profile directly from Supabase
-                const { data: leadData, error: leadError } = await supabase
-                    .from('leads')
-                    .select('*')
-                    .eq('id', user.id)
-                    .single();
+        if (leadError && leadError.code !== "PGRST116") {
+          throw leadError;
+        }
 
-                if (leadError && leadError.code !== 'PGRST116') {
-                    throw leadError;
-                }
+        // Fetch applications directly from Supabase
+        const { data: appsData, error: appsError } = await supabase
+          .from("applications")
+          .select("*")
+          .eq("lead_id", user.id)
+          .is("deleted_at", null);
 
-                // Fetch applications directly from Supabase
-                const { data: appsData, error: appsError } = await supabase
-                    .from('applications')
-                    .select('*')
-                    .eq('lead_id', user.id)
-                    .is('deleted_at', null);
+        if (appsError) {
+          throw appsError;
+        }
 
-                if (appsError) {
-                    throw appsError;
-                }
-
-                setLead(leadData);
-                setApplications(appsData || []);
-
-            } catch (err: any) {
-                console.error("Unexpected error:", err);
-                setError(err.message || "An unexpected error occurred");
-            } finally {
-                setLoading(false);
-            }
-        };
+        setLead(leadData);
+        setApplications(appsData || []);
+      } catch (err: any) {
+        console.error("Unexpected error:", err);
+        setError(err.message || "An unexpected error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
 
     checkUser();
   }, [router]);
@@ -116,7 +115,7 @@ export default function DetailsPage() {
 
       <main className="grow flex justify-center sm:p-12">
         <div className="max-w-5xl w-full">
-            {/*  bg-white rounded-2xl shadow-lg */}
+          {/*  bg-white rounded-2xl shadow-lg */}
           {/* {!initialCompleted ? (
                         <InitialDetailsForm
                             lead={lead}
@@ -137,7 +136,11 @@ export default function DetailsPage() {
                     )
                     } */}
           {!initialCompleted && (
-            <InitialDetailsForm onComplete={() => setInitialCompleted(true)} />
+            <InitialDetailsForm
+              lead={lead}
+              userId={user?.id}
+              onComplete={() => setInitialCompleted(true)}
+            />
           )}
 
           {initialCompleted && !wizardCompleted && (
