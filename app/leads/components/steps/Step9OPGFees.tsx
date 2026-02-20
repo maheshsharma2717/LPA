@@ -2,7 +2,22 @@
 
 import { TextField } from "@mui/material";
 
-export default function OPGFeesTab() {
+
+
+import { useEffect } from "react";
+
+type Props = {
+  onNext: () => void;
+  isSaving: boolean;
+};
+
+export default function OPGFeesTab({ onNext, isSaving }: Props) {
+  useEffect(() => {
+    if (isSaving) {
+      onNext();
+    }
+  }, [isSaving]);
+
   return (
     <>
       <section>

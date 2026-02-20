@@ -1,5 +1,12 @@
 "use client";
 
+import { useEffect } from "react";
+
+type Props = {
+  onNext: () => void;
+  isSaving: boolean;
+};
+
 import {
   Button,
   Dialog,
@@ -27,14 +34,16 @@ type Person = {
   year: string;
   email: string;
 };
-type Props = {
-  data: any;
-  updateData: (data: any) => void;
-};
-export default function CertificateProviderTab({ data, updateData }: Props) {
+
+export default function CertificateProviderTab({ onNext, isSaving }: Props) {
+  useEffect(() => {
+    if (isSaving) {
+      onNext();
+    }
+  }, [isSaving]);
   const [openModal, setOpenModal] = useState(false);
 
-  const [people, setPeople] = useState<Person[]>(data?.people || []);
+  // const [people, setPeople] = useState<Person[]>(data?.people || []);
 
   const [newPerson, setNewPerson] = useState<Person>({
     title: "",
@@ -58,7 +67,7 @@ export default function CertificateProviderTab({ data, updateData }: Props) {
     )
       return;
 
-    setPeople((prev) => [...prev, newPerson]);
+    // setPeople((prev) => [...prev, newPerson]);
     setNewPerson({
       title: "",
       firstName: "",
@@ -143,7 +152,7 @@ export default function CertificateProviderTab({ data, updateData }: Props) {
                   <div className="ps-9">
                     <ul
                       className="list-disc"
-                      //  style="list-style-type:disc;"
+                    //  style="list-style-type:disc;"
                     >
                       <li>An attorney or replacement attorney</li>
                       <li>

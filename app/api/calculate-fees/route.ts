@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getServerSupabase } from '@/lib/supabase';
 
 const OUR_FEE_PER_LPA_PENCE = 9900;
 const OPG_FEE_FULL_PENCE = 8200;
@@ -21,8 +21,12 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'application_id is required' }, { status: 400 });
         }
 
-       
-        const { data: lpaDocuments, error: lpaError } = await supabase
+
+        const authHeader = request.headers.get('Authorization');
+        const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
+        const db = getServerSupabase(token);
+
+        const { data: lpaDocuments, error: lpaError } = await db
             .from('lpa_documents')
             .select(`
         id,
@@ -41,7 +45,7 @@ export async function POST(request: Request) {
         if (lpaError) return NextResponse.json({ error: lpaError.message }, { status: 500 });
 
         const donorIds = [...new Set((lpaDocuments || []).map((ld: any) => ld.donor_id))];
-        const { data: assessments } = await supabase
+        const { data: assessments } = await db
             .from('benefits_assessments')
             .select('donor_id, calculated_fee_tier')
             .in('donor_id', donorIds);
