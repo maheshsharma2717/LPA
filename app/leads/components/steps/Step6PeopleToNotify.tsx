@@ -1,16 +1,18 @@
 "use client";
-import Link from "next/link";
 import {
   SquarePen,
   UserPlus,
   UserRound,
   X,
+  Trash2,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "./Steps.module.css";
-import { useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import { CircularProgress, Alert } from "@mui/material";
+
 type Person = {
-  id: number;
+  id: string;
   lpa_document_id: string;
   title: string;
   first_name: string;
@@ -18,52 +20,204 @@ type Person = {
   address_line_1: string;
   city: string;
   postcode: string;
+  deleted_at?: string | null;
 };
-
-
 
 type Props = {
   onNext: () => void;
   isSaving: boolean;
+  allFormData: any;
+  updateData: (data: any) => void;
 };
 
-export default function PeopleToNotifyTab({ onNext, isSaving }: Props) {
-  useEffect(() => {
-    if (isSaving) {
-      onNext();
-    }
-  }, [isSaving]);
+export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updateData }: Props) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [hasPeople, setHasPeople] = useState<boolean | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [people, setPeople] = useState<Person[]>([]);
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [editingPerson, setEditingPerson] = useState<Person | null>(null);
 
-  const lpaDocId = "LPA-001";
+  const applicationId = allFormData?.who?.applicationId;
+  const donorId = allFormData?.["which-donor"]?.donorId;
+  const [lpaDocId, setLpaDocId] = useState<string | null>(null);
 
-  const staticNewPerson: Person = {
-    id: Date.now(),
-    lpa_document_id: lpaDocId,
-    title: "Dr",
-    first_name: "Sarah",
-    last_name: "Williams",
-    address_line_1: "7 Birch Road",
-    city: "Oxford",
-    postcode: "OX1 1AA",
+  // Form state for modal
+  const [formData, setFormData] = useState({
+    title: "Mr",
+    first_name: "",
+    last_name: "",
+    address_line_1: "",
+    city: "",
+    postcode: "",
+  });
+
+  // ─── Data Fetch ───────────────────────────────────────────
+  useEffect(() => {
+    const init = async () => {
+      if (!donorId) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+        const token = session.access_token;
+
+        // 1. Fetch LPA documents for this donor
+        const lpaDocsRes = await fetch(`/api/lpa-documents?donorId=${donorId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const { data: lpaDocs } = await lpaDocsRes.json();
+
+        if (lpaDocs && lpaDocs.length > 0) {
+          const firstLpaId = lpaDocs[0].id;
+          setLpaDocId(firstLpaId);
+
+          // 2. Fetch people to notify for this LPA doc
+          const peopleRes = await fetch(`/api/people-to-notify?lpaDocId=${firstLpaId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const { data: fetchedPeople } = await peopleRes.json();
+
+          if (fetchedPeople) {
+            setPeople(fetchedPeople);
+            setHasPeople(fetchedPeople.length > 0);
+          }
+        }
+
+        // Restore hasPeople state from formData if available
+        if (allFormData["people-to-Notify"]?.hasPeople !== undefined) {
+          setHasPeople(allFormData["people-to-Notify"].hasPeople);
+        }
+
+      } catch (err) {
+        console.error("Error loading people to notify:", err);
+        setError("Failed to load data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    init();
+  }, [donorId]);
+
+  useEffect(() => {
+    if (isSaving) {
+      handleSaveAndNext();
+    }
+  }, [isSaving]);
+
+  const handleSaveAndNext = () => {
+    updateData({ hasPeople });
+    onNext();
   };
 
-  const addPerson = () => {
-    setPeople((prev) => [...prev, staticNewPerson]);
-    setShowModal(false);
+  const openAddModal = () => {
+    setEditingPerson(null);
+    setFormData({
+      title: "Mr",
+      first_name: "",
+      last_name: "",
+      address_line_1: "",
+      city: "",
+      postcode: "",
+    });
+    setShowModal(true);
   };
 
-  const toggleSelect = (id: number) => {
-    setSelectedIds((prev) =>
-      prev.includes(id)
-        ? prev.filter((p) => p !== id)
-        : [...prev, id]
-    );
+  const openEditModal = (person: Person) => {
+    setEditingPerson(person);
+    setFormData({
+      title: person.title,
+      first_name: person.first_name,
+      last_name: person.last_name,
+      address_line_1: person.address_line_1,
+      city: person.city,
+      postcode: person.postcode,
+    });
+    setShowModal(true);
   };
+
+  const handleSavePerson = async () => {
+    if (!lpaDocId) return;
+    if (!formData.first_name || !formData.last_name) {
+      alert("First and last name are required.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const token = session.access_token;
+
+      if (editingPerson) {
+        // PATCH
+        const res = await fetch("/api/people-to-notify", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ id: editingPerson.id, ...formData }),
+        });
+        const { data: updated } = await res.json();
+        if (updated) {
+          setPeople((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+        }
+      } else {
+        // POST
+        if (people.length >= 5) {
+          alert("Maximum 5 people to notify allowed per document.");
+          setIsSubmitting(false);
+          return;
+        }
+
+        const res = await fetch("/api/people-to-notify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ lpa_document_id: lpaDocId, ...formData }),
+        });
+        const { data: created } = await res.json();
+        if (created) {
+          setPeople((prev) => [...prev, created]);
+        }
+      }
+
+      setShowModal(false);
+    } catch (err) {
+      console.error("Error saving person:", err);
+      alert("Failed to save person.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeletePerson = async (id: string) => {
+    if (!confirm("Are you sure you want to remove this person?")) return;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const token = session.access_token;
+
+      const res = await fetch(`/api/people-to-notify?id=${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const result = await res.json();
+
+      if (result.success) {
+        setPeople((prev) => prev.filter((p) => p.id !== id));
+      }
+    } catch (err) {
+      console.error("Error deleting person:", err);
+      alert("Failed to delete person.");
+    }
+  };
+
+  if (loading) return <div className="flex justify-center p-10"><CircularProgress /></div>;
 
   return (
     <>
@@ -75,10 +229,6 @@ export default function PeopleToNotifyTab({ onNext, isSaving }: Props) {
             </h4>
 
             <div className={styles.dividerZenco}></div>
-
-            <p className={styles.pZenco}>
-              You can let people know that you're going to register this document.
-            </p>
 
             <p className={styles.pZenco}>
               You can let people know that you're going to register this document. They can raise any concerns they have about the
@@ -94,187 +244,179 @@ export default function PeopleToNotifyTab({ onNext, isSaving }: Props) {
               Choose people who care about your best interests and who would be willing to speak up if they were concerned.
             </p>
 
-            <Link href="/" className="text-zenco-blue font-medium">
+            <div className="text-zenco-blue font-medium mb-8">
               Most people choose 'No' and do not enter anyone here.
-            </Link>
+            </div>
 
             <div className="mx-auto">
-
               <h2 className="font-bold text-lg my-4">
                 Are there any people to notify?
               </h2>
 
-              <button
-                onClick={() => setHasPeople(false)}
-                className={hasPeople !== true ? styles.btnDark : styles.btnWhite}
-              >
-                No, there are no people to notify
-              </button>
-              <button
-                onClick={() => setHasPeople(true)}
-                className={hasPeople === true ? styles.btnDark : styles.btnWhite} style={{ marginBottom: "3rem" }}
-              >
-                Yes, there are people to notify
-              </button>
+              <div className="space-y-3">
+                <button
+                  onClick={() => setHasPeople(false)}
+                  className={hasPeople === false ? styles.btnDark : styles.btnWhite}
+                >
+                  No, there are no people to notify
+                </button>
+                <button
+                  onClick={() => setHasPeople(true)}
+                  className={hasPeople === true ? styles.btnDark : styles.btnWhite}
+                >
+                  Yes, there are people to notify
+                </button>
+              </div>
 
-              {hasPeople && (
-                <>
+              {hasPeople === true && (
+                <div className="mt-8 animate-in fade-in">
                   <button
-                    onClick={() => setShowModal(true)}
-                    className={styles.btnWhite}
+                    onClick={openAddModal}
+                    disabled={people.length >= 5}
+                    className={`${styles.btnWhite} mb-6 ${people.length >= 5 ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <UserPlus size={18} />
                     Add new person to notify
                   </button>
 
+                  {people.length >= 5 && (
+                    <Alert severity="warning" className="mb-4">
+                      You have reached the maximum limit of 5 people to notify.
+                    </Alert>
+                  )}
+
                   {people.length > 0 && (
                     <>
                       <h2 className="font-bold text-lg my-4">
-                        Select people to notify
+                        People to notify
                       </h2>
 
-                      <div className="border rounded">
+                      <div className="space-y-3">
                         {people.map((person) => (
                           <div
                             key={person.id}
-                            onClick={() => toggleSelect(person.id)}
-                            className={`flex justify-between items-center p-3 cursor-pointer transition ${selectedIds.includes(person.id)
-                              ? "bg-blue-50"
-                              : "hover:bg-gray-50"
-                              }`}
+                            className="flex justify-between items-center p-4 border rounded-lg bg-white shadow-sm hover:shadow-md transition"
                           >
                             <div className="flex items-center gap-3">
-                              <UserRound size={30} />
+                              <UserRound size={30} className="text-gray-400" />
                               <div>
-                                <label className="font-bold">
+                                <p className="font-bold text-zenco-dark text-lg">
                                   {person.title} {person.first_name} {person.last_name}
-                                </label>
-
-                                {/* <p className="text-sm text-gray-600">
-                                {person.address_line_1}, {person.city}, {person.postcode}
-                              </p> */}
-
-                                <p
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="text-sm flex items-center gap-1 text-blue-600 hover:underline cursor-pointer"
-                                >
-                                  <SquarePen size={13} />
-                                  Update this person's details
                                 </p>
+                                <p className="text-sm text-gray-600">
+                                  {person.address_line_1}, {person.city}, {person.postcode}
+                                </p>
+
+                                <div className="flex gap-4 mt-1">
+                                  <p
+                                    onClick={() => openEditModal(person)}
+                                    className="text-sm flex items-center gap-1 text-blue-600 hover:underline cursor-pointer"
+                                  >
+                                    <SquarePen size={13} />
+                                    Update details
+                                  </p>
+                                  <p
+                                    onClick={() => handleDeletePerson(person.id)}
+                                    className="text-sm flex items-center gap-1 text-red-600 hover:underline cursor-pointer"
+                                  >
+                                    <Trash2 size={13} />
+                                    Remove
+                                  </p>
+                                </div>
                               </div>
                             </div>
-
-                            <input
-                              type="checkbox"
-                              checked={selectedIds.includes(person.id)}
-                              onChange={() => toggleSelect(person.id)}
-                              onClick={(e) => e.stopPropagation()}
-                              className="w-4 h-4"
-                            />
                           </div>
                         ))}
                       </div>
                     </>
                   )}
-                </>
+                </div>
               )}
             </div>
           </div>
         </div>
-        <aside className="bg-white p-6 h-fit">
-
-          <h3 className="text-lg font-bold mb-4">
-            Who can be a Person to Notify?
-          </h3>
-
-          <p className="text-sm mb-4 text-gray-700">
-            The person to notify must meet the following requirements:
-          </p>
-
-          <ul className="space-y-3 text-sm">
-
-            <li className="flex items-start gap-2">
-              <span className="text-green-600 mt-1">●</span>
-              <span>Aged 18 or over</span>
-            </li>
-
-            <li className="flex items-start gap-2">
-              <span className="text-green-600 mt-1">●</span>
-              <span>Have mental capacity to make decisions</span>
-            </li>
-
-            <li className="flex items-start gap-2">
-              <span className="text-red-500 mt-1">●</span>
-              <span>
-                Must not be bankrupt, or subject to a debt relief order
-              </span>
-            </li>
-
-          </ul>
-        </aside>
-
       </main>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white w-[420px] rounded shadow-lg overflow-hidden">
-
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white w-full max-w-md rounded shadow-lg overflow-hidden animate-in zoom-in-95">
             {/* Header */}
             <div className="bg-[#3b5c77] text-white flex justify-between items-center px-4 py-3">
-              <h3 className="font-semibold">Add person</h3>
+              <h3 className="font-semibold">{editingPerson ? "Update person" : "Add person"}</h3>
               <X
-                className="cursor-pointer"
+                className="cursor-pointer hover:rotate-90 transition"
                 onClick={() => setShowModal(false)}
               />
             </div>
 
             {/* Body */}
             <div className="p-5 space-y-4">
-
               <div>
-                <label className="text-sm font-semibold block mb-1">
-                  Full legal name
-                </label>
-
-                <select className="w-full border p-2 rounded mb-3">
-                  <option>Dr</option>
+                <label className="text-sm font-semibold block mb-1">Title</label>
+                <select
+                  className="w-full border p-2 rounded mb-3 focus:ring-2 focus:ring-blue-500 outline-none"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                >
+                  {["Mr", "Mrs", "Miss", "Ms", "Mx", "Dr", "Rev", "Prof", "Lady", "Lord"].map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
                 </select>
 
                 <div className="flex gap-3">
-                  <input
-                    className="w-full border p-2 rounded"
-                    defaultValue="Sarah"
-                  />
-                  <input
-                    className="w-full border p-2 rounded"
-                    defaultValue="Williams"
-                  />
+                  <div className="flex-1">
+                    <label className="text-sm font-semibold block mb-1">First Name</label>
+                    <input
+                      className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                      value={formData.first_name}
+                      onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-sm font-semibold block mb-1">Last Name</label>
+                    <input
+                      className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                      value={formData.last_name}
+                      onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                    />
+                  </div>
                 </div>
               </div>
 
               <div>
-                <label className="text-sm font-semibold block mb-1">
-                  Address
-                </label>
+                <label className="text-sm font-semibold block mb-1">Address Line 1</label>
                 <input
-                  className="w-full border p-2 rounded mb-2"
-                  defaultValue="7 Birch Road"
+                  className="w-full border p-2 rounded mb-3 focus:ring-2 focus:ring-blue-500 outline-none"
+                  value={formData.address_line_1}
+                  onChange={(e) => setFormData({ ...formData, address_line_1: e.target.value })}
                 />
-                <input
-                  className="w-full border p-2 rounded mb-2"
-                  defaultValue="Oxford"
-                />
-                <input
-                  className="w-full border p-2 rounded"
-                  defaultValue="OX1 1AA"
-                />
+
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <label className="text-sm font-semibold block mb-1">City</label>
+                    <input
+                      className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                      value={formData.city}
+                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-sm font-semibold block mb-1">Postcode</label>
+                    <input
+                      className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                      value={formData.postcode}
+                      onChange={(e) => setFormData({ ...formData, postcode: e.target.value })}
+                    />
+                  </div>
+                </div>
               </div>
 
               <button
-                onClick={addPerson}
-                className="w-full bg-[#00a8cc] text-white py-3 rounded font-semibold"
+                onClick={handleSavePerson}
+                disabled={isSubmitting}
+                className="w-full bg-[#00a8cc] hover:bg-[#008aaa] text-white py-3 rounded font-semibold transition-colors flex justify-center items-center gap-2"
               >
-                Save and continue
+                {isSubmitting ? <CircularProgress size={20} color="inherit" /> : "Save and continue"}
               </button>
             </div>
           </div>

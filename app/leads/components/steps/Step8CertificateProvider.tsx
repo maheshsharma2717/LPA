@@ -43,7 +43,7 @@ export default function CertificateProviderTab({ onNext, isSaving }: Props) {
   }, [isSaving]);
   const [openModal, setOpenModal] = useState(false);
 
-  const [people, setPeople] = useState<Person[]>(data?.people || []);
+  // const [people, setPeople] = useState<Person[]>(data?.people || []);
 
   const [newPerson, setNewPerson] = useState<Person>({
     title: "",
@@ -67,7 +67,7 @@ export default function CertificateProviderTab({ onNext, isSaving }: Props) {
     )
       return;
 
-    setPeople((prev) => [...prev, newPerson]);
+    // setPeople((prev) => [...prev, newPerson]);
     setNewPerson({
       title: "",
       firstName: "",

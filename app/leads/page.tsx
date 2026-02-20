@@ -45,7 +45,7 @@ export default function DetailsPage() {
           return;
         }
         setUser(user);
-        debugger;
+  
         // Fetch lead profile directly from Supabase
         const { data: leadData, error: leadError } = await supabase
           .from("leads")
