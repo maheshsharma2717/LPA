@@ -257,7 +257,7 @@ export default function InitialDetailsForm({ lead, userId, onComplete }: Props) 
             variant="contained"
             sx={{
               backgroundColor: "#08B9ED",
-              "&:hover": { backgroundColor: "#1d4ed8" },
+              "&:hover": { backgroundColor: "#07bdf5ff" },
             }}
           >
             Search
