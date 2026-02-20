@@ -22,6 +22,8 @@ type Props = {
   formData: any;
   setFormData: React.Dispatch<React.SetStateAction<any>>;
   onExitWizard: () => void;
+  onFinish: () => void;
+
 };
 
 export default function WizardLayout({
@@ -31,7 +33,8 @@ export default function WizardLayout({
   setCompletedSteps,
   formData,
   setFormData,
-  onExitWizard
+  onExitWizard,
+  onFinish
 }: Props) {
   // Map step key to component
   const stepComponentMap: Record<string, any> = {
@@ -82,6 +85,7 @@ export default function WizardLayout({
   };
 
   return (
+    <>
     <div className="space-y-10">
       {/* Horizontal Stepper */}
       <Stepper
@@ -152,6 +156,7 @@ export default function WizardLayout({
           {isSaving ? <CircularProgress size={24} color="inherit" /> : (activeStep === steps.length - 1 ? "Finish" : "Next")}
         </Button>
       </div>
-    </div>
+    </div></>
+    
   );
 }

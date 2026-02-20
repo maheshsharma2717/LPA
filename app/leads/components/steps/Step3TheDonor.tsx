@@ -96,7 +96,7 @@ export default function DonorTab() {
                     <p>Title</p>
                     <Select
                       value={formData.title}
-                      label="Title"
+                      // label="Title"
                       onChange={(e) =>
                         handleFormChange("title", e.target.value)
                       }
@@ -183,7 +183,7 @@ export default function DonorTab() {
                     <p>Day</p>
                     <Select
                       value={formData.day}
-                      label="Day"
+                      // label="Day"
                       onChange={(e) => handleFormChange("day", e.target.value)}
                     >
                       {[...Array(31)].map((_, i) => (
@@ -199,7 +199,7 @@ export default function DonorTab() {
                     <p>Month</p>
                     <Select
                       value={formData.month}
-                      label="Month"
+                      // label="Month"
                       onChange={(e) =>
                         handleFormChange("month", e.target.value)
                       }
@@ -230,7 +230,7 @@ export default function DonorTab() {
                     <p>Year</p>
                     <Select
                       value={formData.year}
-                      label="Year"
+                      // label="Year"
                       onChange={(e) => handleFormChange("year", e.target.value)}
                     >
                       {Array.from({ length: 100 }, (_, i) => {
