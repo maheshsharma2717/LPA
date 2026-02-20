@@ -16,6 +16,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { supabase } from "@/lib/supabase";
+import styles from "./Steps.module.css";
 
 type Person = {
   id?: string;
@@ -453,18 +454,22 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
 
   const renderCategories = () => (
     <div className="space-y-6">
-      <p className="font-semibold text-zenco-dark">Who are these documents for?</p>
+      <p className={styles.pZenco}>Who are these documents for?</p>
       <div className="grid grid-cols-1 gap-3">
         {options.map((option) => (
           <button
             key={option}
             onClick={() => setSelected(option)}
-            className={`p-4 text-left rounded-xl border-2 transition-all ${selected === option
-              ? "border-zenco-blue bg-blue-50 text-zenco-dark font-semibold shadow-sm"
-              : "border-gray-100 hover:border-blue-100 text-gray-600"
-              }`}
+            className={selected === option ? styles.btnSelectDark : styles.btnSelectWhite}
           >
-            {option}
+            <span className={selected === option ? "font-semibold" : ""}>{option}</span>
+            {selected === option && (
+              <div className="w-6 h-6 rounded-full bg-zenco-blue flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            )}
           </button>
         ))}
       </div>
@@ -493,7 +498,7 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
           Back
         </button>
       </div>
-      <p className="font-semibold text-zenco-dark">How many people do you need documents for?</p>
+      <p className={styles.pZenco}>How many people do you need documents for?</p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <button
           onClick={() => handleQuantitySelection(1)}
@@ -536,21 +541,21 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
         </button>
       </p>
 
-      <div className="space-y-3">
+      <div className="">
         {/* Lead Details */}
         {isLeadIncluded && leadPerson && (
-          <div className="flex items-center justify-between p-4 rounded-xl border border-zenco-blue bg-blue-50/50">
+          <div className={styles.btnSelectDark}>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-zenco-blue/10 flex items-center justify-center text-zenco-blue font-bold">
+              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold">
                 {leadPerson.firstName[0]}
               </div>
               <div>
-                <p className="font-semibold text-zenco-dark">{leadPerson.firstName} {leadPerson.lastName} (You)</p>
-                <p className="text-xs text-gray-500">Self</p>
+                <p className="font-semibold text-white">{leadPerson.firstName} {leadPerson.lastName} (You)</p>
+                <p className="text-xs text-white/70">Self</p>
               </div>
             </div>
-            <div className="w-6 h-6 rounded-full bg-zenco-blue flex items-center justify-center">
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center">
+              <svg className="w-4 h-4 text-zenco-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
               </svg>
             </div>
@@ -567,29 +572,24 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
               key={person.id}
               disabled={disabled}
               onClick={() => togglePerson(person.id!)}
-              className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all ${isSelected
-                ? "border-zenco-blue bg-white shadow-sm"
-                : disabled
-                  ? "border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed"
-                  : "border-gray-200 bg-white hover:border-blue-200"
-                }`}
+              className={`${isSelected ? styles.btnSelectDark : styles.btnSelectWhite} ${disabled ? styles.btnSelectDisabled : ""}`}
             >
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${isSelected ? "bg-zenco-blue/10 text-zenco-blue" : "bg-gray-100 text-gray-400"
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${isSelected ? "bg-white/20 text-white" : "bg-gray-100 text-gray-400"
                   }`}>
                   {person.firstName[0]}
                 </div>
                 <div className="text-left">
-                  <p className={`font-semibold ${isSelected ? "text-zenco-dark" : "text-gray-600"}`}>
+                  <p className={`font-semibold ${isSelected ? "text-white" : "text-gray-600"}`}>
                     {person.firstName} {person.lastName}
                   </p>
-                  <p className="text-xs text-gray-400 capitalize">{person.relationship}</p>
+                  <p className={`text-xs capitalize ${isSelected ? "text-white/70" : "text-gray-400"}`}>{person.relationship}</p>
                 </div>
               </div>
-              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? "bg-zenco-blue border-zenco-blue" : "border-gray-200 bg-white"
+              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? "bg-white border-white" : "border-gray-200 bg-white"
                 }`}>
                 {isSelected && (
-                  <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-3.5 h-3.5 text-zenco-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                   </svg>
                 )}
@@ -637,7 +637,7 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-3">
-        <h2 className="text-2xl font-bold text-zenco-dark">
+        <h2 className={styles.stepHeading}>
           Who is the <span className="text-zenco-blue">Lasting Power of Attorney</span> for?
         </h2>
 
@@ -674,7 +674,7 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
       <Dialog open={openModal} onClose={() => setOpenModal(false)} fullWidth maxWidth="sm">
         <DialogTitle className="font-bold text-zenco-dark">Add person</DialogTitle>
         <DialogContent className="flex flex-col gap-6 mt-2">
-          <p className="font-semibold text-zenco-dark -mb-2">Full legal name</p>
+          <p className={styles.pZenco}>Full legal name</p>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <FormControl fullWidth>
               <InputLabel>Title</InputLabel>

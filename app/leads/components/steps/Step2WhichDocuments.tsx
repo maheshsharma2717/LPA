@@ -12,6 +12,8 @@ import {
   CircularProgress,
   Alert,
 } from "@mui/material";
+import { ArrowLeft } from "lucide-react";
+import styles from "./Steps.module.css";
 
 type DocumentSelection = "Health and Welfare" | "Property and Finance" | "Both" | "";
 
@@ -231,6 +233,11 @@ export default function Step2WhichDocuments({
     }
   };
 
+  const handleBack = () => {
+    // Implement back logic (e.g. windows.history.back() or a prop-based back call)
+    window.history.back();
+  };
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" p={4}>
@@ -244,49 +251,75 @@ export default function Step2WhichDocuments({
   }
 
   return (
-    <section className="space-y-8 animate-in fade-in slide-in-from-top-4">
-      <div className="flex flex-col gap-5">
-        <h1 className="text-3xl font-bold text-zenco-dark">
+    <section className="space-y-8 animate-in fade-in slide-in-from-top-4 pb-20">
+      <div className="flex flex-col gap-3">
+        <h1 className={styles.stepHeading}>
           Which <span className="text-zenco-blue">Lasting Power of Attorney</span> documents do you need?
         </h1>
-        <p className="text-gray-600">
-          You need to choose which type of documents you want. Choose{" "}
-          <strong className="text-zenco-dark">Health and Welfare</strong> for health decisions,{" "}
-          <strong className="text-zenco-dark">Property and Finance</strong> for decisions about your finances, or choose{" "}
-          <strong className="text-zenco-dark">Both</strong>.
+        <p className="text-gray-600 text-sm">
+          You need to choose which type of documents you want for you and your partner, choose either Health and Welfare for
+          health decisions, Property and Finance for decisions about your finances or choose both.
         </p>
-        <div className="bg-blue-50 border-l-4 border-zenco-blue p-4 rounded-r-md">
-          <p className="text-sm text-zenco-dark">
-            <span className="font-bold">💡 Recommendation:</span> We strongly recommend taking both documents for peace of mind and the best protection.
-          </p>
+        <div className={styles.recommendationBox}>
+          <span className="text-lg">💡</span>
+          <span>We strongly recommend taking both documents for peace of mind and the best protection.</span>
         </div>
       </div>
 
-      <div className="flex flex-col gap-6">
-        {donors.map((donor) => (
-          <div key={donor.id} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-            <h3 className="text-xl font-bold text-zenco-dark mb-4">
-              Which documents does <span className="text-zenco-blue">{donor.first_name} {donor.last_name}</span> need?
-            </h3>
-            <FormControl fullWidth>
-              <InputLabel>Document Selection</InputLabel>
-              <Select
-                value={selections[donor.id] || ""}
-                label="Document Selection"
-                onChange={(e) => handleSelectionChange(donor.id, e.target.value as DocumentSelection)}
-              >
-                <MenuItem value="Health and Welfare">Health and Welfare</MenuItem>
-                <MenuItem value="Property and Finance">Property and Finance</MenuItem>
-                <MenuItem value="Both">Both (Recommended)</MenuItem>
-              </Select>
-            </FormControl>
-          </div>
-        ))}
+      <div className="flex flex-col gap-10">
+        {donors.map((donor) => {
+          const currentSelection = selections[donor.id] || "";
+          return (
+            <div key={donor.id}>
+              <h3 className={styles.stepSubHeading}>
+                Which documents does <span className="text-zenco-blue">{donor.is_lead ? "You" : `${donor.first_name} ${donor.last_name}`}</span> need?
+              </h3>
+
+              <div className={styles.stackedButtonGroup}>
+                <button
+                  onClick={() => handleSelectionChange(donor.id, "Health and Welfare")}
+                  className={`${styles.btnSelectStacked} ${currentSelection === "Health and Welfare" ? styles.btnSelectStackedActive : ""}`}
+                >
+                  Health and Welfare
+                </button>
+                <button
+                  onClick={() => handleSelectionChange(donor.id, "Property and Finance")}
+                  className={`${styles.btnSelectStacked} ${currentSelection === "Property and Finance" ? styles.btnSelectStackedActive : ""}`}
+                >
+                  Property and Finance
+                </button>
+                <button
+                  onClick={() => handleSelectionChange(donor.id, "Both")}
+                  className={currentSelection === "Both" ? styles.btnSelectStackedDark : styles.btnSelectStacked}
+                >
+                  Both
+                </button>
+              </div>
+            </div>
+          );
+        })}
 
         {donors.length === 0 && (
           <Alert severity="info">No people selected. Please go back and select who this LPA is for.</Alert>
         )}
       </div>
+
+      {/* <div className="flex justify-between items-center pt-8 border-t border-gray-100">
+        <button
+          onClick={handleBack}
+          className="flex items-center gap-2 text-gray-500 hover:text-zenco-blue transition-colors font-medium"
+        >
+          <ArrowLeft size={18} />
+          Back
+        </button>
+        <button
+          onClick={handleSave}
+          disabled={donors.length === 0 || isSaving}
+          className="bg-zenco-blue hover:bg-[#07bdf5ff] text-white px-8 py-3 rounded-md font-bold transition-all disabled:opacity-50"
+        >
+          {isSaving ? "Saving..." : "Save and continue"}
+        </button>
+      </div> */}
     </section>
   );
 }

@@ -9,6 +9,7 @@ import {
   TextField,
 } from "@mui/material";
 import { useState } from "react";
+import styles from "./Steps.module.css";
 
 type Props = {
   onComplete: () => void;
