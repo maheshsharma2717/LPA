@@ -1,5 +1,4 @@
 "use client";
-import "../styles/Step6PeopleToNotify.module.css";
 import Link from "next/link";
 import {
   SquarePen,
@@ -8,6 +7,7 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
+import styles from "./Steps.module.css";
 
 type Person = {
   id: number;
@@ -56,33 +56,28 @@ export default function PeopleToNotifyTab() {
     <>
       <main className="grow flex justify-center">
         <div className="max-w-6xl w-full grid grid-cols-1 gap-10">
-
-          {/* LEFT CONTENT (your entire existing UI goes here) */}
           <div className="lg:col-span-2">
-
-            {/* ===== KEEPING YOUR EXISTING UPPER UI EXACTLY SAME ===== */}
-
-            <h4 className="text-2xl sm:text-4xl font-bold text-zenco-dark mb-2 text-center leading-tight">
+            <h4 className={styles.stepHeading}>
               People to notify
             </h4>
 
-            <div className="divider"></div>
+            <div className={styles.dividerZenco}></div>
 
-            <p className="font-bold text-sm mt-4 my-4">
+            <p className={styles.pZenco}>
               You can let people know that you're going to register this document.
             </p>
 
-            <p className="font-bold text-sm text-left mt-4 my-4" style={{ lineHeight: 1.5 }}>
+            <p className={styles.pZenco}>
               You can let people know that you're going to register this document. They can raise any concerns they have about the
               Lasting Powers of Attorney-for example, if there was any pressure or fraud in making it.
             </p>
-            <p className="font-bold text-sm text-left mt-4 my-4" style={{ lineHeight: 1.5 }}>
+            <p className={styles.pZenco}>
               When the document is registered, the person applying to register must send a notice to each 'person to notify'.
             </p>
-            <p className="font-bold text-sm text-left mt-4 my-4" style={{ lineHeight: 1.5 }}>
+            <p className={styles.pZenco}>
               You can't put any of the attorneys or replacement attorneys here.
             </p>
-            <p className="font-bold text-sm text-left mt-4 my-4" style={{ lineHeight: 1.5 }}>
+            <p className={styles.pZenco}>
               Choose people who care about your best interests and who would be willing to speak up if they were concerned.
             </p>
 
@@ -96,33 +91,24 @@ export default function PeopleToNotifyTab() {
                 Are there any people to notify?
               </h2>
 
-              {/* YES / NO LOGIC */}
               <button
                 onClick={() => setHasPeople(false)}
-                className="w-full bg-white border shadow-sm py-3 rounded-sm font-semibold mb-3"
+                className={hasPeople !== true ? styles.btnDark : styles.btnWhite}
               >
                 No, there are no people to notify
               </button>
-
               <button
                 onClick={() => setHasPeople(true)}
-                className={`btnPrimaryZenco w-full mb-5 text-white py-3 rounded-sm font-semibold`}
+                className={hasPeople === true ? styles.btnDark : styles.btnWhite} style={{ marginBottom: "3rem" }}
               >
                 Yes, there are people to notify
               </button>
-              {/* IF NO → simulate move to step 7 */}
-              {/* {hasPeople === false && (
-              <div className="p-4 bg-green-50 border border-green-300 rounded">
-                Moving to Step 7...
-              </div>
-            )} */}
 
-              {/* IF YES → SHOW LOWER UI */}
               {hasPeople && (
                 <>
                   <button
                     onClick={() => setShowModal(true)}
-                    className="w-full mt-5 bg-white py-3 border rounded-sm font-semibold flex items-center justify-center gap-2"
+                    className={styles.btnWhite}
                   >
                     <UserPlus size={18} />
                     Add new person to notify
@@ -182,7 +168,6 @@ export default function PeopleToNotifyTab() {
             </div>
           </div>
         </div>
-        {/* RIGHT SIDE REQUIREMENTS */}
         <aside className="bg-white p-6 h-fit">
 
           <h3 className="text-lg font-bold mb-4">
@@ -217,7 +202,6 @@ export default function PeopleToNotifyTab() {
 
       </main>
 
-      {/* ===== MODAL POPUP ===== */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white w-[420px] rounded shadow-lg overflow-hidden">

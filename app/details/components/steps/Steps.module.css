@@ -19,23 +19,10 @@
     --font-main: 'Open Sans', sans-serif;
     --container-max: 1080px;
     --transition-fast: 0.3s ease-in-out;
+    --color-selected-applicant: #96a0ab;
 }
 
-/* Reset and Base */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: var(--font-main);
-    color: var(--text-primary);
-    line-height: 1.7;
-    background-color: var(--bg-white);
-    -webkit-font-smoothing: antialiased;
-}
-
+/* 
 h1,
 h2,
 h3,
@@ -52,7 +39,7 @@ a {
 
 a:hover {
     color: var(--zenco-teal);
-}
+} */
 
 .container {
     max-width: var(--container-max);
@@ -60,10 +47,11 @@ a:hover {
     padding: 0 15px;
 }
 
+/* 
 header {
     background: var(--bg-white);
     padding: 20px 0;
-}
+} */
 
 .nav-flex {
     display: flex;
@@ -95,7 +83,7 @@ header {
     color: var(--zenco-blue);
 }
 
-/* Hero Section - Exact Layout */
+
 .hero {
     padding: 80px 0;
     background: var(--bg-white);
@@ -130,6 +118,94 @@ header {
     border: none;
 }
 
+.btnWhite {
+    background-color: var(--bg-white);
+    color: #3A3A3C !important;
+    cursor: pointer;
+    width: 100%;
+    padding: 1rem 0;
+    border: 1px solid var(--border-soft);
+    border-radius: 0.25rem;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    font-weight: 600;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.dividerZenco {
+    height: 2px;
+    width: 100%;
+    margin: 15px 0 20px 0;
+
+    background: linear-gradient(to right,
+            rgba(30, 167, 225, 0) 0%,
+            rgba(30, 167, 225, 1) 20%,
+            rgba(30, 167, 225, 1) 80%,
+            rgba(30, 167, 225, 0) 100%);
+}
+
+.btnDark {
+    background-color: var(--selected-button-dark);
+    color: #fff !important;
+    cursor: pointer;
+    width: 100%;
+    padding: 1rem 0;
+    border-radius: 0.25rem;
+    font-weight: 600;
+}
+
+.pZenco {
+    font-weight: bold;
+    font-size: 0.875rem;
+    text-align: left;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.selectedApplication {
+    margin-top: 1.5rem;
+    border: 1px solid var(--border-soft);
+    border-radius: 0.125rem;
+    color: #fff;
+    background-color: var(--color-selected-applicant);
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+
+.applicantDropdown {
+    width: 100%;
+    border: 1px solid var(--border-soft);
+    border-radius: 0.125rem;
+    padding: 0.75rem;
+    background-color: #fff;
+    outline: none;
+    transition: box-shadow var(--transition-fast);
+}
+
+.applicantDropdown:focus {
+    box-shadow: 0 0 0 2px var(--zenco-blue);
+}
+
+.stepHeading {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--selected-button-dark);
+    margin-bottom: 0.5rem;
+    text-align: center;
+    line-height: 1.25;
+}
+
+@media (min-width: 640px) {
+    .stepHeading {
+        font-size: 2.25rem;
+    }
+}
+
 .btnPrimaryZenco:hover {
     background-color: var(--zenco-navy);
     cursor: pointer;
@@ -145,7 +221,7 @@ header {
     border-radius: 0.25rem;
 }
 
-form {
+/* form {
     width: 400px;
     margin: 0 auto;
 }
@@ -172,7 +248,7 @@ form {
 
 .form-check-input[type=checkbox] {
     border-radius: .25em;
-}
+} */
 
 .zenco-card {
     max-width: 520px;
@@ -245,9 +321,9 @@ form {
 
 
 /* Sections */
-section {
+/* section {
     padding: 80px 0;
-}
+} */
 
 .section-bg-light {
     background-color: var(--bg-light);
@@ -308,7 +384,7 @@ section {
 }
 
 /* Footer */
-footer {
+/* footer {
     background: var(--zenco-navy);
     color: #fff;
     padding: 60px 0 30px;
@@ -337,7 +413,7 @@ footer {
 
 .footer-col a:hover {
     color: #fff;
-}
+} */
 
 /* Responsive */
 @media (max-width: 768px) {
