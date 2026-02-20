@@ -7,12 +7,80 @@ type Props = {
   isSaving: boolean;
 };
 
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  FormControlLabel,
+  MenuItem,
+  Radio,
+  RadioGroup,
+  Select,
+  TextField,
+} from "@mui/material";
+import { useState } from "react";
+
+type Person = {
+  title: string;
+  firstName: string;
+  lastName: string;
+  middleName: string;
+  postcode: string;
+  day: string;
+  month: string;
+  year: string;
+  email: string;
+};
+
 export default function CertificateProviderTab({ onNext, isSaving }: Props) {
   useEffect(() => {
     if (isSaving) {
       onNext();
     }
   }, [isSaving]);
+  const [openModal, setOpenModal] = useState(false);
+
+  const [people, setPeople] = useState<Person[]>(data?.people || []);
+
+  const [newPerson, setNewPerson] = useState<Person>({
+    title: "",
+    firstName: "",
+    lastName: "",
+    middleName: "",
+    postcode: "",
+    day: "",
+    month: "",
+    year: "",
+    email: "",
+  });
+  const handleAddPerson = () => {
+    if (
+      !newPerson.title ||
+      !newPerson.firstName ||
+      !newPerson.lastName ||
+      !newPerson.middleName ||
+      !newPerson.postcode ||
+      !newPerson.email
+    )
+      return;
+
+    setPeople((prev) => [...prev, newPerson]);
+    setNewPerson({
+      title: "",
+      firstName: "",
+      lastName: "",
+      middleName: "",
+      postcode: "",
+      day: "",
+      month: "",
+      year: "",
+      email: "",
+    });
+    setOpenModal(false);
+  };
   return (
     <>
       <section>
@@ -104,12 +172,20 @@ export default function CertificateProviderTab({ onNext, isSaving }: Props) {
                 </div>
                 <div className="flex flex-col gap-5">
                   <p className="text-lg font-semibold">Alternative</p>
-                  <p>You can also use a medical professional(doctor, social worker, nurse) to sign the document. They will sign in their professional capacity to ensure the donor has mental capacity.</p>
+                  <p>
+                    You can also use a medical professional(doctor, social
+                    worker, nurse) to sign the document. They will sign in their
+                    professional capacity to ensure the donor has mental
+                    capacity.
+                  </p>
                 </div>
               </div>
               <div className="flex flex-col gap-3">
-                <p className="text-lg font-semibold">Please add the certificate provider details below.</p>
+                <p className="text-lg font-semibold">
+                  Please add the certificate provider details below.
+                </p>
                 <button
+                  onClick={() => setOpenModal(true)}
                   className="border-2 border-gray-300 p-3 flex items-center justify-center gap-2 font-semibold cursor-pointer"
                 >
                   <svg
@@ -130,6 +206,245 @@ export default function CertificateProviderTab({ onNext, isSaving }: Props) {
           <div></div>
         </div>
       </section>
+      <Dialog open={openModal} onClose={() => setOpenModal(false)} fullWidth>
+        <div className="flex justify-between items-center px-3 bg-[#334a5e]">
+          <DialogTitle className="text-white">Add person</DialogTitle>
+
+          <span
+            className="hover:cursor-pointer"
+            onClick={() => setOpenModal(false)}
+          >
+            {" "}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              width="25"
+              height="25"
+              fill="currentColor"
+            >
+              <path d="M11.9997 10.5865L16.9495 5.63672L18.3637 7.05093L13.4139 12.0007L18.3637 16.9504L16.9495 18.3646L11.9997 13.4149L7.04996 18.3646L5.63574 16.9504L10.5855 12.0007L5.63574 7.05093L7.04996 5.63672L11.9997 10.5865Z"></path>
+            </svg>
+          </span>
+        </div>
+
+        <DialogContent className="flex flex-col gap-6 mt-4 my-5">
+          <p className="text-xl font-semibold">Full legal name</p>
+
+          {/* TITLE */}
+          <FormControl fullWidth>
+            <p>Title</p>
+            <Select
+              value={newPerson.title}
+              onChange={(e) =>
+                setNewPerson({ ...newPerson, title: e.target.value })
+              }
+            >
+              {[
+                "Mr",
+                "Mrs",
+                "Miss",
+                "Ms",
+                "Mx",
+                "Dr",
+                "Rev",
+                "Prof",
+                "Lady",
+                "Lord",
+              ].map((title) => (
+                <MenuItem key={title} value={title}>
+                  {title}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* FIRST + LAST NAME */}
+          <div className="flex gap-5">
+            <FormControl fullWidth>
+              <p>First Name</p>
+              <TextField
+                fullWidth
+                value={newPerson.firstName}
+                onChange={(e) =>
+                  setNewPerson({ ...newPerson, firstName: e.target.value })
+                }
+              />
+            </FormControl>
+
+            <FormControl fullWidth>
+              <p>Last Name</p>
+              <TextField
+                fullWidth
+                value={newPerson.lastName}
+                onChange={(e) =>
+                  setNewPerson({ ...newPerson, lastName: e.target.value })
+                }
+              />
+            </FormControl>
+          </div>
+
+          {/* MIDDLE NAME */}
+          <FormControl fullWidth>
+            <p>Middle Name</p>
+            <TextField
+              fullWidth
+              value={newPerson.middleName}
+              onChange={(e) =>
+                setNewPerson({ ...newPerson, middleName: e.target.value })
+              }
+            />
+          </FormControl>
+
+          {/* ADDRESS */}
+          <div className="flex flex-col gap-5">
+            <p className="text-xl font-bold">What's their address?</p>
+            <div className="flex gap-5 items-center">
+              <FormControl fullWidth>
+                <div>
+                  <p>Postcode</p>
+
+                  <TextField
+                    fullWidth
+                    value={newPerson.postcode}
+                    onChange={(e) =>
+                      setNewPerson({ ...newPerson, postcode: e.target.value })
+                    }
+                  />
+                </div>
+              </FormControl>
+              <button className="bg-blue-400 text-lg">Search</button>
+            </div>
+          </div>
+
+          {/* DATE OF BIRTH */}
+          {/* <div className="flex flex-col gap-5">
+                  <p className="text-xl font-bold">What's their date of birth?</p>
+      
+                  <div className="flex gap-4">
+                    <FormControl fullWidth>
+                      <p>Day</p>
+                      <Select
+                        value={newPerson.day}
+                        label="Day"
+                        onChange={(e) =>
+                          setNewPerson({ ...newPerson, day: e.target.value })
+                        }
+                      >
+                        {[...Array(31)].map((_, i) => (
+                          <MenuItem key={i + 1} value={String(i + 1)}>
+                            {i + 1}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+      
+                    <FormControl fullWidth>
+                      <p>Month</p>
+                      <Select
+                        value={newPerson.month}
+                        label="Month"
+                        onChange={(e) =>
+                          setNewPerson({ ...newPerson, month: e.target.value })
+                        }
+                      >
+                        {[
+                          "January",
+                          "February",
+                          "March",
+                          "April",
+                          "May",
+                          "June",
+                          "July",
+                          "August",
+                          "September",
+                          "October",
+                          "November",
+                          "December",
+                        ].map((month) => (
+                          <MenuItem key={month} value={month}>
+                            {month}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+      
+                    <FormControl fullWidth>
+                      <p>Year</p>
+                      <Select
+                        value={newPerson.year}
+                        label="Year"
+                        onChange={(e) =>
+                          setNewPerson({ ...newPerson, year: e.target.value })
+                        }
+                      >
+                        {Array.from({ length: 100 }, (_, i) => {
+                          const year = new Date().getFullYear() - i;
+                          return (
+                            <MenuItem key={year} value={String(year)}>
+                              {year}
+                            </MenuItem>
+                          );
+                        })}
+                      </Select>
+                    </FormControl>
+                  </div>
+      
+                  <FormControl fullWidth>
+                    <p className="text-xl font-bold mb-2">
+                      What's their email address? (optional)
+                    </p>
+                    <TextField
+                      fullWidth
+                      value={newPerson.email}
+                      onChange={(e) =>
+                        setNewPerson({ ...newPerson, email: e.target.value })
+                      }
+                    />
+                  </FormControl>
+                </div> */}
+
+          <p className="text-cyan-400">
+            <u>Enter address manually</u>
+          </p>
+          <div>
+            <p className="text-xl">Age</p>
+
+            <div className="">
+              <RadioGroup
+                aria-labelledby="demo-radio-buttons-group-label"
+                defaultValue="over18"
+                name="radio-buttons-group"
+              >
+                <div className="flex gap-3">
+                  <FormControlLabel
+                    value="over18"
+                    control={<Radio />}
+                    label="Over 18"
+                  />
+                  <FormControlLabel
+                    value="under18"
+                    control={<Radio />}
+                    label="Under 18"
+                  />
+                </div>
+              </RadioGroup>
+            </div>
+          </div>
+        </DialogContent>
+
+        <DialogActions>
+          <Button
+            variant="contained"
+            onClick={handleAddPerson}
+            sx={{
+              backgroundColor: "#2563eb",
+              "&:hover": { backgroundColor: "#1d4ed8" },
+            }}
+          >
+            Save and continue
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }
