@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-  --color-zenco-blue: #08B9ED;
+  --color-zenco-blue: #0086c4;
   --color-zenco-dark: #1a1a1a;
+  --color-selected-attorny: #96a0ab;
   --font-sans: 'Roboto' !important;
 }
 
@@ -13,7 +14,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #ffffff;
+    --background: #ffffff; /* Zenco site seems to prefer light theme even in dark mode for LPA journey */
     --foreground: #1a1a1a;
   }
 }
@@ -22,4 +23,21 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: var(--font-sans);
+}
+.divider {
+  height: 2px;
+  width: 100%;
+  margin: 15px 0 20px 0;
+
+  background: linear-gradient(
+    to right,
+    rgba(30, 167, 225, 0) 0%,
+    rgba(30, 167, 225, 1) 20%,
+    rgba(30, 167, 225, 1) 80%,
+    rgba(30, 167, 225, 0) 100%
+  );
+}
+
+.selected-attorny{
+  background-color: var(--color-selected-attorny);
 }
