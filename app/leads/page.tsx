@@ -100,8 +100,8 @@ export default function DetailsPage() {
         </div>
       </header>
 
-      <main className="grow flex items-center justify-center p-6 sm:p-12">
-        <div className="max-w-5xl w-full p-8 sm:p-12 border border-blue-50">
+      <main className="grow flex justify-center sm:p-12">
+        <div className="max-w-5xl w-full">
             {/*  bg-white rounded-2xl shadow-lg */}
           {/* {!initialCompleted ? (
                         <InitialDetailsForm

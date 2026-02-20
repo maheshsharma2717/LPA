@@ -1,8 +1,11 @@
 "use client";
 
+import { FormControl, MenuItem, Select } from "@mui/material";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function Acknowledgement() {
+  const routePage = useRouter();
   return (
     <>
       <div className="flex flex-col min-h-screen">
@@ -57,7 +60,7 @@ export default function Acknowledgement() {
 
         {/* Hero Section */}
         <main className="grow">
-          {/* Benefits Section */}
+          {/* Acknowledge to the user and create form for attorney Section */}
           <section className="container mx-auto">
             <div className="flex flex-col justify-center items-center">
               <div className="flex flex-col p-12 gap-20 justify-center">
@@ -66,21 +69,103 @@ export default function Acknowledgement() {
                     You have now finished the Lasting Power of Attorney
                   </p>
                   <p className=" leading-7 text-xl font-semibold">
-                    for <span className="text-cyan-400">Yourself</span>, next we will move on and get the
+                    for <span className="text-cyan-400">Yourself</span>, next we
+                    will move on and get the
                   </p>
                   <p className=" leading-7 text-xl font-semibold">
-                    documents for <span  className="text-cyan-400">Gabriel Lenicker</span> done.
+                    documents for
+                    <span className="text-cyan-400">Gabriel Lenicker</span>
+                    done.
                   </p>
                 </div>
                 <div className="w-full flex justify-between">
-                  <button> back</button>
+                  {/* Back */}
+                  <div className="mt-8">
+                    <button className="text-gray-500 font-semibold hover:underline">
+                      ← <u>Back</u>
+                    </button>
+                  </div>
                   <button
                     // onClick={() => {routePage.push("/leads/Acknowledgement")}}
                     className="bg-cyan-400 cursor-pointer py-2 px-7 text-white rounded"
                   >
                     Continue
-                  </button>{" "}
+                  </button>
                 </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Complete order */}
+          <section className="container mx-auto">
+            <div className="flex justify-center gap-13">
+              <div className="flex flex-col w-full gap-5">
+                <p className="text-xl font-semibold">
+                  Almost There! Complete your order...
+                </p>
+                <div className="border border-gray-300 rounded shadow-lg py-7 px-13">
+                  <div className="flex gap-3 px-3">
+                    <p>1</p>
+                    <p className="text-lg font-semibold">
+                      Create your documents
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-5">
+                    <p className="text-gray-500">
+                      Congratulations! You've finished creating your Lasting
+                      Power of Attorney <br /> documents. Now you just need to
+                      pay to have the documents sent out.
+                    </p>
+                    <div className="flex flex-col gap-3">
+                      <button
+                        onClick={() => {routePage.push("/leads/Checkout")}}
+                        className="bg-cyan-400 cursor-pointer py-4 px-7 text-white rounded text-lg font-semibold"
+                      >
+                        Go to checkout{" "}
+                      </button>{" "}
+                      <p className="text-center text-cyan-400">
+                        <u>Review documents again</u>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col w-full gap-5">
+                <div className="flex flex-col gap-5 border border-gray-400 rounded p-3">
+                  <div className="flex justify-between">
+                    <p className="text-lg font-semibold">We're here to help</p>
+                    <p>users icons</p>
+                  </div>
+                  <p className="text-gray-500 text-sm">
+                    Need help with your payment?
+                  </p>
+                  <div className="flex gap-3">
+                    <p>phoneicon</p>
+                    <p>
+                      Call us on <u>0800 888 6508</u>
+                    </p>
+                  </div>
+                </div>
+                
+                <FormControl fullWidth>
+                  <Select
+                    value={"NEED HELP?"}
+                    sx={{
+                      fontWeight: 600,
+                      color: "#06b6d4", // cyan-500
+                    }}
+                  >
+                    <MenuItem
+                      value="NEED HELP?"
+                      sx={{
+                        fontWeight: 600,
+                        color: "#06b6d4",
+                      }}
+                    >
+                      NEED HELP?
+                    </MenuItem>
+                  </Select>
+                </FormControl>
               </div>
             </div>
           </section>
@@ -174,7 +259,7 @@ export default function Acknowledgement() {
             &copy; {new Date().getFullYear()} Zenco Legal. All rights reserved.
           </div>
         </footer>
-      </div>{" "}
+      </div>
     </>
   );
 }
