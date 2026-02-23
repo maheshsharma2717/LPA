@@ -675,7 +675,7 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
         <DialogTitle className="font-bold text-zenco-dark">Add person</DialogTitle>
         <DialogContent className="flex flex-col gap-6 mt-2">
           <p className={styles.pZenco}>Full legal name</p>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4">
             <FormControl fullWidth>
               <InputLabel>Title</InputLabel>
               <Select
@@ -752,7 +752,7 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
               value={newPerson.addressLine2}
               onChange={(e) => setNewPerson({ ...newPerson, addressLine2: e.target.value })}
             />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2">
               <TextField
                 label="City"
                 fullWidth

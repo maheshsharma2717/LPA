@@ -582,15 +582,15 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center gap-2">
                   <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                  Aged <strong>18 or over</strong>.
+                  Aged  18 or over .
                 </li>
                 <li className="flex items-center gap-2">
                   <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                  Have <strong>mental capacity</strong> to make decisions.
+                  Have  mental capacity  to make decisions.
                 </li>
                 <li className="flex items-center gap-2">
                   <svg className="w-4 h-4 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                  Must <strong>not</strong> be bankrupt, or subject to a debt relief order.
+                  Must  not  be bankrupt, or subject to a debt relief order.
                 </li>
               </ul>
             </div>

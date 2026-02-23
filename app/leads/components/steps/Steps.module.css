@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap');
+
+
 /* 
 h1,
 h2,
@@ -12,10 +15,34 @@ a {
     text-decoration: none;
     transition: var(--transition-fast);
 }
+    */
+
+:root {
+    /* Brand Colors - Exact from Source */
+    --zenco-blue: #01b6ea;
+    --zenco-teal: #29c4a9;
+    --zenco-navy: #52d0f0;
+    --text-primary: #3A3A3C;
+    --text-secondary: #455056;
+    --text-heading: #333333;
+    --bg-light: #f2f6f9;
+    --bg-white: #ffffff;
+    --selected-button-dark: #35495e;
+    --selected-button-light: #96a0ab;
+    --popup-header-dark: #40688b;
+    --progress-bar-filled: #28a745;
+    --progress-bar-current-page: #20c3ef;
+    --border-soft: #ced4da;
+    --font-main: 'Open Sans',
+        sans-serif;
+    --container-max: 1080px;
+    --transition-fast: 0.3s ease-in-out;
+    --color-selected-applicant: #96a0ab;
+}
 
 a:hover {
     color: var(--zenco-teal);
-} */
+}
 
 .container {
     max-width: var(--container-max);

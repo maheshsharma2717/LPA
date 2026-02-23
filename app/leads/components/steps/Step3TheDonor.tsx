@@ -327,11 +327,16 @@ export default function DonorTab({ onNext, isSaving, allFormData, updateData }: 
             <h3 className="font-semibold text-lg text-zenco-dark border-b pb-2">Address & Contact</h3>
             <div className="space-y-4">
               <TextField label="Address Line 1" value={formData.address} onChange={(e) => handleFormChange("address", e.target.value)} fullWidth />
+            </div>
+            <div className="space-y-4">
               <TextField label="Address Line 2 (Optional)" value={formData.addressLine2} onChange={(e) => handleFormChange("addressLine2", e.target.value)} fullWidth />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TextField label="City" value={formData.city} onChange={(e) => handleFormChange("city", e.target.value)} fullWidth />
-                <TextField label="County (Optional)" value={formData.county} onChange={(e) => handleFormChange("county", e.target.value)} fullWidth />
-              </div>
+            </div>
+            <div className="space-y-4">
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <TextField label="City" value={formData.city} onChange={(e) => handleFormChange("city", e.target.value)} fullWidth />
+              <TextField label="County (Optional)" value={formData.county} onChange={(e) => handleFormChange("county", e.target.value)} fullWidth />
+
               <TextField label="Postcode" value={formData.postcode} onChange={(e) => handleFormChange("postcode", e.target.value)} fullWidth />
             </div>
           </div>
