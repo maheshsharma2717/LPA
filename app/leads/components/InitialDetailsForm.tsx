@@ -40,6 +40,7 @@ export default function InitialDetailsForm({
     city: "",
     country: "",
     county: "",
+    town: "",
     mobile: "",
     landline: "",
   });
@@ -67,11 +68,253 @@ export default function InitialDetailsForm({
         city: lead.city || "",
         country: lead.country || "",
         county: lead.county || "",
+        town: lead.town || "",
         mobile: lead.mobile || "",
         landline: lead.landline || "",
       });
     }
   }, [lead]);
+
+  const countries = [
+    "United Kingdom",
+    "Afghanistan",
+    "Albania",
+    "Algeria",
+    "American Samoa",
+    "Andorra",
+    "Angola",
+    "Anguilla",
+    "Antarctica",
+    "Antigua and Barbuda",
+    "Argentina",
+    "Armenia",
+    "Aruba",
+    "Australia",
+    "Austria",
+    "Azerbaijan",
+    "Bahamas",
+    "Bahrain",
+    "Bangladesh",
+    "Barbados",
+    "Belarus",
+    "Belgium",
+    "Belize",
+    "Benin",
+    "Bermuda",
+    "Bhutan",
+    "Bolivia",
+    "Bosnia and Herzegovina",
+    "Botswana",
+    "Brazil",
+    "British Indian Ocean Territory",
+    "Brunei Darussalam",
+    "Bulgaria",
+    "Burkina Faso",
+    "Burundi",
+    "Cambodia",
+    "Cameroon",
+    "Canada",
+    "Cape Verde",
+    "Cayman Islands",
+    "Central African Republic",
+    "Chad",
+    "Chile",
+    "China",
+    "Christmas Island",
+    "Cocos (Keeling) Islands",
+    "Colombia",
+    "Comoros",
+    "Congo",
+    "Congo, the Democratic Republic of the",
+    "Cook Islands",
+    "Costa Rica",
+    "Cote D Ivoire",
+    "Croatia",
+    "Cuba",
+    "Cyprus",
+    "Czech Republic",
+    "Denmark",
+    "Djibouti",
+    "Dominica",
+    "Dominican Republic",
+    "Ecuador",
+    "Egypt",
+    "El Salvador",
+    "Equatorial Guinea",
+    "Eritrea",
+    "Estonia",
+    "Ethiopia",
+    "Falkland Islands (Malvinas)",
+    "Faroe Islands",
+    "Fiji",
+    "Finland",
+    "France",
+    "French Guiana",
+    "French Polynesia",
+    "French Southern Territories",
+    "Gabon",
+    "Gambia",
+    "Georgia",
+    "Germany",
+    "Ghana",
+    "Gibraltar",
+    "Greece",
+    "Greenland",
+    "Grenada",
+    "Guadeloupe",
+    "Guam",
+    "Guatemala",
+    "Guinea",
+    "Guinea-Bissau",
+    "Guyana",
+    "Haiti",
+    "Heard Island and Mcdonald Islands",
+    "Holy See (Vatican City State)",
+    "Honduras",
+    "Hong Kong",
+    "Hungary",
+    "Iceland",
+    "India",
+    "Indonesia",
+    "Iran, Islamic Republic of",
+    "Iraq",
+    "Ireland",
+    "Israel",
+    "Italy",
+    "Jamaica",
+    "Japan",
+    "Jordan",
+    "Kazakhstan",
+    "Kenya",
+    "Kiribati",
+    "Korea, Democratic Peoples Republic of",
+    "Korea, Republic of",
+    "Kuwait",
+    "Kyrgyzstan",
+    "Lao Peoples Democratic Republic",
+    "Latvia",
+    "Lebanon",
+    "Lesotho",
+    "Liberia",
+    "Libyan Arab Jamahiriya",
+    "Liechtenstein",
+    "Lithuania",
+    "Luxembourg",
+    "Macao",
+    "Macedonia, the Former Yugoslav Republic of",
+    "Madagascar",
+    "Malawi",
+    "Malaysia",
+    "Maldives",
+    "Mali",
+    "Malta",
+    "Marshall Islands",
+    "Martinique",
+    "Mauritania",
+    "Mauritius",
+    "Mayotte",
+    "Mexico",
+    "Micronesia, Federated States of",
+    "Moldova, Republic of",
+    "Monaco",
+    "Mongolia",
+    "Montserrat",
+    "Morocco",
+    "Mozambique",
+    "Myanmar",
+    "Namibia",
+    "Nauru",
+    "Nepal",
+    "Netherlands",
+    "Netherlands Antilles",
+    "New Caledonia",
+    "New Zealand",
+    "Nicaragua",
+    "Niger",
+    "Nigeria",
+    "Niue",
+    "Norfolk Island",
+    "Northern Mariana Islands",
+    "Norway",
+    "Oman",
+    "Pakistan",
+    "Palau",
+    "Palestinian Territory, Occupied",
+    "Panama",
+    "Papua New Guinea",
+    "Paraguay",
+    "Peru",
+    "Philippines",
+    "Pitcairn",
+    "Poland",
+    "Portugal",
+    "Puerto Rico",
+    "Qatar",
+    "Reunion",
+    "Romania",
+    "Russian Federation",
+    "Rwanda",
+    "Saint Helena",
+    "Saint Kitts and Nevis",
+    "Saint Lucia",
+    "Saint Pierre and Miquelon",
+    "Saint Vincent and the Grenadines",
+    "Samoa",
+    "San Marino",
+    "Sao Tome and Principe",
+    "Saudi Arabia",
+    "Senegal",
+    "Serbia and Montenegro",
+    "Seychelles",
+    "Sierra Leone",
+    "Singapore",
+    "Slovakia",
+    "Slovenia",
+    "Solomon Islands",
+    "Somalia",
+    "South Africa",
+    "South Georgia and the South Sandwich Islands",
+    "Spain",
+    "Sri Lanka",
+    "Sudan",
+    "Suriname",
+    "Svalbard and Jan Mayen",
+    "Swaziland",
+    "Sweden",
+    "Switzerland",
+    "Syrian Arab Republic",
+    "Taiwan, Province of China",
+    "Tajikistan",
+    "Tanzania, United Republic of",
+    "Thailand",
+    "Timor-Leste",
+    "Togo",
+    "Tokelau",
+    "Tonga",
+    "Trinidad and Tobago",
+    "Tunisia",
+    "Turkey",
+    "Turkmenistan",
+    "Turks and Caicos Islands",
+    "Tuvalu",
+    "Uganda",
+    "Ukraine",
+    "United Arab Emirates",
+    "United States",
+    "United States Minor Outlying Islands",
+    "Uruguay",
+    "Uzbekistan",
+    "Vanuatu",
+    "Venezuela",
+    "Viet Nam",
+    "Virgin Islands, British",
+    "Virgin Islands, U.s.",
+    "Wallis and Futuna",
+    "Western Sahara",
+    "Yemen",
+    "Zambia",
+    "Zimbabwe",
+  ];
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -330,31 +573,6 @@ export default function InitialDetailsForm({
           What's your address?
         </h3>
 
-        <div className="flex gap-4">
-          <FormControl fullWidth>
-            <p>Enter postcode to search for address</p>
-            <div className="flex w-full justify-between">
-              <TextField
-                // label="Enter postcode"
-                value={formData.postcode}
-                onChange={(e) => handleChange("postcode", e.target.value)}
-                fullWidth
-                className="bg-white max-w-[49%] w-full"
-              />
-              <Button
-                variant="contained"
-                sx={{
-                  backgroundColor: "#08B9ED",
-                  "&:hover": { backgroundColor: "#07bdf5ff" },
-                }}
-                className=" max-w-[49%] w-full"
-              >
-                Search
-              </Button>
-            </div>
-          </FormControl>
-        </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* openAddress */}
 
@@ -391,8 +609,8 @@ export default function InitialDetailsForm({
                   <p>Town</p>
                   <TextField
                     // label="Address Line 1"
-                    value={formData.address}
-                    onChange={(e) => handleChange("address", e.target.value)}
+                    value={formData.town}
+                    onChange={(e) => handleChange("town", e.target.value)}
                     fullWidth
                     className="bg-white"
                   />
@@ -403,10 +621,8 @@ export default function InitialDetailsForm({
                   <p>County</p>
                   <TextField
                     // label="Address Line 2 (Optional)"
-                    value={formData.addressLine2}
-                    onChange={(e) =>
-                      handleChange("addressLine2", e.target.value)
-                    }
+                    value={formData.county}
+                    onChange={(e) => handleChange("county", e.target.value)}
                     fullWidth
                     className="bg-white"
                   />
@@ -415,13 +631,20 @@ export default function InitialDetailsForm({
               <div className="flex gap-4">
                 <FormControl fullWidth>
                   <p>Country</p>
-                  <TextField
-                    // label="Address Line 1"
-                    value={formData.address}
-                    onChange={(e) => handleChange("address", e.target.value)}
-                    fullWidth
+                  <Select
+                    displayEmpty
+                    value={formData.country || ""}
+                    onChange={(e) => handleChange("country", e.target.value)}
                     className="bg-white"
-                  />
+                  >
+                    <MenuItem value="">Choose Country...</MenuItem>
+
+                    {countries.map((country) => (
+                      <MenuItem key={country} value={country}>
+                        {country}
+                      </MenuItem>
+                    ))}
+                  </Select>
                 </FormControl>
               </div>
               <div className="flex gap-4">
@@ -429,10 +652,8 @@ export default function InitialDetailsForm({
                   <p>Postcode</p>
                   <TextField
                     // label="Address Line 2 (Optional)"
-                    value={formData.addressLine2}
-                    onChange={(e) =>
-                      handleChange("addressLine2", e.target.value)
-                    }
+                    value={formData.postcode}
+                    onChange={(e) => handleChange("postcode", e.target.value)}
                     fullWidth
                     className="bg-white"
                   />
@@ -448,14 +669,45 @@ export default function InitialDetailsForm({
               </p>
             </>
           ) : (
-            <p
-              onClick={() => {
-                setOpenAddress(!openAddress);
-              }}
-              className="cursor-pointer text-[#08b9ed]"
-            >
-              <u>Enter address manually</u>
-            </p>
+            <>
+              <div className="flex flex-col w-full">
+                <div className="flex gap-4 w-full">
+                  <FormControl fullWidth>
+                    <p>Enter postcode to search for address</p>
+                    <div className="flex w-full justify-between">
+                      <TextField
+                        // label="Enter postcode"
+                        value={formData.postcode}
+                        onChange={(e) =>
+                          handleChange("postcode", e.target.value)
+                        }
+                        fullWidth
+                        className="bg-white max-w-[49%] w-full"
+                      />
+                      <Button
+                        variant="contained"
+                        sx={{
+                          backgroundColor: "#08B9ED",
+                          "&:hover": { backgroundColor: "#07bdf5ff" },
+                        }}
+                        className=" max-w-[49%] w-full"
+                      >
+                        Search
+                      </Button>
+                    </div>
+                  </FormControl>
+                </div>
+                <p
+                  onClick={() => {
+                    setOpenAddress(!openAddress);
+                  }}
+                  className="cursor-pointer text-[#08b9ed]"
+                >
+                  <u>Enter address manually</u>
+                </p>
+              </div>
+              
+            </>
           )}
         </div>
       </div>
@@ -499,9 +751,10 @@ export default function InitialDetailsForm({
           onClick={handleContinue}
           sx={{
             backgroundColor: "#08B9ED",
-            "&:hover": { backgroundColor: "#1d4ed8" },
-            paddingY: 1.5,
+            // "&:hover": { backgroundColor: "#1d4ed8" },
+            padding: "15px",
           }}
+          className="max-w-[29%] w-full"
         >
           {loading ? (
             <CircularProgress size={24} color="inherit" />
