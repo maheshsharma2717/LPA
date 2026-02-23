@@ -230,7 +230,40 @@ export default function RegisterUser() {
                     Log in
                   </Link>
                 </p>
+{/*  this is how it works 
+ if(donor ="self"){
+ donor = "me";
+ attorney = "choosen by me ";
+ replacementAttorner = "option / choosen by me ";
+ peopleToNotify ="optional/ choosen by me ";
+ certificate provider = "choosen by me/ people added or new but only one";
+ }
+ else if (donor = "me and partner "){
+ donor = "me and partner";
+ attorney = "choosen by me/ partner ";
+ replacementAttorner = "optional / choosen by me/ partner ";
+ peopleToNotify ="optional/ choosen by me/partner ";
+ certificate provider = "choosen by me/ people added or new but only one can be changed";
+ }
+ else if (donor = "parents "){
+ donor = "mum / dad";
+ attorney = "choosen by  someone from the family  ";
+ replacementAttorner = "optional / choosen by mum / parents /me ";
+ peopleToNotify ="optional/ choosen by me/parents ";
+ certificate provider = "choosen by me/ people added or new but only one can be changed";
+ }
+ else  {
+ donor = "mum / dad/ partner";
+ attorney = "choosen by  one of donor";
+ replacementAttorner = "optional / choosen by mum / parents /me / partner";
+ peopleToNotify ="optional/ choosen by me/parents ";
+ certificate provider = "choosen by me/ people added or new but only one can be changed";
+ }
 
+
+
+
+*/}
                 <div className="text-xs text-gray-500 text-center mt-6">
                   <p className="font-semibold mb-1">Privacy guaranteed</p>
                   <p>

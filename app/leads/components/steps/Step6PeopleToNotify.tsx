@@ -28,9 +28,10 @@ type Props = {
   isSaving: boolean;
   allFormData: any;
   updateData: (data: any) => void;
+  currentDonorIndex: number;
 };
 
-export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updateData }: Props) {
+export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updateData, currentDonorIndex }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,7 +45,6 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
   const donorId = allFormData?.["which-donor"]?.donorId;
   const [lpaDocId, setLpaDocId] = useState<string | null>(null);
 
-  // Form state for modal
   const [formData, setFormData] = useState({
     title: "Mr",
     first_name: "",
@@ -54,7 +54,6 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
     postcode: "",
   });
 
-  // ─── Data Fetch ───────────────────────────────────────────
   useEffect(() => {
     const init = async () => {
       if (!donorId) {
@@ -67,8 +66,33 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
         if (!session) return;
         const token = session.access_token;
 
-        // 1. Fetch LPA documents for this donor
-        const lpaDocsRes = await fetch(`/api/lpa-documents?donorId=${donorId}`, {
+        const donorsRes = await fetch(`/api/donors?applicationId=${applicationId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const { data: fetchedDonors } = await donorsRes.json();
+
+        let activeDonorId = donorId;
+        if (fetchedDonors) {
+          const step1Selection = allFormData?.who?.selection;
+          const step1SelectedIds = allFormData?.who?.selectedPeopleIds || [];
+          const isLeadSelected =
+            step1Selection === "You" ||
+            step1Selection === "You and your partner" ||
+            step1Selection === "You and someone else";
+
+          const activeDonors = fetchedDonors.filter((d: any) => {
+            if (d.is_lead) return isLeadSelected;
+            return step1SelectedIds.includes(d.id);
+          });
+          activeDonorId = activeDonors[currentDonorIndex]?.id;
+        }
+
+        if (!activeDonorId) {
+          setLoading(false);
+          return;
+        }
+
+        const lpaDocsRes = await fetch(`/api/lpa-documents?donorId=${activeDonorId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const { data: lpaDocs } = await lpaDocsRes.json();
@@ -77,7 +101,6 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
           const firstLpaId = lpaDocs[0].id;
           setLpaDocId(firstLpaId);
 
-          // 2. Fetch people to notify for this LPA doc
           const peopleRes = await fetch(`/api/people-to-notify?lpaDocId=${firstLpaId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
@@ -89,7 +112,6 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
           }
         }
 
-        // Restore hasPeople state from formData if available
         if (allFormData["people-to-Notify"]?.hasPeople !== undefined) {
           setHasPeople(allFormData["people-to-Notify"].hasPeople);
         }
@@ -103,7 +125,7 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
     };
 
     init();
-  }, [donorId]);
+  }, [applicationId, currentDonorIndex, allFormData?.who]);
 
   useEffect(() => {
     if (isSaving) {
@@ -112,7 +134,7 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
   }, [isSaving]);
 
   const handleSaveAndNext = () => {
-    updateData({ hasPeople });
+    updateData({ hasPeople, people });
     onNext();
   };
 
@@ -156,7 +178,6 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
       const token = session.access_token;
 
       if (editingPerson) {
-        // PATCH
         const res = await fetch("/api/people-to-notify", {
           method: "PATCH",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -167,7 +188,6 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
           setPeople((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
         }
       } else {
-        // POST
         if (people.length >= 5) {
           alert("Maximum 5 people to notify allowed per document.");
           setIsSubmitting(false);

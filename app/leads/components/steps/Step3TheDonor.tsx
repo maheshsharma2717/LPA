@@ -20,14 +20,15 @@ type Props = {
   onNext: () => void;
   isSaving: boolean;
   allFormData: any;
+  currentDonorIndex: number;
 };
 
-export default function DonorTab({ onNext, isSaving, allFormData, updateData }: Props) {
+export default function DonorTab({ onNext, isSaving, allFormData, updateData, currentDonorIndex }: Props) {
   const [loading, setLoading] = useState(true);
+  const [showManualAddress, setShowManualAddress] = useState(false);
   const [currentDonor, setCurrentDonor] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Internal Step State: 0 = Personal Details, 1 = Address/Contact
   const [subStep, setSubStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -44,14 +45,13 @@ export default function DonorTab({ onNext, isSaving, allFormData, updateData }: 
     address: "",
     mobile: "",
     landline: "",
-    city: "",      // Added to match schema/form
-    county: "",    // Added
-    addressLine2: "" // Added
+    city: "",
+    county: "",
+    addressLine2: ""
   });
 
   const applicationId = allFormData?.who?.applicationId;
 
-  // Initial Data Fetch
   useEffect(() => {
     const init = async () => {
       if (!applicationId) {
@@ -74,7 +74,6 @@ export default function DonorTab({ onNext, isSaving, allFormData, updateData }: 
           return;
         }
 
-        // Filter active donors (same logic as Step 2)
         const step1Selection = allFormData?.who?.selection;
         const step1SelectedIds = allFormData?.who?.selectedPeopleIds || [];
         const isLeadSelected =
@@ -82,24 +81,21 @@ export default function DonorTab({ onNext, isSaving, allFormData, updateData }: 
           step1Selection === "You and your partner" ||
           step1Selection === "You and someone else";
 
-        const activeDonors = fetchedDonors.filter((d: any) => {
+        const activeDonors = (fetchedDonors || []).filter((d: any) => {
           if (d.is_lead) return isLeadSelected;
           return step1SelectedIds.includes(d.id);
         });
 
-        // SELECT FIRST DONOR
-        // TODO: In future, handle multiple donors iteration
-        const firstDonor = activeDonors[0];
+        const firstDonor = activeDonors[currentDonorIndex];
 
         if (firstDonor) {
           setCurrentDonor(firstDonor);
 
-          // Parse DOB
           let day = "", month = "", year = "";
           if (firstDonor.date_of_birth) {
             const date = new Date(firstDonor.date_of_birth);
             day = String(date.getDate());
-            // Month names array matches the Select options
+
             const months = [
               "January", "February", "March", "April", "May", "June",
               "July", "August", "September", "October", "November", "December"
@@ -122,26 +118,7 @@ export default function DonorTab({ onNext, isSaving, allFormData, updateData }: 
             addressLine2: firstDonor.address_line_2 || "",
             city: firstDonor.city || "",
             county: firstDonor.county || "",
-            mobile: "", // Donor table doesn't have mobile? Leads table does. 
-            // If it's the Lead, we might want to fetch from Leads table or use what's in Donors if we added it?
-            // Schema check: Donors table (from API_REFERENCE) does NOT have mobile/landline.
-            // Leads table has mobile.
-            // Step 3 UI asks for contact info?
-            // Let's check the UI code I'm replacing... 
-            // It had mobile/landline inputs. "address" field (single line?).
-            // API Reference -> Donors: address_line_1, address_line_2, city, county, postcode.
-            // No mobile/landline in Donors table. 
-            // If it's the Lead, we updated Profile.
-            // If it's another person, do we collect mobile?
-            // Reference says "Leads" extends users. "Donors" does not have contact info columns in the snippet.
-            // Wait, looking at API_REFERENCE again.
-            // Table `donors`: title, first_name... address... relationship... 
-            // NO mobile/email in `donors` table.
-            // `attorneys` table has email.
-            // `leads` table has mobile/landline.
-            // So if this donor is NOT the lead, we might not be storing mobile?
-            // OR the UI expects it but backend doesn't support it yet?
-            // For now, I'll bind what I can.
+            mobile: "",
             landline: ""
           });
         }
@@ -155,16 +132,14 @@ export default function DonorTab({ onNext, isSaving, allFormData, updateData }: 
     };
 
     init();
-  }, [applicationId, allFormData?.who]);
+  }, [applicationId, allFormData?.who, currentDonorIndex]);
 
-  // Handle Internal "Next"
   const handleInternalNext = async () => {
     if (subStep === 0) {
-      // Validation for Personal Details could go here
+
       setSubStep(1);
       window.scrollTo(0, 0);
     } else {
-      // Final Save
       setIsSubmitting(true);
       await handleSave();
       setIsSubmitting(false);
@@ -184,7 +159,6 @@ export default function DonorTab({ onNext, isSaving, allFormData, updateData }: 
       if (!session) return;
       const token = session.access_token;
 
-      // Construct DOB
       const monthIdx = [
         "January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
@@ -192,9 +166,7 @@ export default function DonorTab({ onNext, isSaving, allFormData, updateData }: 
 
       let dob = null;
       if (formData.year && formData.month && formData.day) {
-        // Create date object (UTC or local? simple ISO string YYYY-MM-DD usually best for date type)
-        // Note: Date.parse might be timezone dependent.
-        // Safer:
+
         const m = String(monthIdx + 1).padStart(2, '0');
         const d = String(formData.day).padStart(2, '0');
         dob = `${formData.year}-${m}-${d}`;
@@ -208,12 +180,12 @@ export default function DonorTab({ onNext, isSaving, allFormData, updateData }: 
         middle_name: formData.middleName,
         preferred_name: formData.preferredName,
         date_of_birth: dob,
-        address_line_1: formData.address, // Mapping 'address' input to line 1
+        address_line_1: formData.address,
         address_line_2: formData.addressLine2,
         city: formData.city,
         county: formData.county,
         postcode: formData.postcode,
-        // Mobile/Landline not in `donors` schema, ignoring for now or needs schema update.
+
       };
 
       await fetch("/api/donors", {
@@ -222,7 +194,6 @@ export default function DonorTab({ onNext, isSaving, allFormData, updateData }: 
         body: JSON.stringify(body)
       });
 
-      // Save donorId to formData so downstream steps (4, 5, etc.) can access it
       updateData({ donorId: currentDonor.id });
 
       onNext();
@@ -325,13 +296,69 @@ export default function DonorTab({ onNext, isSaving, allFormData, updateData }: 
           <div className="space-y-8 animate-in fade-in">
             <h3 className="font-semibold text-lg text-zenco-dark border-b pb-2">Address & Contact</h3>
             <div className="space-y-4">
-              <TextField label="Address Line 1" value={formData.address} onChange={(e) => handleFormChange("address", e.target.value)} fullWidth />
-              <TextField label="Address Line 2 (Optional)" value={formData.addressLine2} onChange={(e) => handleFormChange("addressLine2", e.target.value)} fullWidth />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TextField label="City" value={formData.city} onChange={(e) => handleFormChange("city", e.target.value)} fullWidth />
-                <TextField label="County (Optional)" value={formData.county} onChange={(e) => handleFormChange("county", e.target.value)} fullWidth />
+              <div className="flex gap-4 items-end">
+                <TextField
+                  label="Postcode"
+                  value={formData.postcode || ""}
+                  onChange={(e) => handleFormChange("postcode", e.target.value)}
+                  fullWidth
+                />
+                <Button
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "#08B9ED",
+                    color: "white",
+                    padding: "10px 24px",
+                    height: "56px",
+                    textTransform: "none",
+                    fontWeight: 600,
+                    "&:hover": { backgroundColor: "#07bdf5ff" }
+                  }}
+                >
+                  Search
+                </Button>
               </div>
-              <TextField label="Postcode" value={formData.postcode} onChange={(e) => handleFormChange("postcode", e.target.value)} fullWidth />
+
+              {!showManualAddress && (
+                <button
+                  type="button"
+                  onClick={() => setShowManualAddress(true)}
+                  className="text-cyan-500 font-semibold text-sm hover:underline text-left w-fit"
+                >
+                  Enter address manually
+                </button>
+              )}
+
+              {showManualAddress && (
+                <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                  <TextField
+                    label="Address Line 1"
+                    value={formData.address || ""}
+                    onChange={(e) => handleFormChange("address", e.target.value)}
+                    fullWidth
+                  />
+                  <TextField
+                    label="Address Line 2 (Optional)"
+                    value={formData.addressLine2 || ""}
+                    onChange={(e) => handleFormChange("addressLine2", e.target.value)}
+                    fullWidth
+                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <TextField
+                      label="City"
+                      value={formData.city || ""}
+                      onChange={(e) => handleFormChange("city", e.target.value)}
+                      fullWidth
+                    />
+                    <TextField
+                      label="County (Optional)"
+                      value={formData.county || ""}
+                      onChange={(e) => handleFormChange("county", e.target.value)}
+                      fullWidth
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
