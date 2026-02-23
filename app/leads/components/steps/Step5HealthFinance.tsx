@@ -23,34 +23,29 @@ type Props = {
   onNext: () => void;
   isSaving: boolean;
   allFormData: any;
+  currentDonorIndex: number;
 };
 
-export default function HealthFinanceTab({ onNext, isSaving, allFormData, updateData }: Props) {
+export default function HealthFinanceTab({ onNext, isSaving, allFormData, updateData, currentDonorIndex }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Donor info
   const [donorName, setDonorName] = useState("");
   const [donorFirstName, setDonorFirstName] = useState("");
 
-  // LPA docs for this donor
   const [lpaDocs, setLpaDocs] = useState<LpaDoc[]>([]);
   const hasHealth = lpaDocs.some((d) => d.lpa_type === "health_and_welfare");
   const hasFinance = lpaDocs.some((d) => d.lpa_type === "property_and_finance");
 
-  // Internal sub-step tracking
   const [subStep, setSubStep] = useState(0);
 
-  // Health & Welfare: life-sustaining treatment
+
   const [lifeSustaining, setLifeSustaining] = useState<boolean | null>(null);
 
-  // Property & Finance: when attorneys can act
   const [whenCanAct, setWhenCanAct] = useState<"when_registered" | "loss_of_capacity" | null>(null);
 
   const applicationId = allFormData?.who?.applicationId;
 
-  // ─── Data Fetch ───────────────────────────────────────────
   useEffect(() => {
     const init = async () => {
       if (!applicationId) { setLoading(false); return; }
@@ -59,7 +54,6 @@ export default function HealthFinanceTab({ onNext, isSaving, allFormData, update
         if (!session) return;
         const token = session.access_token;
 
-        // 1. Fetch all donors for this application
         const donorsRes = await fetch(`/api/donors?applicationId=${applicationId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -70,7 +64,6 @@ export default function HealthFinanceTab({ onNext, isSaving, allFormData, update
           return;
         }
 
-        // 2. Determine active donors (same logic used in Step 2, 3, 4)
         const step1Selection = allFormData?.who?.selection;
         const step1SelectedIds = allFormData?.who?.selectedPeopleIds || [];
         const isLeadSelected =
@@ -83,7 +76,7 @@ export default function HealthFinanceTab({ onNext, isSaving, allFormData, update
           return step1SelectedIds.includes(d.id);
         });
 
-        const firstDonor = activeDonors[0];
+        const firstDonor = activeDonors[currentDonorIndex];
         if (!firstDonor) {
           setLoading(false);
           return;
@@ -92,7 +85,6 @@ export default function HealthFinanceTab({ onNext, isSaving, allFormData, update
         setDonorName(`${firstDonor.first_name} ${firstDonor.last_name}`);
         setDonorFirstName(firstDonor.first_name);
 
-        // 3. Fetch LPA documents for this specific donor
         const lpasRes = await fetch(`/api/lpa-documents?donorId=${firstDonor.id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -101,7 +93,6 @@ export default function HealthFinanceTab({ onNext, isSaving, allFormData, update
         if (docs && Array.isArray(docs) && docs.length > 0) {
           setLpaDocs(docs);
 
-          // Restore saved preferences from DB
           const healthDoc = docs.find((d: any) => d.lpa_type === "health_and_welfare");
           const financeDoc = docs.find((d: any) => d.lpa_type === "property_and_finance");
 
@@ -113,7 +104,6 @@ export default function HealthFinanceTab({ onNext, isSaving, allFormData, update
           }
         }
 
-        // Also restore from wizard formData if available
         const saved = allFormData?.["health-&-finances"];
         if (saved) {
           if (saved.lifeSustaining !== undefined && saved.lifeSustaining !== null) setLifeSustaining(saved.lifeSustaining);
@@ -127,15 +117,12 @@ export default function HealthFinanceTab({ onNext, isSaving, allFormData, update
       }
     };
     init();
-  }, [applicationId]);
+  }, [applicationId, currentDonorIndex, allFormData?.who]);
 
-  // ─── Determine which pages to show ────────────────────────
   const pages: ("health" | "finance")[] = [];
   if (hasHealth) pages.push("health");
   if (hasFinance) pages.push("finance");
   const currentPage = pages[subStep] || null;
-
-  // ─── Save & Navigate ─────────────────────────────────────
   const handleInternalNext = async () => {
     if (currentPage === "health") {
       if (lifeSustaining === null) {
@@ -143,8 +130,6 @@ export default function HealthFinanceTab({ onNext, isSaving, allFormData, update
         return;
       }
       setError(null);
-
-      // If there's a finance page next, go to it
       if (subStep < pages.length - 1) {
         setSubStep(subStep + 1);
         window.scrollTo(0, 0);
@@ -160,14 +145,12 @@ export default function HealthFinanceTab({ onNext, isSaving, allFormData, update
       setError(null);
     }
 
-    // Final save — persist to DB
     setIsSubmitting(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
       const token = session.access_token;
 
-      // Save life-sustaining treatment to the health LPA document
       const healthDoc = lpaDocs.find((d) => d.lpa_type === "health_and_welfare");
       if (healthDoc && lifeSustaining !== null) {
         await fetch("/api/lpa-documents", {
@@ -180,7 +163,6 @@ export default function HealthFinanceTab({ onNext, isSaving, allFormData, update
         });
       }
 
-      // Save when_attorneys_can_act to the finance LPA document
       const financeDoc = lpaDocs.find((d) => d.lpa_type === "property_and_finance");
       if (financeDoc && whenCanAct !== null) {
         await fetch("/api/lpa-documents", {
@@ -193,7 +175,6 @@ export default function HealthFinanceTab({ onNext, isSaving, allFormData, update
         });
       }
 
-      // Save to wizard formData for state restoration
       updateData({
         lifeSustaining,
         whenCanAct,
@@ -215,7 +196,6 @@ export default function HealthFinanceTab({ onNext, isSaving, allFormData, update
     }
   };
 
-  // ─── Render ───────────────────────────────────────────────
   if (loading) return <Box p={4} display="flex" justifyContent="center"><CircularProgress /></Box>;
 
   if (pages.length === 0) {

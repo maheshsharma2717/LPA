@@ -12,7 +12,7 @@ export async function POST(request: Request) {
         const authHeader = request.headers.get('Authorization');
         const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
 
-        // Use admin if available (bypasses RLS), otherwise use token-based client (respects RLS)
+       
         const db = supabaseAdmin || getServerSupabase(token);
 
         if (!db) {

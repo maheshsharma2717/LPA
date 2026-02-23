@@ -5,7 +5,7 @@ export const steps = [
   { label: "Attorneys", key: "attorneys", hideNext: true },
   { label: "Health & Finance Decisions", key: "health-&-finances", hideNext: true },
   { label: "People to Notify", key: "people-to-Notify" },
-  { label: "Application Information", key: "application-information" },
-  { label: "Certificate Provider", key: "certificate-provider" },
+  { label: "Application Information", key: "application-information", hideNext: true },
+  { label: "Certificate Provider", key: "certificate-provider", hideNext: true },
   { label: "OPG Fees", key: "opg-fees" },
 ];

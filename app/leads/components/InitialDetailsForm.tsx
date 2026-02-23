@@ -125,7 +125,6 @@ export default function InitialDetailsForm({ lead, userId, onComplete }: Props) 
       onComplete();
     } catch (err) {
       console.error("Error saving lead details:", err);
-      // Fallback to next step even if save fails, but log it
       onComplete();
     } finally {
       setLoading(false);
