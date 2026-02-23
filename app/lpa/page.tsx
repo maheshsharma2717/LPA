@@ -266,7 +266,7 @@ export default function LPAStepOne() {
               <div className="border border-gray-300 rounded-md p-6 bg-white max-w-2xl">
                 {/* Item 1 */}
                 <div className="flex items-start gap-4 mb-6">
-                  <div className="text-green-600 mt-1">
+                  <div className="text-[#28a745] mt-1">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -279,10 +279,10 @@ export default function LPAStepOne() {
                   </div>
 
                   <div>
-                    <h3 className="font-semibold text-lg text-gray-800">
+                    <h3 className="font-semibold text-lg text-[#3A3A3C]">
                       Protect yourself and your family.
                     </h3>
-                    <p className="text-gray-600 leading-relaxed mt-1">
+                    <p className="text-[#3A3A3C] leading-relaxed mt-1">
                       Ensure everything is in place before it is needed.
                     </p>
                   </div>
@@ -290,7 +290,7 @@ export default function LPAStepOne() {
 
                 {/* Item 2 */}
                 <div className="flex items-start gap-4 mb-6">
-                  <div className="text-green-600 mt-1">
+                  <div className="text-[#28a745] mt-1">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -303,10 +303,10 @@ export default function LPAStepOne() {
                   </div>
 
                   <div>
-                    <h3 className="font-semibold text-lg text-gray-800">
+                    <h3 className="font-semibold text-lg text-[#3A3A3C]">
                       Secure your family's future.
                     </h3>
-                    <p className="text-gray-600 leading-relaxed mt-1">
+                    <p className="text-[#3A3A3C] leading-relaxed mt-1">
                       Guarantee access to finance when most needed and make
                       important health decisions.
                     </p>
@@ -315,7 +315,7 @@ export default function LPAStepOne() {
 
                 {/* Item 3 */}
                 <div className="flex items-start gap-4 mb-8">
-                  <div className="text-green-600 mt-1">
+                  <div className="text-[#28a745] mt-1">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -328,10 +328,10 @@ export default function LPAStepOne() {
                   </div>
 
                   <div>
-                    <h3 className="font-semibold text-lg text-gray-800">
+                    <h3 className="font-semibold text-lg text-[#3A3A3C]">
                       It only takes 15 minutes.
                     </h3>
-                    <p className="text-gray-600 leading-relaxed mt-1">
+                    <p className="text-[#3A3A3C] leading-relaxed mt-1">
                       Easy to use system. Designed for all ages. Save your
                       progress as you go.
                     </p>
