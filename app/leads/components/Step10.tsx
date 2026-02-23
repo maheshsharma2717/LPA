@@ -611,19 +611,66 @@ export default function Step10({ allFormData, onEdit, currentDonorIndex }: Props
               </p>
 
               <button
-                onClick={() => {
-                  const step1Selection = allFormData?.who?.selection;
-                  const selectedPeopleIds = allFormData?.who?.selectedPeopleIds || [];
-                  const isLeadSelected =
-                    step1Selection === "You" ||
-                    step1Selection === "You and your partner" ||
-                    step1Selection === "You and someone else";
+                onClick={async () => {
+                  try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (!session) return;
+                    const token = session.access_token;
 
-                  const totalDonorsNeeded = (isLeadSelected ? 1 : 0) + selectedPeopleIds.length;
+                    // Get app ID
+                    let appId = applicationId;
+                    if (!appId) {
+                      const { data: { user } } = await supabase.auth.getUser();
+                      if (user) {
+                        const { data: apps } = await supabase
+                          .from("applications")
+                          .select("id")
+                          .eq("lead_id", user.id)
+                          .is("deleted_at", null)
+                          .order("created_at", { ascending: false })
+                          .limit(1);
+                        if (apps && apps.length > 0) appId = apps[0].id;
+                      }
+                    }
+                    if (!appId) throw new Error("No application found");
 
-                  if (currentDonorIndex < totalDonorsNeeded - 1) {
-                    routePage.push(`/leads/Acknowledgement?finishedIndex=${currentDonorIndex}&nextIndex=${currentDonorIndex + 1}`);
-                  } else {
+                    // Fetch actual donors from DB to be absolutely sure of the count
+                    const donorsRes = await fetch(`/api/donors?applicationId=${appId}`, {
+                      headers: { Authorization: `Bearer ${token}` },
+                    });
+                    const { data: fetchedDonors } = await donorsRes.json();
+
+                    if (!fetchedDonors || fetchedDonors.length === 0) {
+                      // Fallback to old logic if fetch fails
+                      const step1Selection = allFormData?.who?.selection;
+                      const selectedPeopleIds = allFormData?.who?.selectedPeopleIds || [];
+                      const isLeadSelected =
+                        step1Selection === "You" ||
+                        step1Selection === "You and your partner" ||
+                        step1Selection === "You and someone else";
+                      const totalDonorsNeeded = (isLeadSelected ? 1 : 0) + selectedPeopleIds.length;
+
+                      if (currentDonorIndex < totalDonorsNeeded - 1) {
+                        routePage.push(`/leads/Acknowledgement?finishedIndex=${currentDonorIndex}&nextIndex=${currentDonorIndex + 1}`);
+                      } else {
+                        routePage.push(`/leads/Acknowledgement?finishedIndex=${currentDonorIndex}&done=true`);
+                      }
+                      return;
+                    }
+
+                    // Sort them correctly (same as in Acknowledgement page)
+                    const sortedDonors = fetchedDonors.sort((a: any, b: any) =>
+                      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+                    );
+
+                    if (currentDonorIndex < sortedDonors.length - 1) {
+                      routePage.push(`/leads/Acknowledgement?finishedIndex=${currentDonorIndex}&nextIndex=${currentDonorIndex + 1}`);
+                    } else {
+                      routePage.push(`/leads/Acknowledgement?finishedIndex=${currentDonorIndex}&done=true`);
+                    }
+                  } catch (err) {
+                    console.error("Error in Step10 transition:", err);
+                    // Minimal fallback
                     routePage.push(`/leads/Acknowledgement?finishedIndex=${currentDonorIndex}&done=true`);
                   }
                 }}

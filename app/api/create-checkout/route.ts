@@ -30,12 +30,14 @@ export async function POST(request: Request) {
         const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
         const db = getServerSupabase(token);
 
-        const { data: app, error: appError } = await db
+        const { data: apps, error: appError } = await db
             .from('applications')
             .select('id, lead_id, status')
             .eq('id', application_id)
             .is('deleted_at', null)
-            .single();
+            .limit(1);
+
+        const app = apps?.[0];
 
         if (appError || !app) {
             return NextResponse.json({ error: 'Application not found' }, { status: 404 });
