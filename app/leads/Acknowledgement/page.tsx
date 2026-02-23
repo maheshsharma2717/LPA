@@ -14,6 +14,8 @@ function AcknowledgementContent() {
   const [nextDonor, setNextDonor] = useState<any>(null);
   const [isDone, setIsDone] = useState(false);
 
+  const [error, setError] = useState<string | null>(null);
+
   const finishedIndex = parseInt(searchParams.get("finishedIndex") || "0");
   const nextIndexParam = searchParams.get("nextIndex");
   const nextIndex = nextIndexParam ? parseInt(nextIndexParam) : null;
@@ -21,37 +23,60 @@ function AcknowledgementContent() {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
+      setError(null);
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+        if (!user) {
+          setError("User not authenticated");
+          return;
+        }
 
-        const { data: applications } = await supabase
+        // Use limit(1) instead of single() to be safer if multiple draft apps exist
+        const { data: apps, error: appError } = await supabase
           .from("applications")
           .select("id")
           .eq("lead_id", user.id)
           .is("deleted_at", null)
-          .single();
+          .order("created_at", { ascending: false })
+          .limit(1);
 
-        if (!applications) return;
+        if (appError) throw appError;
+        if (!apps || apps.length === 0) {
+          setError("No active application found");
+          return;
+        }
 
-        const { data: donors } = await supabase
+        const application = apps[0];
+
+        const { data: donors, error: donorsError } = await supabase
           .from("donors")
           .select("*")
-          .eq("application_id", applications.id)
+          .eq("application_id", application.id)
           .order("created_at", { ascending: true });
 
+        if (donorsError) throw donorsError;
+
         if (donors) {
+          console.log("Donors found:", donors.length, donors);
           setFinishedDonor(donors[finishedIndex]);
-          if (nextIndex !== null && nextIndex < donors.length) {
-            setNextDonor(donors[nextIndex]);
+
+          // Debugging: if nextIndex is provided but out of bounds, check why
+          if (nextIndex !== null) {
+            if (nextIndex < donors.length) {
+              setNextDonor(donors[nextIndex]);
+            } else {
+              console.warn(`nextIndex ${nextIndex} is out of bounds for donors array of length ${donors.length}`);
+            }
           }
         }
 
         if (doneParam === "true") {
           setIsDone(true);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Error fetching acknowledgement data:", err);
+        setError(err.message || "Failed to load donor information");
       } finally {
         setLoading(false);
       }
@@ -68,8 +93,24 @@ function AcknowledgementContent() {
     );
   }
 
+  if (error) {
+    return (
+      <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" minHeight="100vh" p={4} textAlign="center">
+        <h2 className="text-xl font-bold text-red-600 mb-4">Oops! Something went wrong</h2>
+        <p className="text-gray-600 mb-6">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="bg-zenco-blue text-white px-6 py-2 rounded-lg font-bold"
+        >
+          Retry
+        </button>
+      </Box>
+    );
+  }
+
   // ───── PHASE 2: All donors done — "Almost There! Complete your order..." ─────
-  if (isDone || !nextDonor) {
+  // Only show this if explicitly done OR if we have no intent to go to a next person
+  if (isDone || (nextIndexParam === null && !nextDonor && !loading)) {
     return (
       <div className="flex flex-col min-h-screen bg-gray-50">
         {/* Header */}
@@ -162,7 +203,50 @@ function AcknowledgementContent() {
                     Now you just need to pay to have the documents sent out.
                   </p>
                   <button
-                    onClick={() => router.push("/leads/Checkout")}
+                    onClick={async () => {
+                      try {
+                        const { data: { user } } = await supabase.auth.getUser();
+                        if (!user) return;
+
+                        // 1. Get application
+                        const { data: apps } = await supabase
+                          .from("applications")
+                          .select("id")
+                          .eq("lead_id", user.id)
+                          .is("deleted_at", null)
+                          .order("created_at", { ascending: false })
+                          .limit(1);
+
+                        const app = apps?.[0];
+
+                        if (app) {
+                          // 2. Mark all LPAs as complete as a precaution
+                          const { data: donors } = await supabase
+                            .from("donors")
+                            .select("id")
+                            .eq("application_id", app.id);
+
+                          if (donors) {
+                            const donorIds = donors.map(d => d.id);
+                            await supabase
+                              .from("lpa_documents")
+                              .update({ status: 'complete' })
+                              .in("donor_id", donorIds);
+                          }
+
+                          // 3. Update application status
+                          await supabase
+                            .from("applications")
+                            .update({ status: "complete" })
+                            .eq("id", app.id);
+
+                          router.push(`/leads/Checkout?application_id=${app.id}`);
+                        }
+                      } catch (err) {
+                        console.error("Error transitioning to checkout:", err);
+                        router.push("/leads/Checkout");
+                      }
+                    }}
                     className="bg-[#06b6d4] hover:bg-cyan-600 text-white font-bold py-3 px-8 rounded-lg transition-all active:scale-95 shadow-lg w-full text-center text-lg"
                   >
                     Go to checkout
