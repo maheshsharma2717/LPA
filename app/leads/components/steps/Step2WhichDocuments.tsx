@@ -47,18 +47,7 @@ export default function Step2WhichDocuments({
 
   const applicationId = allFormData?.who?.applicationId;
   const selectedPeopleIds = allFormData?.who?.selectedPeopleIds || [];
-  // Step 1 saves isLeadIncluded and leadPerson logic, but fundamentally it saves to the DB.
-  // We should trust the DB donors that match the selection.
-  // However, Step 1 might have soft-deleted unselected ones (or we stopped that).
-  // The user interaction says "selected two, clicked next". Step 1 (modified) DOES NOT delete unselected ones.
-  // So we must filter fetched donors by `selectedPeopleIds` PLUS the lead if selected.
-  // Actually, Step 1's `selectedPeopleIds` tracks the IDs of "other" people.
-  // If "You" is selected, the Lead is a donor but might not be in `selectedPeopleIds` depending on Step 1 implementation.
-  // Let's check `allFormData.who`.
-  // Step 1: `updateData({ selection, people, selectedPeopleIds, morePeople, applicationId })`
-  // `selectedPeopleIds` contains IDs of `people` (others).
-  // Lead inclusion is derived from `selection` ("You..." or "You and...").
-
+ 
   useEffect(() => {
     const init = async () => {
       if (!applicationId) {
@@ -71,7 +60,6 @@ export default function Step2WhichDocuments({
         if (!session) return;
         const token = session.access_token;
 
-        // Fetch donors
         const donorsRes = await fetch(`/api/donors?applicationId=${applicationId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -83,16 +71,14 @@ export default function Step2WhichDocuments({
           return;
         }
 
-        // Filter Donors based on Step 1 selection logic
-        // We need to know which donors are "active" for this application flow.
-        // Since we stopped deleting them in Step 1, we rely on Step 1's state to know who is selected.
+      
         const step1Selection = allFormData?.who?.selection;
         const step1SelectedIds = allFormData?.who?.selectedPeopleIds || [];
 
         const isLeadSelected =
           step1Selection === "You" ||
           step1Selection === "You and your partner" ||
-          step1Selection === "You and someone else"; // "You and someone else" isn't a category but checking logic
+          step1Selection === "You and someone else"; 
 
         const activeDonors = fetchedDonors.filter((d: any) => {
           if (d.is_lead) return isLeadSelected;
@@ -101,7 +87,6 @@ export default function Step2WhichDocuments({
 
         setDonors(activeDonors);
 
-        // Fetch existing LPA Documents for these donors to populate state
         const initialSelections: Record<string, DocumentSelection> = {};
 
         await Promise.all(
@@ -137,7 +122,7 @@ export default function Step2WhichDocuments({
     };
 
     init();
-  }, [applicationId, allFormData?.who]); // Depend on Step 1 data
+  }, [applicationId, allFormData?.who]); 
 
   useEffect(() => {
     if (isSaving) {
@@ -155,13 +140,9 @@ export default function Step2WhichDocuments({
       if (!session) return;
       const token = session.access_token;
 
-      // Perform updates for each donor
       for (const donor of donors) {
         const selection = selections[donor.id];
-        if (!selection) continue; // Or should we mandate selection? Assuming validation elsewhere or tolerant.
-
-        // Fetch current docs again to be safe? Or just use known state + API logic.
-        // Simplest is to list current docs for donor, then add/remove.
+        if (!selection) continue; 
         const lpasRes = await fetch(`/api/lpa-documents?donorId=${donor.id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -174,7 +155,6 @@ export default function Step2WhichDocuments({
         const existingHealth = currentDocs.find((d: any) => d.lpa_type === "health_and_welfare");
         const existingFinance = currentDocs.find((d: any) => d.lpa_type === "property_and_finance");
 
-        // Health & Welfare
         if (needsHealth && !existingHealth) {
           console.log("Creating Health & Welfare document for", donor.id);
           const res = await fetch("/api/lpa-documents", {
@@ -206,7 +186,6 @@ export default function Step2WhichDocuments({
           });
         }
 
-        // Property & Finance
         if (needsFinance && !existingFinance) {
           console.log("Creating Property & Finance document for", donor.id);
           const res = await fetch("/api/lpa-documents", {
@@ -239,7 +218,7 @@ export default function Step2WhichDocuments({
         }
       }
 
-      updateData({ selections }); // Save local state to form data if needed for back navigation
+      updateData({ selections }); 
       onNext();
     } catch (err) {
       console.error("Error saving documents:", err);

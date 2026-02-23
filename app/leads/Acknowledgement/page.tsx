@@ -1,265 +1,293 @@
 "use client";
 
-import { FormControl, MenuItem, Select } from "@mui/material";
+import { useEffect, useState, Suspense } from "react";
+import { CircularProgress, Box, FormControl, Select, MenuItem } from "@mui/material";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
-export default function Acknowledgement() {
-  const routePage = useRouter();
-  return (
-    <>
-      <div className="flex flex-col min-h-screen">
+function AcknowledgementContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [loading, setLoading] = useState(true);
+  const [finishedDonor, setFinishedDonor] = useState<any>(null);
+  const [nextDonor, setNextDonor] = useState<any>(null);
+  const [isDone, setIsDone] = useState(false);
+
+  const finishedIndex = parseInt(searchParams.get("finishedIndex") || "0");
+  const nextIndexParam = searchParams.get("nextIndex");
+  const nextIndex = nextIndexParam ? parseInt(nextIndexParam) : null;
+  const doneParam = searchParams.get("done");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: applications } = await supabase
+          .from("applications")
+          .select("id")
+          .eq("lead_id", user.id)
+          .is("deleted_at", null)
+          .single();
+
+        if (!applications) return;
+
+        const { data: donors } = await supabase
+          .from("donors")
+          .select("*")
+          .eq("application_id", applications.id)
+          .order("created_at", { ascending: true });
+
+        if (donors) {
+          setFinishedDonor(donors[finishedIndex]);
+          if (nextIndex !== null && nextIndex < donors.length) {
+            setNextDonor(donors[nextIndex]);
+          }
+        }
+
+        if (doneParam === "true") {
+          setIsDone(true);
+        }
+      } catch (err) {
+        console.error("Error fetching acknowledgement data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [finishedIndex, nextIndex, doneParam]);
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  // ───── PHASE 2: All donors done — "Almost There! Complete your order..." ─────
+  if (isDone || !nextDonor) {
+    return (
+      <div className="flex flex-col min-h-screen bg-gray-50">
         {/* Header */}
         <header className="w-full border-b border-gray-100 py-4 px-6 sm:px-12 flex justify-between items-center bg-white sticky top-0 z-50">
           <div className="flex items-center gap-2">
-            {/* Placeholder Logo */}
-            <div className="w-8 h-8 bg-zenco-blue rounded-full"></div>
-            <span className="text-xl font-bold text-zenco-dark tracking-tight">
-              ZENCO<span className="text-zenco-blue">LEGAL</span>
-            </span>
+            <img src="/zen_logo.png" className="w-20" alt="Zenco Logo" />
           </div>
           <nav className="hidden md:flex gap-8 text-sm font-medium text-gray-600">
-            <Link href="#" className="hover:text-zenco-blue transition-colors">
-              Products
-            </Link>
-            <Link href="#" className="hover:text-zenco-blue transition-colors">
-              About Us
-            </Link>
-            <Link href="#" className="hover:text-zenco-blue transition-colors">
-              Pricing
-            </Link>
-            <Link href="#" className="hover:text-zenco-blue transition-colors">
-              Contact
-            </Link>
-          </nav>
-          <div className="flex items-center gap-4">
-            <Link
-              href="tel:08081693475"
-              className="text-sm font-semibold text-gray-700 hidden sm:block"
+            <Link href="/" className="hover:text-cyan-500 transition-colors">Home</Link>
+            <Link href="#" className="hover:text-cyan-500 transition-colors">My Messages</Link>
+            <Link href="#" className="hover:text-cyan-500 transition-colors">Help</Link>
+            <Link href="#" className="hover:text-cyan-500 transition-colors">My Account</Link>
+            <button
+              onClick={async () => { await supabase.auth.signOut(); router.push("/login"); }}
+              className="hover:text-cyan-500 transition-colors"
             >
-              0808 169 3475
-            </Link>
-            <button className="md:hidden text-gray-600">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16m-7 6h7"
-                />
-              </svg>
+              Logout
             </button>
-          </div>
+          </nav>
         </header>
 
-        {/* Hero Section */}
-        <main className="grow">
-          {/* Acknowledge to the user and create form for attorney Section */}
-          <section className="container mx-auto">
-            <div className="flex flex-col justify-center items-center">
-              <div className="flex flex-col p-12 gap-20 justify-center">
-                <div>
-                  <p className=" leading-7 text-xl font-semibold">
-                    You have now finished the Lasting Power of Attorney
-                  </p>
-                  <p className=" leading-7 text-xl font-semibold">
-                    for <span className="text-cyan-400">Yourself</span>, next we
-                    will move on and get the
-                  </p>
-                  <p className=" leading-7 text-xl font-semibold">
-                    documents for
-                    <span className="text-cyan-400">Gabriel Lenicker</span>
-                    done.
-                  </p>
-                </div>
-                <div className="w-full flex justify-between">
-                  {/* Back */}
-                  <div className="mt-8">
-                    <button className="text-gray-500 font-semibold hover:underline">
-                      ← <u>Back</u>
-                    </button>
-                  </div>
-                  <button
-                    // onClick={() => {routePage.push("/leads/Acknowledgement")}}
-                    className="bg-cyan-400 cursor-pointer py-2 px-7 text-white rounded"
-                  >
-                    Continue
-                  </button>
+        {/* Main Content */}
+        <main className="grow flex flex-col items-center p-6 sm:p-12">
+          <div className="max-w-4xl w-full space-y-6">
+            {/* Support card + Help */}
+            <div className="flex flex-col md:flex-row gap-6 items-start">
+              {/* Illustration */}
+              <div className="hidden md:block w-36 flex-shrink-0">
+                <div className="w-36 h-28 bg-blue-50 rounded-2xl flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
                 </div>
               </div>
-            </div>
-          </section>
 
-          {/* Complete order */}
-          <section className="container mx-auto">
-            <div className="flex justify-center gap-13">
-              <div className="flex flex-col w-full gap-5">
-                <p className="text-xl font-semibold">
-                  Almost There! Complete your order...
-                </p>
-                <div className="border border-gray-300 rounded shadow-lg py-7 px-13">
-                  <div className="flex gap-3 px-3">
-                    <p>1</p>
-                    <p className="text-lg font-semibold">
-                      Create your documents
-                    </p>
-                  </div>
-                  <div className="flex flex-col gap-5">
-                    <p className="text-gray-500">
-                      Congratulations! You've finished creating your Lasting
-                      Power of Attorney <br /> documents. Now you just need to
-                      pay to have the documents sent out.
-                    </p>
-                    <div className="flex flex-col gap-3">
-                      <button
-                        onClick={() => {routePage.push("/leads/Checkout")}}
-                        className="bg-cyan-400 cursor-pointer py-4 px-7 text-white rounded text-lg font-semibold"
-                      >
-                        Go to checkout{" "}
-                      </button>{" "}
-                      <p className="text-center text-cyan-400">
-                        <u>Review documents again</u>
-                      </p>
+              {/* Support box */}
+              <div className="flex-1 bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-bold text-[#334a5e] text-lg">We&apos;re here to help</h3>
+                    <p className="text-gray-500 text-sm mt-1">Need help with your payment?</p>
+                    <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-cyan-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                      </svg>
+                      <span>Call us on <u className="text-cyan-500 font-semibold">0800 888 6508</u></span>
                     </div>
                   </div>
+                  <div className="flex -space-x-2">
+                    <div className="w-8 h-8 bg-cyan-100 rounded-full border-2 border-white flex items-center justify-center text-xs font-bold text-cyan-600">Z</div>
+                    <div className="w-8 h-8 bg-blue-100 rounded-full border-2 border-white flex items-center justify-center text-xs font-bold text-blue-600">L</div>
+                    <div className="w-8 h-8 bg-teal-100 rounded-full border-2 border-white flex items-center justify-center text-xs font-bold text-teal-600">S</div>
+                  </div>
                 </div>
               </div>
-              <div className="flex flex-col w-full gap-5">
-                <div className="flex flex-col gap-5 border border-gray-400 rounded p-3">
-                  <div className="flex justify-between">
-                    <p className="text-lg font-semibold">We're here to help</p>
-                    <p>users icons</p>
-                  </div>
-                  <p className="text-gray-500 text-sm">
-                    Need help with your payment?
-                  </p>
-                  <div className="flex gap-3">
-                    <p>phoneicon</p>
-                    <p>
-                      Call us on <u>0800 888 6508</u>
-                    </p>
-                  </div>
-                </div>
-                
+
+              {/* Help dropdown */}
+              <div className="md:w-48">
                 <FormControl fullWidth>
                   <Select
-                    value={"NEED HELP?"}
-                    sx={{
-                      fontWeight: 600,
-                      color: "#06b6d4", // cyan-500
-                    }}
+                    value="HELP"
+                    sx={{ fontWeight: 600, color: "#06b6d4", borderRadius: "8px" }}
                   >
-                    <MenuItem
-                      value="NEED HELP?"
-                      sx={{
-                        fontWeight: 600,
-                        color: "#06b6d4",
-                      }}
-                    >
-                      NEED HELP?
-                    </MenuItem>
+                    <MenuItem value="HELP" sx={{ fontWeight: 600, color: "#06b6d4" }}>NEED HELP?</MenuItem>
+                    <MenuItem value="SUPPORT">Contact Support</MenuItem>
                   </Select>
                 </FormControl>
               </div>
             </div>
-          </section>
-        </main>
 
-        {/* Footer */}
-        <footer className="bg-zenco-dark text-white py-12 px-6 sm:px-12 mt-12">
-          <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between gap-12">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-6">
-                <div className="w-6 h-6 bg-zenco-blue rounded-full"></div>
-                <span className="text-xl font-bold tracking-tight">
-                  ZENCO<span className="text-zenco-blue">LEGAL</span>
-                </span>
+            {/* Title */}
+            <h1 className="text-2xl font-bold text-[#334a5e]">
+              Almost There! Complete your order...
+            </h1>
+
+            {/* Steps */}
+            <div className="space-y-6">
+              {/* Step 1 — Create your documents (COMPLETED) */}
+              <div className="flex gap-4 items-start">
+                <div className="flex flex-col items-center">
+                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                    ✓
+                  </div>
+                  <div className="w-0.5 h-16 bg-gray-200 mt-1"></div>
+                </div>
+                <div className="flex-1 bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                  <h3 className="font-bold text-[#334a5e] text-lg mb-2">Create your documents</h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Congratulations! You&apos;ve finished creating your Lasting Power of Attorney documents.
+                    Now you just need to pay to have the documents sent out.
+                  </p>
+                  <button
+                    onClick={() => router.push("/leads/Checkout")}
+                    className="bg-[#06b6d4] hover:bg-cyan-600 text-white font-bold py-3 px-8 rounded-lg transition-all active:scale-95 shadow-lg w-full text-center text-lg"
+                  >
+                    Go to checkout
+                  </button>
+                  <p
+                    className="text-center text-cyan-500 text-sm mt-3 cursor-pointer hover:underline font-medium"
+                    onClick={() => router.back()}
+                  >
+                    Review documents again
+                  </p>
+                </div>
               </div>
-              <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
-                Providing affordable and accessible legal documents for
-                everyone. Secure your future today with Zenco Legal.
-              </p>
-            </div>
-            <div className="flex-1 grid grid-cols-2 gap-8">
-              <div>
-                <h4 className="font-bold mb-4">Quick Links</h4>
-                <ul className="text-gray-400 text-sm flex flex-col gap-2">
-                  <li>
-                    <Link
-                      href="#"
-                      className="hover:text-white transition-colors"
-                    >
-                      Home
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="#"
-                      className="hover:text-white transition-colors"
-                    >
-                      Products
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="#"
-                      className="hover:text-white transition-colors"
-                    >
-                      About Us
-                    </Link>
-                  </li>
-                </ul>
+
+              {/* Step 2 — Expert check */}
+              <div className="flex gap-4 items-start">
+                <div className="flex flex-col items-center">
+                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm">
+                    2
+                  </div>
+                  <div className="w-0.5 h-10 bg-gray-200 mt-1"></div>
+                </div>
+                <div className="flex-1 pt-1">
+                  <h3 className="font-bold text-gray-400 text-lg">Expert check</h3>
+                  <p className="text-gray-400 text-sm">Our experts check your documents.</p>
+                </div>
               </div>
-              <div>
-                <h4 className="font-bold mb-4">Legal</h4>
-                <ul className="text-gray-400 text-sm flex flex-col gap-2">
-                  <li>
-                    <Link
-                      href="#"
-                      className="hover:text-white transition-colors"
-                    >
-                      Privacy Policy
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="#"
-                      className="hover:text-white transition-colors"
-                    >
-                      Terms of Service
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="#"
-                      className="hover:text-white transition-colors"
-                    >
-                      Cookie Policy
-                    </Link>
-                  </li>
-                </ul>
+
+              {/* Step 3 — Print and send */}
+              <div className="flex gap-4 items-start">
+                <div className="flex flex-col items-center">
+                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm">
+                    3
+                  </div>
+                </div>
+                <div className="flex-1 pt-1">
+                  <h3 className="font-bold text-gray-400 text-lg">Print and send</h3>
+                  <p className="text-gray-400 text-sm">We print and send your documents to you along with help sheets on how to sign.</p>
+                </div>
               </div>
-            </div>
-            <div className="flex-1">
-              <h4 className="font-bold mb-4">Contact Us</h4>
-              <ul className="text-gray-400 text-sm flex flex-col gap-2">
-                <li>0808 169 3475</li>
-                <li>info@zenco.com</li>
-                <li>Mon - Fri: 9am - 5pm</li>
-              </ul>
             </div>
           </div>
-          <div className="max-w-6xl mx-auto mt-12 pt-8 border-t border-gray-800 text-center text-gray-500 text-xs">
-            &copy; {new Date().getFullYear()} Zenco Legal. All rights reserved.
-          </div>
-        </footer>
+        </main>
       </div>
-    </>
+    );
+  }
+
+  // ───── PHASE 1: "Continue to next person" transition screen ─────
+  return (
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="w-full border-b border-gray-100 py-4 px-6 sm:px-12 flex justify-between items-center bg-white sticky top-0 z-50">
+        <div className="flex items-center gap-2">
+          <img src="/zen_logo.png" className="w-20" alt="Zenco Logo" />
+        </div>
+        <nav className="hidden md:flex gap-8 text-sm font-medium text-gray-600">
+          <Link href="/" className="hover:text-cyan-500 transition-colors">Home</Link>
+          <Link href="#" className="hover:text-cyan-500 transition-colors">My Messages</Link>
+          <Link href="#" className="hover:text-cyan-500 transition-colors">Help</Link>
+          <Link href="#" className="hover:text-cyan-500 transition-colors">My Account</Link>
+          <button
+            onClick={async () => { await supabase.auth.signOut(); router.push("/login"); }}
+            className="hover:text-cyan-500 transition-colors"
+          >
+            Logout
+          </button>
+        </nav>
+      </header>
+
+      {/* Main Content */}
+      <main className="grow flex flex-col items-center justify-center p-6 sm:p-12">
+        <div className="max-w-2xl w-full text-center space-y-8">
+          {/* LPA Icon */}
+          <div className="mx-auto w-24 h-24 bg-cyan-50 rounded-2xl flex items-center justify-center border border-cyan-100">
+            <div className="text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-cyan-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p className="text-[10px] font-bold text-cyan-600 mt-1">LPA</p>
+            </div>
+          </div>
+
+          <p className="text-xl text-gray-700 leading-relaxed">
+            You have now finished the Lasting Power of Attorney for{" "}
+            <span className="text-cyan-500 font-bold underline">
+              {finishedDonor ? `${finishedDonor.first_name} ${finishedDonor.last_name}` : "the donor"}
+            </span>
+            , next we will move on and get the documents for{" "}
+            <span className="text-cyan-500 font-bold underline">
+              {nextDonor ? `${nextDonor.first_name} ${nextDonor.last_name}` : "the next person"}
+            </span>
+            {" "}done.
+          </p>
+
+          <div className="flex justify-between items-center pt-4">
+            <button
+              onClick={() => router.back()}
+              className="text-gray-400 font-bold flex items-center gap-2 hover:text-[#334a5e] transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+              </svg>
+              <u>Back</u>
+            </button>
+
+            <button
+              onClick={() => router.push(`/leads?currentDonorIndex=${nextIndex}`)}
+              className="bg-[#06b6d4] hover:bg-cyan-600 text-white font-bold py-3 px-10 rounded-lg transition-all active:scale-95 shadow-lg text-lg"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+export default function Acknowledgement() {
+  return (
+    <Suspense fallback={
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <CircularProgress />
+      </Box>
+    }>
+      <AcknowledgementContent />
+    </Suspense>
   );
 }

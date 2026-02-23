@@ -185,7 +185,8 @@ header {
     width: 100%;
     border: 1px solid var(--border-soft);
     border-radius: 0.125rem;
-    padding: 0.25rem;
+    padding: 1rem;
+    cursor: pointer;
     background-color: #fff;
     outline: none;
     transition: box-shadow var(--transition-fast);

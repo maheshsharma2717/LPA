@@ -28,9 +28,10 @@ type Props = {
   isSaving: boolean;
   allFormData: any;
   updateData: (data: any) => void;
+  currentDonorIndex: number;
 };
 
-export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updateData }: Props) {
+export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updateData, currentDonorIndex }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,13 +39,13 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
   const [hasPeople, setHasPeople] = useState<boolean | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [people, setPeople] = useState<Person[]>([]);
+  const [selectedPeopleIds, setSelectedPeopleIds] = useState<string[]>([]);
   const [editingPerson, setEditingPerson] = useState<Person | null>(null);
 
   const applicationId = allFormData?.who?.applicationId;
   const donorId = allFormData?.["which-donor"]?.donorId;
   const [lpaDocId, setLpaDocId] = useState<string | null>(null);
 
-  // Form state for modal
   const [formData, setFormData] = useState({
     title: "Mr",
     first_name: "",
@@ -54,7 +55,6 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
     postcode: "",
   });
 
-  // ─── Data Fetch ───────────────────────────────────────────
   useEffect(() => {
     const init = async () => {
       if (!donorId) {
@@ -67,8 +67,33 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
         if (!session) return;
         const token = session.access_token;
 
-        // 1. Fetch LPA documents for this donor
-        const lpaDocsRes = await fetch(`/api/lpa-documents?donorId=${donorId}`, {
+        const donorsRes = await fetch(`/api/donors?applicationId=${applicationId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const { data: fetchedDonors } = await donorsRes.json();
+
+        let activeDonorId = donorId;
+        if (fetchedDonors) {
+          const step1Selection = allFormData?.who?.selection;
+          const step1SelectedIds = allFormData?.who?.selectedPeopleIds || [];
+          const isLeadSelected =
+            step1Selection === "You" ||
+            step1Selection === "You and your partner" ||
+            step1Selection === "You and someone else";
+
+          const activeDonors = fetchedDonors.filter((d: any) => {
+            if (d.is_lead) return isLeadSelected;
+            return step1SelectedIds.includes(d.id);
+          });
+          activeDonorId = activeDonors[currentDonorIndex]?.id;
+        }
+
+        if (!activeDonorId) {
+          setLoading(false);
+          return;
+        }
+
+        const lpaDocsRes = await fetch(`/api/lpa-documents?donorId=${activeDonorId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const { data: lpaDocs } = await lpaDocsRes.json();
@@ -77,7 +102,6 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
           const firstLpaId = lpaDocs[0].id;
           setLpaDocId(firstLpaId);
 
-          // 2. Fetch people to notify for this LPA doc
           const peopleRes = await fetch(`/api/people-to-notify?lpaDocId=${firstLpaId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
@@ -86,10 +110,17 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
           if (fetchedPeople) {
             setPeople(fetchedPeople);
             setHasPeople(fetchedPeople.length > 0);
+
+            // Default selection logic if not already set in allFormData
+            const savedSelectedIds = allFormData["people-to-Notify"]?.selectedPeopleIds;
+            if (savedSelectedIds) {
+              setSelectedPeopleIds(savedSelectedIds);
+            } else {
+              setSelectedPeopleIds(fetchedPeople.map((p: any) => p.id));
+            }
           }
         }
 
-        // Restore hasPeople state from formData if available
         if (allFormData["people-to-Notify"]?.hasPeople !== undefined) {
           setHasPeople(allFormData["people-to-Notify"].hasPeople);
         }
@@ -103,7 +134,7 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
     };
 
     init();
-  }, [donorId]);
+  }, [applicationId, currentDonorIndex, allFormData?.who]);
 
   useEffect(() => {
     if (isSaving) {
@@ -112,7 +143,7 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
   }, [isSaving]);
 
   const handleSaveAndNext = () => {
-    updateData({ hasPeople });
+    updateData({ hasPeople, people, selectedPeopleIds });
     onNext();
   };
 
@@ -156,7 +187,6 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
       const token = session.access_token;
 
       if (editingPerson) {
-        // PATCH
         const res = await fetch("/api/people-to-notify", {
           method: "PATCH",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -167,7 +197,6 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
           setPeople((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
         }
       } else {
-        // POST
         if (people.length >= 5) {
           alert("Maximum 5 people to notify allowed per document.");
           setIsSubmitting(false);
@@ -182,6 +211,7 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
         const { data: created } = await res.json();
         if (created) {
           setPeople((prev) => [...prev, created]);
+          setSelectedPeopleIds((prev) => [...prev, created.id]);
         }
       }
 
@@ -210,6 +240,7 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
 
       if (result.success) {
         setPeople((prev) => prev.filter((p) => p.id !== id));
+        setSelectedPeopleIds((prev) => prev.filter((pid) => pid !== id));
       }
     } catch (err) {
       console.error("Error deleting person:", err);
@@ -244,7 +275,7 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
               Choose people who care about your best interests and who would be willing to speak up if they were concerned.
             </p>
 
-            <div className="text-zenco-blue font-medium mb-8">
+            <div className={styles.pZenco} style={{ color: 'var(--zenco-blue)', marginBottom: '2rem' }}>
               Most people choose 'No' and do not enter anyone here.
             </div>
 
@@ -253,7 +284,7 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
                 Are there any people to notify?
               </h2>
 
-              <div className="space-y-3">
+              <div className="">
                 <button
                   onClick={() => setHasPeople(false)}
                   className={hasPeople === false ? styles.btnDark : styles.btnWhite}
@@ -292,41 +323,64 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
                       </h2>
 
                       <div className="space-y-3">
-                        {people.map((person) => (
-                          <div
-                            key={person.id}
-                            className="flex justify-between items-center p-4 border rounded-lg bg-white shadow-sm hover:shadow-md transition"
-                          >
-                            <div className="flex items-center gap-3">
-                              <UserRound size={30} className="text-gray-400" />
-                              <div>
-                                <p className="font-bold text-zenco-dark text-lg">
-                                  {person.title} {person.first_name} {person.last_name}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  {person.address_line_1}, {person.city}, {person.postcode}
-                                </p>
+                        {people.map((person) => {
+                          const isSelected = selectedPeopleIds.includes(person.id);
+                          return (
+                            <div
+                              key={person.id}
+                              onClick={() => {
+                                setSelectedPeopleIds(prev =>
+                                  prev.includes(person.id)
+                                    ? prev.filter(id => id !== person.id)
+                                    : [...prev, person.id]
+                                );
+                              }}
+                              className={isSelected ? styles.btnSelectDark : styles.btnSelectWhite}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isSelected ? 'bg-white/20' : 'bg-gray-100'}`}>
+                                  <UserRound size={20} className={isSelected ? "text-white" : "text-gray-400"} />
+                                </div>
+                                <div>
+                                  <p className={`font-bold text-lg ${isSelected ? 'text-white' : 'text-zenco-dark'}`}>
+                                    {person.title} {person.first_name} {person.last_name}
+                                  </p>
 
-                                <div className="flex gap-4 mt-1">
-                                  <p
-                                    onClick={() => openEditModal(person)}
-                                    className="text-sm flex items-center gap-1 text-blue-600 hover:underline cursor-pointer"
-                                  >
-                                    <SquarePen size={13} />
-                                    Update details
-                                  </p>
-                                  <p
-                                    onClick={() => handleDeletePerson(person.id)}
-                                    className="text-sm flex items-center gap-1 text-red-600 hover:underline cursor-pointer"
-                                  >
-                                    <Trash2 size={13} />
-                                    Remove
-                                  </p>
+                                  <div className="flex gap-4 mt-1">
+                                    <p
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        openEditModal(person);
+                                      }}
+                                      className={`text-sm flex items-center gap-1 hover:underline cursor-pointer ${isSelected ? 'text-cyan-300' : 'text-blue-600'}`}
+                                    >
+                                      <SquarePen size={13} />
+                                      Update details
+                                    </p>
+                                    <p
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeletePerson(person.id);
+                                      }}
+                                      className={`text-sm flex items-center gap-1 hover:underline cursor-pointer ${isSelected ? 'text-red-300' : 'text-red-600'}`}
+                                    >
+                                      <Trash2 size={13} />
+                                      Remove
+                                    </p>
+                                  </div>
                                 </div>
                               </div>
+
+                              <div className={`w-6 h-6 rounded-sm border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-white border-white' : 'border-gray-200 bg-white'}`}>
+                                {isSelected && (
+                                  <svg className="w-4 h-4 text-cyan-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </>
                   )}

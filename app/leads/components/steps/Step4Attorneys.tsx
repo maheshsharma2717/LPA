@@ -40,6 +40,7 @@ type Props = {
   onNext: () => void;
   isSaving: boolean;
   allFormData: any;
+  currentDonorIndex: number;
 };
 
 const emptyForm = {
@@ -56,28 +57,23 @@ const emptyForm = {
   email: "",
 };
 
-export default function AttorneysTab({ onNext, isSaving, allFormData, updateData }: Props) {
+export default function AttorneysTab({ onNext, isSaving, allFormData, updateData, currentDonorIndex }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Internal sub-step: 0=Select Attorneys, 1=Document Authority, 2=Replacement Attorneys
   const [subStep, setSubStep] = useState(0);
 
-  // People pool (all donors except the subject donor)
   const [peoplePool, setPeoplePool] = useState<Person[]>([]);
 
-  // Selected attorney IDs (donor IDs chosen as primary attorneys)
   const [selectedAttorneyIds, setSelectedAttorneyIds] = useState<string[]>([]);
+  const [showManualAddress, setShowManualAddress] = useState(false);
 
-  // Document viewing authority
   const [canViewDocuments, setCanViewDocuments] = useState<boolean | null>(null);
 
-  // Replacement attorneys
   const [wantsReplacement, setWantsReplacement] = useState<boolean | null>(null);
   const [selectedReplacementIds, setSelectedReplacementIds] = useState<string[]>([]);
 
-  // Modal state
   const [openModal, setOpenModal] = useState(false);
   const [modalMode, setModalMode] = useState<"attorney" | "replacement">("attorney");
   const [editingPersonId, setEditingPersonId] = useState<string | null>(null); // null = add new, string = editing existing
@@ -85,7 +81,6 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
 
   const applicationId = allFormData?.who?.applicationId;
 
-  // ─── Data Fetch ───────────────────────────────────────────
   useEffect(() => {
     const init = async () => {
       if (!applicationId) { setLoading(false); return; }
@@ -94,14 +89,12 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
         if (!session) return;
         const token = session.access_token;
 
-        // Fetch all donors (the people pool)
         const donorsRes = await fetch(`/api/donors?applicationId=${applicationId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const { data: donors } = await donorsRes.json();
 
         if (donors && donors.length > 0) {
-          // Determine which donor is the "subject" (the one whose details were filled in Step 3)
           const step1Selection = allFormData?.who?.selection;
           const step1SelectedIds = allFormData?.who?.selectedPeopleIds || [];
           const isLeadSelected =
@@ -113,25 +106,25 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
             if (d.is_lead) return isLeadSelected;
             return step1SelectedIds.includes(d.id);
           });
-          const subjectDonorId = activeDonors[0]?.id;
+          const subjectDonorId = activeDonors[currentDonorIndex]?.id;
 
-          // People pool = all donors EXCEPT the subject donor
           const pool = donors.filter((d: any) => d.id !== subjectDonorId);
           setPeoplePool(pool);
         }
 
-        // Fetch existing attorneys for this application to restore selections
         const attorneysRes = await fetch(`/api/attorneys?applicationId=${applicationId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const { data: existingAttorneys } = await attorneysRes.json();
 
         if (existingAttorneys && existingAttorneys.length > 0) {
-          // We'll match attorneys back to donors by name (since attorneys are copies)
-          // For now just store selectedIds from saved form data if available
+          setPeoplePool((prev) => {
+            // Filter out any duplicates if they were already in the pool from the donor check
+            const newAttorneys = existingAttorneys.filter((ea: any) => !prev.some(p => p.id === ea.id));
+            return [...prev, ...newAttorneys];
+          });
         }
 
-        // Restore saved form data selections
         const savedData = allFormData?.attorneys;
         if (savedData) {
           if (savedData.selectedAttorneyIds) setSelectedAttorneyIds(savedData.selectedAttorneyIds);
@@ -147,9 +140,9 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
       }
     };
     init();
-  }, [applicationId]);
+  }, [applicationId, currentDonorIndex, allFormData?.who]);
 
-  // ─── Toggle Selection ─────────────────────────────────────
+
   const toggleAttorney = (id: string) => {
     setSelectedAttorneyIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
@@ -162,7 +155,6 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
     );
   };
 
-  // ─── Open Modal for Adding ────────────────────────────────
   const openAddModal = (mode: "attorney" | "replacement") => {
     setModalMode(mode);
     setEditingPersonId(null);
@@ -170,7 +162,6 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
     setOpenModal(true);
   };
 
-  // ─── Open Modal for Editing ───────────────────────────────
   const openEditModal = (person: Person, mode: "attorney" | "replacement") => {
     setModalMode(mode);
     setEditingPersonId(person.id);
@@ -190,7 +181,6 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
     setOpenModal(true);
   };
 
-  // ─── Save Modal (Add or Edit) ────────────────────────────
   const handleSaveModal = async () => {
     if (!formData.firstName || !formData.lastName) return;
     setIsSubmitting(true);
@@ -199,9 +189,8 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
       if (!session) return;
       const token = session.access_token;
 
-      const donorBody: any = {
+      const attorneyBody: any = {
         application_id: applicationId,
-        is_lead: false,
         title: formData.title,
         first_name: formData.firstName,
         last_name: formData.lastName,
@@ -212,14 +201,14 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
         city: formData.city,
         county: formData.county,
         postcode: formData.postcode,
+        email: formData.email,
       };
 
       if (editingPersonId) {
-        // PATCH existing donor
-        const res = await fetch("/api/donors", {
+        const res = await fetch("/api/attorneys", {
           method: "PATCH",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ id: editingPersonId, ...donorBody }),
+          body: JSON.stringify({ id: editingPersonId, ...attorneyBody }),
         });
         const { data: updated } = await res.json();
 
@@ -229,21 +218,19 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
           );
         }
       } else {
-        // POST new donor
-        const res = await fetch("/api/donors", {
+        const res = await fetch("/api/attorneys", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify(donorBody),
+          body: JSON.stringify(attorneyBody),
         });
-        const { data: donor } = await res.json();
+        const { data: attorney } = await res.json();
 
-        if (donor) {
-          setPeoplePool((prev) => [...prev, donor]);
-          // Auto-select the newly created person
+        if (attorney) {
+          setPeoplePool((prev) => [...prev, attorney]);
           if (modalMode === "attorney") {
-            setSelectedAttorneyIds((prev) => [...prev, donor.id]);
+            setSelectedAttorneyIds((prev) => [...prev, attorney.id]);
           } else {
-            setSelectedReplacementIds((prev) => [...prev, donor.id]);
+            setSelectedReplacementIds((prev) => [...prev, attorney.id]);
           }
         }
       }
@@ -258,7 +245,6 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
     }
   };
 
-  // ─── Save & Navigate ─────────────────────────────────────
   const handleInternalNext = async () => {
     if (subStep === 0) {
       if (selectedAttorneyIds.length === 0) {
@@ -277,18 +263,15 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
       setSubStep(2);
       window.scrollTo(0, 0);
     } else {
-      // Final save — delete-and-recreate attorneys + junction table links
       setIsSubmitting(true);
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
         const token = session.access_token;
 
-        // ── 0. Resolve the active donor's ID independently ──
         let activeDonorId = allFormData?.["which-donor"]?.donorId;
 
         if (!activeDonorId) {
-          // Fallback: derive from donors list (same pattern used in Steps 2, 3, 5)
           const donorsRes = await fetch(`/api/donors?applicationId=${applicationId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
@@ -314,17 +297,13 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
           return;
         }
 
-        // ── 1. Fetch LPA documents for the donor ──
         const lpaDocsRes = await fetch(`/api/lpa-documents?donorId=${activeDonorId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const { data: lpaDocs } = await lpaDocsRes.json();
 
-        // ── 2. Clean up old junction rows + old attorneys (delete-and-recreate) ──
-        // 2a. Delete existing lpa_document_attorneys for each LPA doc
         if (lpaDocs && lpaDocs.length > 0) {
           for (const doc of lpaDocs) {
-            // Fetch existing junction rows for this doc
             const junctionRes = await fetch(`/api/lpa-document-attorneys?lpaDocId=${doc.id}`, {
               headers: { Authorization: `Bearer ${token}` },
             });
@@ -338,7 +317,6 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
               }
             }
 
-            // Also clean up old lpa_document_applicants
             await fetch(`/api/lpa-document-applicants?lpaDocId=${doc.id}`, {
               method: "DELETE",
               headers: { Authorization: `Bearer ${token}` },
@@ -346,7 +324,6 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
           }
         }
 
-        // 2b. Soft-delete existing attorneys for this application
         const existingAttRes = await fetch(`/api/attorneys?applicationId=${applicationId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -360,7 +337,6 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
           }
         }
 
-        // ── 3. Create fresh primary attorneys ──
         const primaryAttorneyDbIds: string[] = [];
         for (const donorId of selectedAttorneyIds) {
           const person = peoplePool.find((p) => p.id === donorId);
@@ -388,7 +364,6 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
           if (attorney) primaryAttorneyDbIds.push(attorney.id);
         }
 
-        // ── 4. Create fresh replacement attorneys ──
         const replacementAttorneyDbIds: string[] = [];
         if (wantsReplacement) {
           for (const donorId of selectedReplacementIds) {
@@ -418,10 +393,8 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
           }
         }
 
-        // ── 5. Link attorneys to LPA documents + create applicant entries ──
         if (lpaDocs && lpaDocs.length > 0) {
           for (const doc of lpaDocs) {
-            // Link primary attorneys
             for (let i = 0; i < primaryAttorneyDbIds.length; i++) {
               await fetch("/api/lpa-document-attorneys", {
                 method: "POST",
@@ -435,7 +408,6 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
               });
             }
 
-            // Link replacement attorneys
             for (let i = 0; i < replacementAttorneyDbIds.length; i++) {
               await fetch("/api/lpa-document-attorneys", {
                 method: "POST",
@@ -449,7 +421,6 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
               });
             }
 
-            // Create lpa_document_applicants — default: donor is the applicant
             await fetch("/api/lpa-document-applicants", {
               method: "POST",
               headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -462,12 +433,23 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
           }
         }
 
-        // Save selections to formData for restoration
+        const attorneyObjects = selectedAttorneyIds.map(id => {
+          const p = peoplePool.find(pp => pp.id === id);
+          return p ? { firstName: p.first_name, lastName: p.last_name, address: p.postcode, dob: p.date_of_birth } : null;
+        }).filter(Boolean);
+
+        const replacementObjects = selectedReplacementIds.map(id => {
+          const p = peoplePool.find(pp => pp.id === id);
+          return p ? { firstName: p.first_name, lastName: p.last_name, address: p.postcode, dob: p.date_of_birth } : null;
+        }).filter(Boolean);
+
         updateData({
           selectedAttorneyIds,
           selectedReplacementIds,
           canViewDocuments,
           wantsReplacement,
+          attorneys: attorneyObjects,
+          replacementAttorneys: replacementObjects
         });
 
         onNext();
@@ -487,18 +469,15 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
     }
   };
 
-  // ─── Format helpers ───────────────────────────────────────
   const formatDob = (dob: string | undefined) => {
     if (!dob) return "";
     const d = new Date(dob);
     return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
   };
 
-  // ─── Render ───────────────────────────────────────────────
   if (loading) return <Box p={4} display="flex" justifyContent="center"><CircularProgress /></Box>;
   if (error && !peoplePool.length && subStep === 0) return <Alert severity="error">{error}</Alert>;
 
-  // Eligible replacement attorneys = people pool minus selected primary attorneys
   const replacementPool = peoplePool.filter((p) => !selectedAttorneyIds.includes(p.id));
 
   return (
@@ -841,13 +820,67 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
           <TextField label="Middle names (if any)" fullWidth value={formData.middleName} onChange={(e) => setFormData({ ...formData, middleName: e.target.value })} />
 
           <p className="text-xl font-semibold text-zenco-dark">What&apos;s their address?</p>
-          <TextField label="Address Line 1" fullWidth value={formData.addressLine1} onChange={(e) => setFormData({ ...formData, addressLine1: e.target.value })} />
-          <TextField label="Address Line 2 (Optional)" fullWidth value={formData.addressLine2} onChange={(e) => setFormData({ ...formData, addressLine2: e.target.value })} />
-          <div className="grid grid-cols-2 gap-4">
-            <TextField label="City" fullWidth value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} />
-            <TextField label="County (Optional)" fullWidth value={formData.county} onChange={(e) => setFormData({ ...formData, county: e.target.value })} />
+          <div className="flex gap-4 items-end">
+            <TextField
+              label="Postcode"
+              fullWidth
+              value={formData.postcode}
+              onChange={(e) => setFormData({ ...formData, postcode: e.target.value })}
+            />
+            <Button
+              variant="contained"
+              sx={{
+                backgroundColor: "#08B9ED",
+                textTransform: "none",
+                borderRadius: "8px",
+                height: "56px",
+                "&:hover": { backgroundColor: "#07bdf5ff" },
+              }}
+            >
+              Search
+            </Button>
           </div>
-          <TextField label="Postcode" fullWidth value={formData.postcode} onChange={(e) => setFormData({ ...formData, postcode: e.target.value })} />
+
+          {!showManualAddress && (
+            <button
+              type="button"
+              onClick={() => setShowManualAddress(true)}
+              className="text-cyan-500 font-semibold text-sm hover:underline text-left w-fit"
+            >
+              Enter address manually
+            </button>
+          )}
+
+          {showManualAddress && (
+            <div className="space-y-5 animate-in fade-in slide-in-from-top-2">
+              <TextField
+                label="Address Line 1"
+                fullWidth
+                value={formData.addressLine1}
+                onChange={(e) => setFormData({ ...formData, addressLine1: e.target.value })}
+              />
+              <TextField
+                label="Address Line 2 (Optional)"
+                fullWidth
+                value={formData.addressLine2}
+                onChange={(e) => setFormData({ ...formData, addressLine2: e.target.value })}
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <TextField
+                  label="City"
+                  fullWidth
+                  value={formData.city}
+                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                />
+                <TextField
+                  label="County (Optional)"
+                  fullWidth
+                  value={formData.county}
+                  onChange={(e) => setFormData({ ...formData, county: e.target.value })}
+                />
+              </div>
+            </div>
+          )}
 
           <p className="text-xl font-semibold text-zenco-dark">What&apos;s their date of birth?</p>
           <TextField type="date" fullWidth InputLabelProps={{ shrink: true }} value={formData.dob} onChange={(e) => setFormData({ ...formData, dob: e.target.value })} />
