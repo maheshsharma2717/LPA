@@ -245,13 +245,13 @@ export default function LPAStepOne() {
                   </div> */}
                   <div className="">
                     <p className="text-2xl sm:text-3xl font-extrabold text-zenco-dark mb-4 leading-tight text-start">
-                      Documents for{" "}
+                      Documents for
                       <span className="text-[#08b9ed]">more than 2 people</span>
                     </p>
                     <p>
                       You have said that you want documents for more than 2
                       people, unfortunately we are unable to do this online,
-                      please call our team on{" "}
+                      please call our team on
                       <span className="text-[#08b9ed]"> 0800 888 6508</span> who
                       will be happy to help you with this.
                     </p>

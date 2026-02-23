@@ -1,14 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import InitialDetailsForm from "./components/InitialDetailsForm";
 import WizardLayout from "./components/WizardLayout";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import Step10 from "./components/Step10";
 
 export default function DetailsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-zenco-blue"></div>
+      </div>
+    }>
+      <DetailsPageContent />
+    </Suspense>
+  );
+}
+
+function DetailsPageContent() {
   const [initialCompleted, setInitialCompleted] = useState(false);
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -17,6 +29,10 @@ export default function DetailsPage() {
   const [applications, setApplications] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [activeStep, setActiveStep] = useState(0);
+  const searchParams = useSearchParams();
+  const [currentDonorIndex, setCurrentDonorIndex] = useState(
+    parseInt(searchParams.get("currentDonorIndex") || "0")
+  );
 
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [wizardCompleted, setWizardCompleted] = useState(false);
@@ -45,8 +61,7 @@ export default function DetailsPage() {
           return;
         }
         setUser(user);
-        debugger;
-        // Fetch lead profile directly from Supabase
+
         const { data: leadData, error: leadError } = await supabase
           .from("leads")
           .select("*")
@@ -57,7 +72,7 @@ export default function DetailsPage() {
           throw leadError;
         }
 
-        // Fetch applications directly from Supabase
+
         const { data: appsData, error: appsError } = await supabase
           .from("applications")
           .select("*")
@@ -153,10 +168,20 @@ export default function DetailsPage() {
               setFormData={setFormData}
               onExitWizard={() => setInitialCompleted(false)}
               onFinish={() => setWizardCompleted(true)}
+              currentDonorIndex={currentDonorIndex}
             />
           )}
 
-          {wizardCompleted && <Step10 />}
+          {wizardCompleted && (
+            <Step10
+              allFormData={formData}
+              onEdit={(stepIndex: number) => {
+                setActiveStep(stepIndex);
+                setWizardCompleted(false);
+              }}
+              currentDonorIndex={currentDonorIndex}
+            />
+          )}
         </div>
       </main>
     </div>

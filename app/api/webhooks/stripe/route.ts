@@ -35,7 +35,6 @@ export async function POST(request: Request) {
                     return NextResponse.json({ error: 'No application_id in metadata' }, { status: 400 });
                 }
 
-                // Insert payment record
                 await supabase
                     .from('payments')
                     .upsert({
@@ -48,7 +47,7 @@ export async function POST(request: Request) {
                         paid_at: new Date().toISOString(),
                     }, { onConflict: 'stripe_checkout_session_id' });
 
-                // Update application status
+              
                 await supabase
                     .from('applications')
                     .update({

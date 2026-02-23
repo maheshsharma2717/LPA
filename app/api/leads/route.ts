@@ -25,7 +25,7 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: leadError.message }, { status: 500 });
         }
 
-        const { data: appsData, error: appsError } = await supabase
+        const { data: appsData, error: appsError } = await db
             .from('applications')
             .select('*')
             .eq('lead_id', userId)
@@ -65,7 +65,7 @@ export async function PATCH(request: Request) {
         const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
         console.log('PATCH /api/leads hit...', { hasToken: !!token });
 
-        // Use admin client if configured, otherwise use request-scoped client with user token
+       
         const db = supabaseAdmin || getServerSupabase(token);
 
         if (!db) {

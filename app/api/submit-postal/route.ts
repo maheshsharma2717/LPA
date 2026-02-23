@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getServerSupabase } from '@/lib/supabase';
 
 export async function POST(request: Request) {
     try {
@@ -8,7 +8,11 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'lpa_document_id is required' }, { status: 400 });
         }
 
-        const { data: lpaDoc, error: lpaError } = await supabase
+        const authHeader = request.headers.get('Authorization');
+        const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
+        const db = getServerSupabase(token);
+
+        const { data: lpaDoc, error: lpaError } = await db
             .from('lpa_documents')
             .select('id, status, pdf_storage_path, lpa_type')
             .eq('id', lpa_document_id)
@@ -30,7 +34,7 @@ export async function POST(request: Request) {
         const postalReference = `SIM-${Date.now()}-${lpa_document_id.substring(0, 8)}`;
         const postalStatus = 'submitted';
 
-        await supabase
+        await db
             .from('lpa_documents')
             .update({
                 postal_reference: postalReference,

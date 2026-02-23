@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getServerSupabase } from '@/lib/supabase';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2026-01-28.clover', 
+    apiVersion: '2026-01-28.clover',
 });
 
 const OUR_FEE_PER_LPA_PENCE = 9900;
@@ -26,7 +26,11 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'application_id is required' }, { status: 400 });
         }
 
-        const { data: app, error: appError } = await supabase
+        const authHeader = request.headers.get('Authorization');
+        const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
+        const db = getServerSupabase(token);
+
+        const { data: app, error: appError } = await db
             .from('applications')
             .select('id, lead_id, status')
             .eq('id', application_id)
@@ -41,7 +45,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Application must be in 'complete' status before payment" }, { status: 400 });
         }
 
-        const { data: lpaDocuments, error: lpaError } = await supabase
+        const { data: lpaDocuments, error: lpaError } = await db
             .from('lpa_documents')
             .select(`
         id,
@@ -69,7 +73,7 @@ export async function POST(request: Request) {
         }
 
         const donorIds = [...new Set((lpaDocuments || []).map((ld: any) => ld.donor_id))];
-        const { data: assessments } = await supabase
+        const { data: assessments } = await db
             .from('benefits_assessments')
             .select('donor_id, calculated_fee_tier')
             .in('donor_id', donorIds);
@@ -130,7 +134,7 @@ export async function POST(request: Request) {
             cancel_url: `${siteUrl}/payment/cancel?application_id=${application_id}`,
         });
 
-       await supabase
+        await db
             .from('applications')
             .update({
                 stripe_checkout_session_id: session.id,
@@ -141,10 +145,10 @@ export async function POST(request: Request) {
             })
             .eq('id', application_id);
 
-       for (const doc of lpaDocuments || []) {
+        for (const doc of lpaDocuments || []) {
             const tier = tierByDonor[doc.donor_id] || 'full';
             const opgFee = calculateOpgFee(tier);
-            await supabase
+            await db
                 .from('lpa_documents')
                 .update({ opg_fee_tier: tier, opg_fee_pence: opgFee })
                 .eq('id', doc.id);

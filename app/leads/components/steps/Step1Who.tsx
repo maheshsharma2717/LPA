@@ -61,6 +61,7 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
   // New State for View Logic
   const [viewMode, setViewMode] = useState<'CATEGORIES' | 'QUANTITY' | 'LIST'>('CATEGORIES');
   const [selectionLimit, setSelectionLimit] = useState<number>(1);
+  const [showManualAddress, setShowManualAddress] = useState(false);
 
   const [newPerson, setNewPerson] = useState<Omit<Person, "id" | "isLead">>({
     title: "Mr",
@@ -82,10 +83,8 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
     }
   }, [isSaving]);
 
-  // Determine if Lead is included based on selection
   const isLeadIncluded = selected === "You" || selected === "You and your partner";
 
-  // Re-derive view state on load if data exists
   useEffect(() => {
     const init = async () => {
       try {
@@ -94,7 +93,6 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
         const userId = session.user.id;
         const token = session.access_token;
 
-        // Fetch lead and application data (same as before)
         const leadRes = await fetch(`/api/leads?userId=${userId}`, { headers: { Authorization: `Bearer ${token}` } });
         const { lead } = await leadRes.json();
 
@@ -329,6 +327,7 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
       }
 
       setOpenModal(false);
+      setShowManualAddress(false);
       setNewPerson({
         title: "Mr",
         firstName: "",
@@ -449,7 +448,6 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
     );
   }
 
-  // --- RENDER HELPERS ---
 
   const renderCategories = () => (
     <div className="space-y-6">
@@ -523,10 +521,7 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
         <button
           type="button"
           onClick={() => {
-            // Reset fully logic? Or just go back?
-            // Requirement: "if no one is created then we show all options"
-            // But here we might have Created people. 
-            // "click here to change" implies going back.
+
             setViewMode('CATEGORIES');
             setSelectedPeopleIds([]);
           }}
@@ -740,38 +735,67 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
 
           <p className="font-semibold text-zenco-dark -mb-2">What is their address?</p>
           <div className="grid grid-cols-1 gap-4">
-            <TextField
-              label="Address Line 1"
-              fullWidth
-              value={newPerson.addressLine1}
-              onChange={(e) => setNewPerson({ ...newPerson, addressLine1: e.target.value })}
-            />
-            <TextField
-              label="Address Line 2 (Optional)"
-              fullWidth
-              value={newPerson.addressLine2}
-              onChange={(e) => setNewPerson({ ...newPerson, addressLine2: e.target.value })}
-            />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex gap-4 items-end">
               <TextField
-                label="City"
+                label="Postcode"
                 fullWidth
-                value={newPerson.city}
-                onChange={(e) => setNewPerson({ ...newPerson, city: e.target.value })}
+                value={newPerson.postcode}
+                onChange={(e) => setNewPerson({ ...newPerson, postcode: e.target.value })}
               />
-              <TextField
-                label="County (Optional)"
-                fullWidth
-                value={newPerson.county}
-                onChange={(e) => setNewPerson({ ...newPerson, county: e.target.value })}
-              />
+              <Button
+                variant="contained"
+                sx={{
+                  backgroundColor: "#08B9ED",
+                  textTransform: "none",
+                  borderRadius: "8px",
+                  height: "56px",
+                  "&:hover": { backgroundColor: "#07bdf5ff" },
+                }}
+              >
+                Search
+              </Button>
             </div>
-            <TextField
-              label="Postcode"
-              fullWidth
-              value={newPerson.postcode}
-              onChange={(e) => setNewPerson({ ...newPerson, postcode: e.target.value })}
-            />
+
+            {!showManualAddress && (
+              <button
+                type="button"
+                onClick={() => setShowManualAddress(true)}
+                className="text-cyan-500 font-semibold text-sm hover:underline text-left w-fit"
+              >
+                Enter address manually
+              </button>
+            )}
+
+            {showManualAddress && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                <TextField
+                  label="Address Line 1"
+                  fullWidth
+                  value={newPerson.addressLine1}
+                  onChange={(e) => setNewPerson({ ...newPerson, addressLine1: e.target.value })}
+                />
+                <TextField
+                  label="Address Line 2 (Optional)"
+                  fullWidth
+                  value={newPerson.addressLine2}
+                  onChange={(e) => setNewPerson({ ...newPerson, addressLine2: e.target.value })}
+                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <TextField
+                    label="City"
+                    fullWidth
+                    value={newPerson.city}
+                    onChange={(e) => setNewPerson({ ...newPerson, city: e.target.value })}
+                  />
+                  <TextField
+                    label="County (Optional)"
+                    fullWidth
+                    value={newPerson.county}
+                    onChange={(e) => setNewPerson({ ...newPerson, county: e.target.value })}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </DialogContent>
         <DialogActions className="p-4 gap-2">

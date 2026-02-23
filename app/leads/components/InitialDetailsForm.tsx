@@ -381,35 +381,37 @@ export default function InitialDetailsForm({
       onComplete();
     } catch (err) {
       console.error("Error saving lead details:", err);
-      // Fallback to next step even if save fails, but log it
       onComplete();
     } finally {
       setLoading(false);
     }
   };
 
+  const isValidDay = /^(0?[1-9]|[12][0-9]|3[01])$/.test(formData.day);
+  const isValidMonth = /^(0?[1-9]|1[0-2])$/.test(formData.month);
+  const isValidYear = /^\d{4}$/.test(formData.year);
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-10 max-w-2xl mx-auto px-4 sm:px-6 md:px-0 pb-16">
       {/* Heading */}
       <div>
-        <h3 className="text-2xl font-bold mb-4 text-zenco-dark">
+        <h3 className="text-xl sm:text-2xl font-bold mb-4 text-zenco-dark">
           Tell us a little about{" "}
           <span className="text-[#08b9ed]">yourself</span>
         </h3>
-        <div className="flex flex-col gap-5">
-          <p className="text-gray-600 text-sm">
+
+        <div className="flex flex-col gap-4 text-gray-600 text-sm leading-relaxed">
+          <p>
             First, please give us some information about yourself to create your
             account.
           </p>
-          <p className="text-gray-600 text-sm">
+          <p>
             You do not have to be the person the Lasting Power of Attorney is
-            for – you might just be helping someone else make the Lasting Power
-            of Attorney.
+            for – you might just be helping someone else make it.
           </p>
-          <p className="text-gray-600 text-sm">
-            You'll be able to use these details in any Lasting Power of Attorney
-            documents you make using our service , the details for the other
-            people featuring on the documents will be taken later.
+          <p>
+            You'll be able to use these details in any documents you make using
+            our service.
           </p>
         </div>
       </div>
@@ -420,12 +422,11 @@ export default function InitialDetailsForm({
           Full legal name
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 text-[#6B7588]   leading-loose">
           <FormControl fullWidth>
             <p>Title</p>
             <Select
               value={formData.title}
-              // label="Title"
               onChange={(e) => handleChange("title", e.target.value)}
               className="bg-white"
             >
@@ -448,21 +449,20 @@ export default function InitialDetailsForm({
               ))}
             </Select>
           </FormControl>
+
           <FormControl fullWidth>
             <p>First Name</p>
             <TextField
-              // label="First Name"
               value={formData.firstName}
               onChange={(e) => handleChange("firstName", e.target.value)}
               fullWidth
               className="bg-white"
             />
           </FormControl>
+
           <FormControl fullWidth>
             <p>Last Name</p>
-
             <TextField
-              // label="Last Name"
               value={formData.lastName}
               onChange={(e) => handleChange("lastName", e.target.value)}
               fullWidth
@@ -471,11 +471,11 @@ export default function InitialDetailsForm({
           </FormControl>
         </div>
 
-        <div className="flex flex-col gap-5 max-w-[65%] w-full space-y-2">
+        {/* Middle / Optional */}
+        <div className="flex flex-col gap-5 w-full md:max-w-[65%] text-[#6B7588]">
           <FormControl fullWidth>
             <p>Middle names (if any)</p>
             <TextField
-              // label="Middle names (if any)"
               value={formData.middleName}
               onChange={(e) => handleChange("middleName", e.target.value)}
               fullWidth
@@ -485,36 +485,32 @@ export default function InitialDetailsForm({
 
           <FormControl fullWidth>
             {otherName ? (
-              <>
-                <div className="w-full space-y-2">
-                  <p>
-                    If this person has been known by any other names enter them
-                    below separated by a comma, for example 'Mary Smith, Mary
-                    Smith-Cooper'.
-                  </p>
+              <div className="space-y-3">
+                <p>
+                  If this person has been known by any other names enter them
+                  separated by a comma, for example 'Mary Smith, Mary
+                  Smith-Cooper'.
+                </p>
+                <p>
+                  {" "}
+                  This is only for other names you are known by on any legal or
+                  medical forms, for example bank account or birth certificate.
+                </p>
+                <p className="text-right text-sm text-[#8F90A6]">(Optional)</p>
 
-                  <p>
-                    This is only for other names you are known by on any legal
-                    or medical forms, for example bank account or birth
-                    certificate.
-                  </p>
-
-                  <p className="text-right text-sm text-gray-500">(Optional)</p>
-
-                  <TextField
-                    value={formData.knownByOtherNames}
-                    onChange={(e) =>
-                      handleChange("knownByOtherNames", e.target.value)
-                    }
-                    fullWidth
-                    className="bg-white"
-                  />
-                </div>
-              </>
+                <TextField
+                  value={formData.knownByOtherNames}
+                  onChange={(e) =>
+                    handleChange("knownByOtherNames", e.target.value)
+                  }
+                  fullWidth
+                  className="bg-white"
+                />
+              </div>
             ) : (
               <p
-                onClick={() => setOtherName(!otherName)}
-                className="cursor-pointer"
+                onClick={() => setOtherName(true)}
+                className="cursor-pointer text-[#08b9ed]"
               >
                 <u>Known by any other names? Click Here</u>
               </p>
@@ -524,7 +520,6 @@ export default function InitialDetailsForm({
           <FormControl fullWidth>
             <p>Preferred Name (Optional)</p>
             <TextField
-              // label="Preferred Name (Optional)"
               value={formData.preferredName}
               onChange={(e) => handleChange("preferredName", e.target.value)}
               fullWidth
@@ -535,32 +530,54 @@ export default function InitialDetailsForm({
       </div>
 
       {/* Date of Birth */}
-      <div className="space-y-4">
+      <div className="space-y-4  leading-loose">
         <h3 className="font-semibold text-lg text-zenco-dark">Date of birth</h3>
 
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 text-[#6B7588]">
           <FormControl fullWidth>
+            <p>Day</p>
             <TextField
-              // label="Day"
               value={formData.day}
-              onChange={(e) => handleChange("day", e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (/^\d*$/.test(value) && value.length <= 2) {
+                  handleChange("day", value);
+                }
+              }}
+              error={formData.day !== "" && !isValidDay}
+              inputProps={{ inputMode: "numeric" }}
               className="bg-white"
             />
           </FormControl>
 
           <FormControl fullWidth>
+            <p>Month</p>
             <TextField
-              // label="Month"
               value={formData.month}
-              onChange={(e) => handleChange("month", e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (/^\d*$/.test(value) && value.length <= 2) {
+                  handleChange("month", value);
+                }
+              }}
+              error={formData.month !== "" && !isValidMonth}
+              inputProps={{ inputMode: "numeric" }}
               className="bg-white"
             />
           </FormControl>
+
           <FormControl fullWidth>
+            <p>Year</p>
             <TextField
-              // label="Year"
               value={formData.year}
-              onChange={(e) => handleChange("year", e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (/^\d*$/.test(value) && value.length <= 4) {
+                  handleChange("year", value);
+                }
+              }}
+              error={formData.year !== "" && !isValidYear}
+              inputProps={{ inputMode: "numeric" }}
               className="bg-white"
             />
           </FormControl>
@@ -568,161 +585,142 @@ export default function InitialDetailsForm({
       </div>
 
       {/* Address */}
-      <div className="space-y-4">
+      <div className="space-y-4 leading-loose">
         <h3 className="font-semibold text-lg text-zenco-dark">
           What's your address?
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* openAddress */}
+        {openAddress ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            {/* Address Line 1 */}
+            <FormControl fullWidth>
+              <p className="text-[#6B7588]">Address Line 1</p>
+              <TextField
+                value={formData.address}
+                onChange={(e) => handleChange("address", e.target.value)}
+                fullWidth
+                className="bg-white"
+              />
+            </FormControl>
 
-          {openAddress ? (
-            <>
-              <div className="flex gap-4">
-                <FormControl fullWidth>
-                  <p>Address Line 1</p>
-                  <TextField
-                    // label="Address Line 1"
-                    value={formData.address}
-                    onChange={(e) => handleChange("address", e.target.value)}
-                    fullWidth
-                    className="bg-white"
-                  />
-                </FormControl>
-              </div>
-              <div className="flex gap-4">
-                <FormControl fullWidth>
-                  <p>Address Line 2</p>
-                  <TextField
-                    // label="Address Line 2 (Optional)"
-                    value={formData.addressLine2}
-                    onChange={(e) =>
-                      handleChange("addressLine2", e.target.value)
-                    }
-                    fullWidth
-                    className="bg-white"
-                  />
-                </FormControl>
-              </div>
-              <div className="flex gap-4">
-                <FormControl fullWidth>
-                  <p>Town</p>
-                  <TextField
-                    // label="Address Line 1"
-                    value={formData.town}
-                    onChange={(e) => handleChange("town", e.target.value)}
-                    fullWidth
-                    className="bg-white"
-                  />
-                </FormControl>
-              </div>
-              <div className="flex gap-4">
-                <FormControl fullWidth>
-                  <p>County</p>
-                  <TextField
-                    // label="Address Line 2 (Optional)"
-                    value={formData.county}
-                    onChange={(e) => handleChange("county", e.target.value)}
-                    fullWidth
-                    className="bg-white"
-                  />
-                </FormControl>
-              </div>
-              <div className="flex gap-4">
-                <FormControl fullWidth>
-                  <p>Country</p>
-                  <Select
-                    displayEmpty
-                    value={formData.country || ""}
-                    onChange={(e) => handleChange("country", e.target.value)}
-                    className="bg-white"
-                  >
-                    <MenuItem value="">Choose Country...</MenuItem>
+            {/* Address Line 2 */}
+            <FormControl fullWidth>
+              <p className="text-[#6B7588]">Address Line 2</p>
+              <TextField
+                value={formData.addressLine2}
+                onChange={(e) => handleChange("addressLine2", e.target.value)}
+                fullWidth
+                className="bg-white"
+              />
+            </FormControl>
 
-                    {countries.map((country) => (
-                      <MenuItem key={country} value={country}>
-                        {country}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </div>
-              <div className="flex gap-4">
-                <FormControl fullWidth>
-                  <p>Postcode</p>
-                  <TextField
-                    // label="Address Line 2 (Optional)"
-                    value={formData.postcode}
-                    onChange={(e) => handleChange("postcode", e.target.value)}
-                    fullWidth
-                    className="bg-white"
-                  />
-                </FormControl>
-              </div>
+            {/* Town */}
+            <FormControl fullWidth>
+              <p className="text-[#6B7588]">Town</p>
+              <TextField
+                value={formData.town}
+                onChange={(e) => handleChange("town", e.target.value)}
+                fullWidth
+                className="bg-white"
+              />
+            </FormControl>
+
+            {/* County */}
+            <FormControl fullWidth>
+              <p className="text-[#6B7588]">County</p>
+              <TextField
+                value={formData.county}
+                onChange={(e) => handleChange("county", e.target.value)}
+                fullWidth
+                className="bg-white"
+              />
+            </FormControl>
+
+            {/* Country */}
+            <FormControl fullWidth>
+              <p className="text-[#6B7588]">Country</p>
+              <Select
+                value={formData.country || ""}
+                onChange={(e) => handleChange("country", e.target.value)}
+                className="bg-white"
+              >
+                <MenuItem value="">Choose Country...</MenuItem>
+                {countries.map((country) => (
+                  <MenuItem key={country} value={country}>
+                    {country}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Postcode */}
+            <FormControl fullWidth>
+              <p className="text-[#6B7588]">Postcode</p>
+              <TextField
+                value={formData.postcode}
+                onChange={(e) => handleChange("postcode", e.target.value)}
+                fullWidth
+                className="bg-white"
+              />
+            </FormControl>
+
+            {/* Toggle Link */}
+            <div className="sm:col-span-2">
               <p
-                onClick={() => {
-                  setOpenAddress(!openAddress);
-                }}
+                onClick={() => setOpenAddress(false)}
                 className="cursor-pointer text-[#08b9ed]"
               >
                 <u>Search for address</u>
               </p>
-            </>
-          ) : (
-            <>
-              <div className="flex flex-col w-full">
-                <div className="flex gap-4 w-full">
-                  <FormControl fullWidth>
-                    <p>Enter postcode to search for address</p>
-                    <div className="flex w-full justify-between">
-                      <TextField
-                        // label="Enter postcode"
-                        value={formData.postcode}
-                        onChange={(e) =>
-                          handleChange("postcode", e.target.value)
-                        }
-                        fullWidth
-                        className="bg-white max-w-[49%] w-full"
-                      />
-                      <Button
-                        variant="contained"
-                        sx={{
-                          backgroundColor: "#08B9ED",
-                          "&:hover": { backgroundColor: "#07bdf5ff" },
-                        }}
-                        className=" max-w-[49%] w-full"
-                      >
-                        Search
-                      </Button>
-                    </div>
-                  </FormControl>
-                </div>
-                <p
-                  onClick={() => {
-                    setOpenAddress(!openAddress);
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <FormControl fullWidth>
+              <p>Enter postcode to search</p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <TextField
+                  value={formData.postcode}
+                  onChange={(e) => handleChange("postcode", e.target.value)}
+                  fullWidth
+                  className="bg-white"
+                />
+
+                <Button
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "#08B9ED",
+                    textTransform: "none",
+                    fontSize: "15px",
                   }}
-                  className="cursor-pointer text-[#08b9ed]"
+                  className="w-full h-full"
                 >
-                  <u>Enter address manually</u>
-                </p>
+                  Search
+                </Button>
               </div>
-              
-            </>
-          )}
-        </div>
+            </FormControl>
+
+            <p
+              onClick={() => setOpenAddress(true)}
+              className="cursor-pointer text-[#08b9ed]"
+            >
+              <u>Enter address manually</u>
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Contact */}
-      <div className="space-y-4">
+      <div className="space-y-4 leading-loose ">
         <h3 className="font-semibold text-lg text-zenco-dark">
           Contact Number
         </h3>
 
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 text-[#6B7588]">
           <FormControl fullWidth>
             <p>Mobile number</p>
             <TextField
-              // label="Mobile number"
               value={formData.mobile}
               onChange={(e) => handleChange("mobile", e.target.value)}
               fullWidth
@@ -733,7 +731,6 @@ export default function InitialDetailsForm({
           <FormControl fullWidth>
             <p>Landline number (optional)</p>
             <TextField
-              // label="Landline number (optional)"
               value={formData.landline}
               onChange={(e) => handleChange("landline", e.target.value)}
               fullWidth
@@ -744,17 +741,18 @@ export default function InitialDetailsForm({
       </div>
 
       {/* Continue */}
-      <div className="pt-4 flex justify-end text-md">
+      <div className="pt-6 flex justify-center sm:justify-end">
         <Button
           variant="contained"
           disabled={!isValid || loading}
           onClick={handleContinue}
           sx={{
             backgroundColor: "#08B9ED",
-            // "&:hover": { backgroundColor: "#1d4ed8" },
-            padding: "15px",
+            padding: "14px 28px",
+            textTransform: "none",
+            fontSize: "15px", // 👈 Change here
           }}
-          className="max-w-[29%] w-full"
+          className="w-full sm:w-auto sm:min-w-45 text-lg"
         >
           {loading ? (
             <CircularProgress size={24} color="inherit" />

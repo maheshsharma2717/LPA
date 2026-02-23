@@ -257,7 +257,8 @@ export default function RegisterUser() {
                     <u> Log in</u>
                   </Link>
                 </p>
-              </div>
+
+          </div>
               <div className="text-[#3A3A3C] text-center">
                 <div className="flex justify-center items-center">
                   <svg

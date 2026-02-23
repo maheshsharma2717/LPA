@@ -23,7 +23,7 @@ type Props = {
   setFormData: React.Dispatch<React.SetStateAction<any>>;
   onExitWizard: () => void;
   onFinish: () => void;
-
+  currentDonorIndex: number;
 };
 
 export default function WizardLayout({
@@ -34,9 +34,9 @@ export default function WizardLayout({
   formData,
   setFormData,
   onExitWizard,
-  onFinish
+  onFinish,
+  currentDonorIndex
 }: Props) {
-  // Map step key to component
   const stepComponentMap: Record<string, any> = {
     who: WhoTab,
     "which-document": WhichDoucmentsTab,
@@ -55,24 +55,24 @@ export default function WizardLayout({
 
   const handleNext = async () => {
     setIsSaving(true);
-    try {
-      // If the component handles its own next (like Step1Who might eventually do)
-      // we could pass handleNext down. For now, we'll just move forward.
-      setCompletedSteps((prev) =>
-        prev.includes(activeStep) ? prev : [...prev, activeStep],
-      );
+  };
 
-      if (activeStep < steps.length - 1) {
-        setActiveStep(activeStep + 1);
-      }
-    } finally {
-      setIsSaving(false);
+  const onNavigateNext = () => {
+    setCompletedSteps((prev) =>
+      prev.includes(activeStep) ? prev : [...prev, activeStep],
+    );
+
+    if (activeStep < steps.length - 1) {
+      setActiveStep(activeStep + 1);
+    } else {
+      onFinish?.();
     }
+    setIsSaving(false);
   };
 
   const handleBack = () => {
     if (activeStep === 0) {
-      onExitWizard(); // Go back to initial form
+      onExitWizard();
       return;
     }
     setActiveStep(activeStep - 1);
@@ -86,77 +86,80 @@ export default function WizardLayout({
 
   return (
     <>
-    <div className="space-y-10">
-      {/* Horizontal Stepper */}
-      <Stepper
-        activeStep={activeStep}
-        alternativeLabel
-        sx={{
-          "& .MuiStepIcon-root.Mui-active": {
-            color: "#08B9ED", // zenco-blue
-          },
-          "& .MuiStepIcon-root.Mui-completed": {
-            color: "#08B9ED",
-          },
-          "& .MuiStepLabel-label.Mui-active": {
-            fontWeight: 600,
-            color: "#1f2937", // zenco-dark
-          },
-        }}
-      >
-        {steps.map((step, index) => (
-          <Step key={step.key} completed={completedSteps.includes(index)}>
-            <StepLabel
-              onClick={() => handleStepClick(index)}
-              sx={{ cursor: (completedSteps.includes(index) || index === activeStep) ? 'pointer' : 'default' }}
-            >
-              {step.label}
-            </StepLabel>
-          </Step>
-        ))}
-      </Stepper>
-
-      {/* Current Step Content */}
-      <div>
-        <CurrentStepComponent
-          data={formData[steps[activeStep].key]}
-          updateData={(data: any) =>
-            setFormData((prev: any) => ({
-              ...prev,
-              [steps[activeStep].key]: data,
-            }))
-          }
-          onNext={handleNext} // Allow component to trigger next
-          isSaving={isSaving}
-          allFormData={formData}
-        />
-      </div>
-
-      {/* Navigation Buttons */}
-      <div className="flex justify-between pt-6">
-        <Button
-          onClick={handleBack}
-          sx={{ color: '#6b7280', textTransform: 'none' }}
-        >
-          Back
-        </Button>
-
-        <Button
-          variant="contained"
-          disabled={isSaving}
-          onClick={handleNext}
+      <div className="space-y-10">
+        {/* Horizontal Stepper */}
+        <Stepper
+          activeStep={activeStep}
+          alternativeLabel
           sx={{
-            backgroundColor: "#08B9ED",
-            textTransform: "none",
-            borderRadius: "8px",
-            padding: "8px 32px",
-            "&:hover": { backgroundColor: "#1d4ed8" },
+            "& .MuiStepIcon-root.Mui-active": {
+              color: "#08B9ED",
+            },
+            "& .MuiStepIcon-root.Mui-completed": {
+              color: "#08B9ED",
+            },
+            "& .MuiStepLabel-label.Mui-active": {
+              fontWeight: 600,
+              color: "#1f2937",
+            },
           }}
         >
-          {isSaving ? <CircularProgress size={24} color="inherit" /> : (activeStep === steps.length - 1 ? "Finish" : "Next")}
-        </Button>
-      </div>
-    </div></>
-    
+          {steps.map((step, index) => (
+            <Step key={step.key} completed={completedSteps.includes(index)}>
+              <StepLabel
+                onClick={() => handleStepClick(index)}
+                sx={{ cursor: (completedSteps.includes(index) || index === activeStep) ? 'pointer' : 'default' }}
+              >
+                {step.label}
+              </StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+
+        {/* Current Step Content */}
+        <div>
+          <CurrentStepComponent
+            data={formData[steps[activeStep].key]}
+            updateData={(data: any) =>
+              setFormData((prev: any) => ({
+                ...prev,
+                [steps[activeStep].key]: data,
+              }))
+            }
+            onNext={onNavigateNext}
+            isSaving={isSaving}
+            allFormData={formData}
+            currentDonorIndex={currentDonorIndex}
+          />
+        </div>
+
+        {/* Navigation Buttons - Show only if not hidden by step config */}
+        {!steps[activeStep].hideNext && (
+          <div className="flex justify-between pt-6">
+            <Button
+              onClick={handleBack}
+              sx={{ color: '#6b7280', textTransform: 'none' }}
+            >
+              Back
+            </Button>
+
+            <Button
+              variant="contained"
+              disabled={isSaving}
+              onClick={handleNext}
+              sx={{
+                backgroundColor: "#08B9ED",
+                textTransform: "none",
+                borderRadius: "8px",
+                padding: "8px 32px",
+                "&:hover": { backgroundColor: "#1d4ed8" },
+              }}
+            >
+              {isSaving ? <CircularProgress size={24} color="inherit" /> : (activeStep === steps.length - 1 ? "Finish" : "Next")}
+            </Button>
+          </div>
+        )}
+      </div></>
+
   );
 }
