@@ -7,8 +7,8 @@ import {
   MenuItem,
   Button,
   FormControl,
-  InputLabel,
-  CircularProgress
+  // InputLabel,
+  CircularProgress,
 } from "@mui/material";
 import { supabase } from "@/lib/supabase";
 
@@ -18,7 +18,11 @@ type Props = {
   onComplete: () => void;
 };
 
-export default function InitialDetailsForm({ lead, userId, onComplete }: Props) {
+export default function InitialDetailsForm({
+  lead,
+  userId,
+  onComplete,
+}: Props) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
@@ -34,10 +38,15 @@ export default function InitialDetailsForm({ lead, userId, onComplete }: Props) 
     address: "",
     addressLine2: "",
     city: "",
+    country: "",
     county: "",
     mobile: "",
     landline: "",
   });
+
+  const [otherName, setOtherName] = useState(false);
+
+  const [openAddress, setOpenAddress] = useState(false);
 
   useEffect(() => {
     if (lead) {
@@ -56,6 +65,7 @@ export default function InitialDetailsForm({ lead, userId, onComplete }: Props) 
         address: lead.address_line_1 || "",
         addressLine2: lead.address_line_2 || "",
         city: lead.city || "",
+        country: lead.country || "",
         county: lead.county || "",
         mobile: lead.mobile || "",
         landline: lead.landline || "",
@@ -89,15 +99,17 @@ export default function InitialDetailsForm({ lead, userId, onComplete }: Props) 
 
     setLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       const token = session?.access_token;
-      const dob = `${formData.year}-${formData.month.padStart(2, '0')}-${formData.day.padStart(2, '0')}`;
+      const dob = `${formData.year}-${formData.month.padStart(2, "0")}-${formData.day.padStart(2, "0")}`;
 
       const response = await fetch("/api/leads", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           userId: activeUserId,
@@ -112,6 +124,7 @@ export default function InitialDetailsForm({ lead, userId, onComplete }: Props) 
           address_line_1: formData.address,
           address_line_2: formData.addressLine2,
           city: formData.city,
+          country: formData.country,
           county: formData.county,
           mobile: formData.mobile,
           landline: formData.landline,
@@ -136,13 +149,26 @@ export default function InitialDetailsForm({ lead, userId, onComplete }: Props) 
     <div className="space-y-8">
       {/* Heading */}
       <div>
-        <h2 className="text-2xl font-bold text-zenco-dark">
-          Tell us a little about yourself
-        </h2>
-        <p className="text-gray-600 mt-2 text-sm">
-          First, please give us some information about yourself to create your
-          account.
-        </p>
+        <h3 className="text-2xl font-bold mb-4 text-zenco-dark">
+          Tell us a little about{" "}
+          <span className="text-[#08b9ed]">yourself</span>
+        </h3>
+        <div className="flex flex-col gap-5">
+          <p className="text-gray-600 text-sm">
+            First, please give us some information about yourself to create your
+            account.
+          </p>
+          <p className="text-gray-600 text-sm">
+            You do not have to be the person the Lasting Power of Attorney is
+            for – you might just be helping someone else make the Lasting Power
+            of Attorney.
+          </p>
+          <p className="text-gray-600 text-sm">
+            You'll be able to use these details in any Lasting Power of Attorney
+            documents you make using our service , the details for the other
+            people featuring on the documents will be taken later.
+          </p>
+        </div>
       </div>
 
       {/* Full Legal Name */}
@@ -153,13 +179,15 @@ export default function InitialDetailsForm({ lead, userId, onComplete }: Props) 
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <FormControl fullWidth>
-            <InputLabel>Title</InputLabel>
+            <p>Title</p>
             <Select
               value={formData.title}
-              label="Title"
+              // label="Title"
               onChange={(e) => handleChange("title", e.target.value)}
+              className="bg-white"
             >
               {[
+                "Choose...",
                 "Mr",
                 "Mrs",
                 "Miss",
@@ -177,42 +205,89 @@ export default function InitialDetailsForm({ lead, userId, onComplete }: Props) 
               ))}
             </Select>
           </FormControl>
+          <FormControl fullWidth>
+            <p>First Name</p>
+            <TextField
+              // label="First Name"
+              value={formData.firstName}
+              onChange={(e) => handleChange("firstName", e.target.value)}
+              fullWidth
+              className="bg-white"
+            />
+          </FormControl>
+          <FormControl fullWidth>
+            <p>Last Name</p>
 
-          <TextField
-            label="First Name"
-            value={formData.firstName}
-            onChange={(e) => handleChange("firstName", e.target.value)}
-            fullWidth
-          />
-
-          <TextField
-            label="Last Name"
-            value={formData.lastName}
-            onChange={(e) => handleChange("lastName", e.target.value)}
-            fullWidth
-          />
+            <TextField
+              // label="Last Name"
+              value={formData.lastName}
+              onChange={(e) => handleChange("lastName", e.target.value)}
+              fullWidth
+              className="bg-white"
+            />
+          </FormControl>
         </div>
-        <div className="flex flex-col gap-5">
-          <TextField
-            label="Middle names (if any)"
-            value={formData.middleName}
-            onChange={(e) => handleChange("middleName", e.target.value)}
-            fullWidth
-          />
 
-          <TextField
-            label="Have you ever been known by any other names? (Optional)"
-            value={formData.knownByOtherNames}
-            onChange={(e) => handleChange("knownByOtherNames", e.target.value)}
-            fullWidth
-          />
+        <div className="flex flex-col gap-5 max-w-[65%] w-full space-y-2">
+          <FormControl fullWidth>
+            <p>Middle names (if any)</p>
+            <TextField
+              // label="Middle names (if any)"
+              value={formData.middleName}
+              onChange={(e) => handleChange("middleName", e.target.value)}
+              fullWidth
+              className="bg-white"
+            />
+          </FormControl>
 
-          <TextField
-            label="Preferred Name (Optional)"
-            value={formData.preferredName}
-            onChange={(e) => handleChange("preferredName", e.target.value)}
-            fullWidth
-          />
+          <FormControl fullWidth>
+            {otherName ? (
+              <>
+                <div className="w-full space-y-2">
+                  <p>
+                    If this person has been known by any other names enter them
+                    below separated by a comma, for example 'Mary Smith, Mary
+                    Smith-Cooper'.
+                  </p>
+
+                  <p>
+                    This is only for other names you are known by on any legal
+                    or medical forms, for example bank account or birth
+                    certificate.
+                  </p>
+
+                  <p className="text-right text-sm text-gray-500">(Optional)</p>
+
+                  <TextField
+                    value={formData.knownByOtherNames}
+                    onChange={(e) =>
+                      handleChange("knownByOtherNames", e.target.value)
+                    }
+                    fullWidth
+                    className="bg-white"
+                  />
+                </div>
+              </>
+            ) : (
+              <p
+                onClick={() => setOtherName(!otherName)}
+                className="cursor-pointer"
+              >
+                <u>Known by any other names? Click Here</u>
+              </p>
+            )}
+          </FormControl>
+
+          <FormControl fullWidth>
+            <p>Preferred Name (Optional)</p>
+            <TextField
+              // label="Preferred Name (Optional)"
+              value={formData.preferredName}
+              onChange={(e) => handleChange("preferredName", e.target.value)}
+              fullWidth
+              className="bg-white"
+            />
+          </FormControl>
         </div>
       </div>
 
@@ -221,21 +296,31 @@ export default function InitialDetailsForm({ lead, userId, onComplete }: Props) 
         <h3 className="font-semibold text-lg text-zenco-dark">Date of birth</h3>
 
         <div className="grid grid-cols-3 gap-6">
-          <TextField
-            label="Day"
-            value={formData.day}
-            onChange={(e) => handleChange("day", e.target.value)}
-          />
-          <TextField
-            label="Month"
-            value={formData.month}
-            onChange={(e) => handleChange("month", e.target.value)}
-          />
-          <TextField
-            label="Year"
-            value={formData.year}
-            onChange={(e) => handleChange("year", e.target.value)}
-          />
+          <FormControl fullWidth>
+            <TextField
+              // label="Day"
+              value={formData.day}
+              onChange={(e) => handleChange("day", e.target.value)}
+              className="bg-white"
+            />
+          </FormControl>
+
+          <FormControl fullWidth>
+            <TextField
+              // label="Month"
+              value={formData.month}
+              onChange={(e) => handleChange("month", e.target.value)}
+              className="bg-white"
+            />
+          </FormControl>
+          <FormControl fullWidth>
+            <TextField
+              // label="Year"
+              value={formData.year}
+              onChange={(e) => handleChange("year", e.target.value)}
+              className="bg-white"
+            />
+          </FormControl>
         </div>
       </div>
 
@@ -246,56 +331,132 @@ export default function InitialDetailsForm({ lead, userId, onComplete }: Props) 
         </h3>
 
         <div className="flex gap-4">
-          <TextField
-            label="Enter postcode"
-            value={formData.postcode}
-            onChange={(e) => handleChange("postcode", e.target.value)}
-            fullWidth
-          />
-
-          <Button
-            variant="contained"
-            sx={{
-              backgroundColor: "#08B9ED",
-              "&:hover": { backgroundColor: "#07bdf5ff" },
-            }}
-          >
-            Search
-          </Button>
+          <FormControl fullWidth>
+            <p>Enter postcode to search for address</p>
+            <div className="flex w-full justify-between">
+              <TextField
+                // label="Enter postcode"
+                value={formData.postcode}
+                onChange={(e) => handleChange("postcode", e.target.value)}
+                fullWidth
+                className="bg-white max-w-[49%] w-full"
+              />
+              <Button
+                variant="contained"
+                sx={{
+                  backgroundColor: "#08B9ED",
+                  "&:hover": { backgroundColor: "#07bdf5ff" },
+                }}
+                className=" max-w-[49%] w-full"
+              >
+                Search
+              </Button>
+            </div>
+          </FormControl>
         </div>
-<div className="flex gap-4">
-
-        <TextField
-          label="Address Line 1"
-          value={formData.address}
-          onChange={(e) => handleChange("address", e.target.value)}
-          fullWidth
-          />
-          </div>
-<div className="flex gap-4">
-
-        <TextField
-          label="Address Line 2 (Optional)"
-          value={formData.addressLine2}
-          onChange={(e) => handleChange("addressLine2", e.target.value)}
-          fullWidth
-        />
-          </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <TextField
-            label="Town / City"
-            value={formData.city}
-            onChange={(e) => handleChange("city", e.target.value)}
-            fullWidth
-          />
+          {/* openAddress */}
 
-          <TextField
-            label="County (Optional)"
-            value={formData.county}
-            onChange={(e) => handleChange("county", e.target.value)}
-            fullWidth
-          />
+          {openAddress ? (
+            <>
+              <div className="flex gap-4">
+                <FormControl fullWidth>
+                  <p>Address Line 1</p>
+                  <TextField
+                    // label="Address Line 1"
+                    value={formData.address}
+                    onChange={(e) => handleChange("address", e.target.value)}
+                    fullWidth
+                    className="bg-white"
+                  />
+                </FormControl>
+              </div>
+              <div className="flex gap-4">
+                <FormControl fullWidth>
+                  <p>Address Line 2</p>
+                  <TextField
+                    // label="Address Line 2 (Optional)"
+                    value={formData.addressLine2}
+                    onChange={(e) =>
+                      handleChange("addressLine2", e.target.value)
+                    }
+                    fullWidth
+                    className="bg-white"
+                  />
+                </FormControl>
+              </div>
+              <div className="flex gap-4">
+                <FormControl fullWidth>
+                  <p>Town</p>
+                  <TextField
+                    // label="Address Line 1"
+                    value={formData.address}
+                    onChange={(e) => handleChange("address", e.target.value)}
+                    fullWidth
+                    className="bg-white"
+                  />
+                </FormControl>
+              </div>
+              <div className="flex gap-4">
+                <FormControl fullWidth>
+                  <p>County</p>
+                  <TextField
+                    // label="Address Line 2 (Optional)"
+                    value={formData.addressLine2}
+                    onChange={(e) =>
+                      handleChange("addressLine2", e.target.value)
+                    }
+                    fullWidth
+                    className="bg-white"
+                  />
+                </FormControl>
+              </div>
+              <div className="flex gap-4">
+                <FormControl fullWidth>
+                  <p>Country</p>
+                  <TextField
+                    // label="Address Line 1"
+                    value={formData.address}
+                    onChange={(e) => handleChange("address", e.target.value)}
+                    fullWidth
+                    className="bg-white"
+                  />
+                </FormControl>
+              </div>
+              <div className="flex gap-4">
+                <FormControl fullWidth>
+                  <p>Postcode</p>
+                  <TextField
+                    // label="Address Line 2 (Optional)"
+                    value={formData.addressLine2}
+                    onChange={(e) =>
+                      handleChange("addressLine2", e.target.value)
+                    }
+                    fullWidth
+                    className="bg-white"
+                  />
+                </FormControl>
+              </div>
+              <p
+                onClick={() => {
+                  setOpenAddress(!openAddress);
+                }}
+                className="cursor-pointer text-[#08b9ed]"
+              >
+                <u>Search for address</u>
+              </p>
+            </>
+          ) : (
+            <p
+              onClick={() => {
+                setOpenAddress(!openAddress);
+              }}
+              className="cursor-pointer text-[#08b9ed]"
+            >
+              <u>Enter address manually</u>
+            </p>
+          )}
         </div>
       </div>
 
@@ -306,26 +467,33 @@ export default function InitialDetailsForm({ lead, userId, onComplete }: Props) 
         </h3>
 
         <div className="grid grid-cols-2 gap-6">
-          <TextField
-            label="Mobile number"
-            value={formData.mobile}
-            onChange={(e) => handleChange("mobile", e.target.value)}
-            fullWidth
-          />
+          <FormControl fullWidth>
+            <p>Mobile number</p>
+            <TextField
+              // label="Mobile number"
+              value={formData.mobile}
+              onChange={(e) => handleChange("mobile", e.target.value)}
+              fullWidth
+              className="bg-white"
+            />
+          </FormControl>
 
-          <TextField
-            label="Landline number (optional)"
-            value={formData.landline}
-            onChange={(e) => handleChange("landline", e.target.value)}
-            fullWidth
-          />
+          <FormControl fullWidth>
+            <p>Landline number (optional)</p>
+            <TextField
+              // label="Landline number (optional)"
+              value={formData.landline}
+              onChange={(e) => handleChange("landline", e.target.value)}
+              fullWidth
+              className="bg-white"
+            />
+          </FormControl>
         </div>
       </div>
 
       {/* Continue */}
-      <div className="pt-4">
+      <div className="pt-4 flex justify-end text-md">
         <Button
-          fullWidth
           variant="contained"
           disabled={!isValid || loading}
           onClick={handleContinue}
@@ -335,7 +503,11 @@ export default function InitialDetailsForm({ lead, userId, onComplete }: Props) 
             paddingY: 1.5,
           }}
         >
-          {loading ? <CircularProgress size={24} color="inherit" /> : "Continue"}
+          {loading ? (
+            <CircularProgress size={24} color="inherit" />
+          ) : (
+            "Continue"
+          )}
         </Button>
       </div>
     </div>
