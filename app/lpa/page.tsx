@@ -179,7 +179,7 @@ export default function LPAStepOne() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-[#f8f8f9] flex flex-col">
       <header className="w-full bg-white border-b border-gray-200 py-4 px-6 sm:px-12 flex justify-between items-center">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 bg-[#08b9ed] rounded-full"></div>
@@ -192,20 +192,21 @@ export default function LPAStepOne() {
         </div> */}
       </header>
 
-      <main className="grow flex items-center justify-center p-6 sm:p-12">
-        <div className="max-w-2xl w-full p-8 sm:p-12">
+      <main className="flex-1 flex items-start sm:items-center justify-center px-4 sm:px-8 lg:px-12">
+        <div className="w-full max-w-2xl p-5 sm:p-10">
           {imageData && (
-            <div className="flex justify-center mb-10">
+            <div className="flex justify-center mb-6 sm:mb-10">
               <Image
                 src={imageData.src}
                 alt="question-image"
                 width={imageData.width}
                 height={imageData.height}
+                className="max-w-40 sm:max-w-50 lg:max-w-60 h-auto"
               />
             </div>
           )}
 
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-zenco-dark mb-4 leading-tight text-center">
+          <h2 className="text-2xl lg:text-3xl font-extrabold text-zenco-dark mb-4 leading-snug text-center">
             {formatQuestion(currentQuestion.question)}
           </h2>
 
@@ -359,7 +360,7 @@ export default function LPAStepOne() {
                     setCurrentStep(option.next);
                     setStepNumber((prev) => Math.min(prev + 1, 5));
                   }}
-                  className="px-8 py-4 rounded border bg-white border-gray-300 hover:bg-[#334A5E] shadow-lg transition-all duration-200 group"
+                  className="px-8 py-4 rounded border bg-white border-gray-300 hover:bg-[#334A5E] shadow-lg cursor-pointer transition-all duration-200 group"
                 >
                   <span className="font-bold text-lg text-[#334A5E] group-hover:text-white text-center">
                     {option.label}
@@ -371,7 +372,7 @@ export default function LPAStepOne() {
 
           <button
             onClick={handleBack}
-            className="flex items-center gap-2 text-[#6B7588] text-lg font-bold mt-8 hover:text-black transition"
+            className="flex items-center gap-2 text-[#6B7588] text-lg font-bold mt-8 cursor-pointer hover:underline transition"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
