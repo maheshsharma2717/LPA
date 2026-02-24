@@ -44,7 +44,7 @@ export async function POST(request: Request) {
 
         if (lpaError) return NextResponse.json({ error: lpaError.message }, { status: 500 });
 
-        const donorIds = [...new Set((lpaDocuments || []).map((ld: any) => ld.donor_id))];
+        const donorIds = [...new Set((lpaDocuments || []).map((ld: { donor_id: string }) => ld.donor_id))];
         const { data: assessments } = await db
             .from('benefits_assessments')
             .select('donor_id, calculated_fee_tier')
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
         let totalOpgFee = 0;
 
         for (const doc of lpaDocuments || []) {
-            const donor = doc.donors as any;
+            const donor = doc.donors as unknown as { first_name: string; last_name: string; application_id: string };
             const tier = tierByDonor[doc.donor_id] || 'full';
             const opgFee = calculateOpgFee(tier);
 
@@ -84,7 +84,7 @@ export async function POST(request: Request) {
             total_pence: totalOurFee + totalOpgFee,
             breakdown,
         });
-    } catch (error: any) {
+    } catch {
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }

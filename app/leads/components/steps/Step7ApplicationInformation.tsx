@@ -13,10 +13,13 @@ type ApplicantRecord = {
 };
 
 type Props = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateData: (data: any) => void;
   onNext: () => void;
   isSaving: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   allFormData: any;
   currentDonorIndex: number;
 };
@@ -67,6 +70,7 @@ export default function ApplicationInfoTab({ onNext, isSaving, allFormData, upda
             step1Selection === "You and your partner" ||
             step1Selection === "You and someone else";
 
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const activeDonors = fetchedDonors.filter((d: any) => {
             if (d.is_lead) return isLeadSelected;
             return step1SelectedIds.includes(d.id);
@@ -93,6 +97,7 @@ export default function ApplicationInfoTab({ onNext, isSaving, allFormData, upda
         const activeLpaId = lpaDocs[0].id;
         setLpaDocId(activeLpaId);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const donor = fetchedDonors?.find((d: any) => d.id === activeDonorId);
 
         if (donor) {
@@ -112,7 +117,9 @@ export default function ApplicationInfoTab({ onNext, isSaving, allFormData, upda
         let primaryAttorneys: ApplicantRecord[] = [];
         if (junctionRows) {
           primaryAttorneys = junctionRows
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .filter((row: any) => row.role === "primary")
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .map((row: any) => ({
               id: row.attorneys.id,
               name: `${row.attorneys.first_name} ${row.attorneys.last_name}`,
@@ -130,10 +137,12 @@ export default function ApplicationInfoTab({ onNext, isSaving, allFormData, upda
           headers: { Authorization: `Bearer ${token}` },
         });
         const { data: notifyPeople } = await notifyRes.json();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const notifyList = (notifyPeople || []).map((p: any) => ({
           id: p.id,
           name: `${p.first_name} ${p.last_name}`,
           email: p.email || "No email provided",
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           role: "notify" as any
         }));
 
@@ -162,12 +171,13 @@ export default function ApplicationInfoTab({ onNext, isSaving, allFormData, upda
     };
 
     init();
-  }, [applicationId, currentDonorIndex, allFormData?.who]);
+  }, [applicationId, currentDonorIndex, allFormData?.who, donorId]);
 
   useEffect(() => {
     if (isSaving) {
       handleSave();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSaving]);
 
   const handleSave = async () => {
@@ -248,7 +258,7 @@ export default function ApplicationInfoTab({ onNext, isSaving, allFormData, upda
             <div className={styles.dividerZenco}></div>
 
             <p className={styles.pZenco + " font-normal text-gray-600 mb-8"}>
-              This document can't be used until it is registered by the Office of the Public Guardian (OPG).
+              This document can&apos;t be used until it is registered by the Office of the Public Guardian (OPG).
               Only the donor ({donorRecord?.name}) or one of the attorneys can apply to register this document.
               Select from the option below whether the donor ({donorRecord?.name}) is registering or one of the attorneys.
             </p>
@@ -392,7 +402,7 @@ export default function ApplicationInfoTab({ onNext, isSaving, allFormData, upda
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                           <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                         </svg>
-                        Update this person's details
+                        Update this person&apos;s details
                       </button>
                     </div>
                   </div>
@@ -419,7 +429,7 @@ export default function ApplicationInfoTab({ onNext, isSaving, allFormData, upda
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                           <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                         </svg>
-                        Update this person's details
+                        Update this person&apos;s details
                       </button>
                     </div>
                   </div>
@@ -451,7 +461,7 @@ export default function ApplicationInfoTab({ onNext, isSaving, allFormData, upda
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                           <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                         </svg>
-                        Update this person's details
+                        Update this person&apos;s details
                       </button>
                     </div>
                   </div>

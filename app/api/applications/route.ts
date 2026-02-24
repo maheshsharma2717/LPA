@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase, getServerSupabase } from '@/lib/supabase';
+import { getServerSupabase } from '@/lib/supabase';
 
 export async function GET(request: Request) {
     try {
@@ -26,7 +26,7 @@ export async function GET(request: Request) {
         }
 
         return NextResponse.json({ data });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Applications GET API error:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
         }
 
         return NextResponse.json({ data });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Applications POST API error:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
@@ -90,7 +90,7 @@ export async function PATCH(request: Request) {
         }
 
         return NextResponse.json({ data });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Applications PATCH API error:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }

@@ -17,6 +17,7 @@ import {
   Alert,
 } from "@mui/material";
 import { supabase } from "@/lib/supabase";
+import styles from "./Steps.module.css";
 
 type Person = {
   id: string;
@@ -35,10 +36,13 @@ type Person = {
 };
 
 type Props = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateData: (data: any) => void;
   onNext: () => void;
   isSaving: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   allFormData: any;
   currentDonorIndex: number;
 };
@@ -57,7 +61,7 @@ const emptyForm = {
   email: "",
 };
 
-export default function AttorneysTab({ onNext, isSaving, allFormData, updateData, currentDonorIndex }: Props) {
+export default function AttorneysTab({ onNext, allFormData, updateData, currentDonorIndex }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -102,12 +106,14 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
             step1Selection === "You and your partner" ||
             step1Selection === "You and someone else";
 
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const activeDonors = donors.filter((d: any) => {
             if (d.is_lead) return isLeadSelected;
             return step1SelectedIds.includes(d.id);
           });
           const subjectDonorId = activeDonors[currentDonorIndex]?.id;
 
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const pool = donors.filter((d: any) => d.id !== subjectDonorId);
           setPeoplePool(pool);
         }
@@ -120,6 +126,7 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
         if (existingAttorneys && existingAttorneys.length > 0) {
           setPeoplePool((prev) => {
             // Filter out any duplicates if they were already in the pool from the donor check
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const newAttorneys = existingAttorneys.filter((ea: any) => !prev.some(p => p.id === ea.id));
             return [...prev, ...newAttorneys];
           });
@@ -140,6 +147,7 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
       }
     };
     init();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [applicationId, currentDonorIndex, allFormData?.who]);
 
 
@@ -189,6 +197,7 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
       if (!session) return;
       const token = session.access_token;
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const attorneyBody: any = {
         application_id: applicationId,
         title: formData.title,
@@ -283,6 +292,7 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
               step1Selection === "You" ||
               step1Selection === "You and your partner" ||
               step1Selection === "You and someone else";
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const activeDonors = allDonors.filter((d: any) => {
               if (d.is_lead) return isLeadSelected;
               return step1SelectedIds.includes(d.id);
@@ -481,7 +491,7 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
   const replacementPool = peoplePool.filter((p) => !selectedAttorneyIds.includes(p.id));
 
   return (
-    <section className="space-y-8 animate-in fade-in slide-in-from-top-4">
+    <section className="space-y-8 p-2 animate-in fade-in slide-in-from-top-4">
 
       {/* ═══════ SUB-STEP 0: SELECT PRIMARY ATTORNEYS ═══════ */}
       {subStep === 0 && (
@@ -489,7 +499,7 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
           <div className="flex flex-col md:flex-row gap-8">
             {/* Left Column - Attorney Selection */}
             <div className="flex-1 space-y-5">
-              <h1 className="text-center text-3xl font-bold text-zenco-dark">Attorneys</h1>
+              <h1 className={`text-center text-3xl font-bold text-zenco-dark ${styles.headingBorderBottom}`}>Attorneys</h1>
 
               <div className="flex flex-col gap-3 text-gray-600">
                 <p>
@@ -565,11 +575,11 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
                 </li>
                 <li className="flex items-center gap-2">
                   <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                  Have <strong>mental capacity</strong> to make decisions.
+                <p>Have <strong>mental capacity</strong> to make decisions.</p>
                 </li>
                 <li className="flex items-center gap-2">
                   <svg className="w-4 h-4 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                  Must <strong>not</strong> be bankrupt, or subject to a debt relief order.
+                <p>Must <strong>not</strong> be bankrupt, or subject to a debt relief order.</p>
                 </li>
               </ul>
             </div>
@@ -580,15 +590,12 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
       {/* ═══════ SUB-STEP 1: DOCUMENT VIEW AUTHORITY ═══════ */}
       {subStep === 1 && (
         <div className="space-y-6 animate-in fade-in">
-          <h1 className="text-center text-3xl font-bold text-zenco-dark">
+          <h1 className={`text-center text-3xl font-bold text-zenco-dark ${styles.headingBorderBottom}`}>
             Can attorneys <span className="text-zenco-blue">view your legal documents?</span>
           </h1>
-
-          <div className="h-1 bg-gradient-to-r from-zenco-blue to-blue-400 rounded-full" />
-
           <div className="flex flex-col md:flex-row gap-8">
             <div className="flex-1 space-y-6">
-              <p className="text-gray-700">
+              <p className="text-zenco-dark text-lg font-semibold">
                 Are you happy for your Attorneys to view your legal documents if you lose
                 mental capacity?
               </p>
@@ -635,7 +642,7 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
         <div className="space-y-6 animate-in fade-in">
           <div className="flex flex-col md:flex-row gap-8">
             <div className="flex-1 space-y-5">
-              <h1 className="text-center text-3xl font-bold text-zenco-dark">
+              <h1 className={`text-center text-3xl font-bold text-zenco-dark ${styles.headingBorderBottom}`}>
                 Replacement <span className="text-zenco-blue">Attorneys</span>
               </h1>
 
@@ -741,15 +748,15 @@ export default function AttorneysTab({ onNext, isSaving, allFormData, updateData
                 </li>
                 <li className="flex items-center gap-2">
                   <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                  Have <strong>mental capacity</strong> to make decisions.
+                 <p>Have <strong>mental capacity</strong> to make decisions.</p>
                 </li>
                 <li className="flex items-center gap-2">
                   <svg className="w-4 h-4 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                  Must <strong>not</strong> be bankrupt, or subject to a debt relief order.
+                  <p>Must <strong>not</strong> be bankrupt, or subject to a debt relief order.</p>
                 </li>
                 <li className="flex items-center gap-2">
                   <svg className="w-4 h-4 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                  Must not already be assigned as an <strong>Attorney</strong>
+                  <p>Must not already be assigned as an <strong>Attorney</strong></p>
                 </li>
               </ul>
             </div>

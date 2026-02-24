@@ -10,7 +10,9 @@ function AcknowledgementContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [finishedDonor, setFinishedDonor] = useState<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [nextDonor, setNextDonor] = useState<any>(null);
   const [isDone, setIsDone] = useState(false);
 
@@ -74,9 +76,10 @@ function AcknowledgementContent() {
         if (doneParam === "true") {
           setIsDone(true);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Error fetching acknowledgement data:", err);
-        setError(err.message || "Failed to load donor information");
+        const errorMsg = err instanceof Error ? err.message : "Failed to load donor information";
+        setError(errorMsg);
       } finally {
         setLoading(false);
       }
@@ -116,6 +119,7 @@ function AcknowledgementContent() {
         {/* Header */}
         <header className="w-full border-b border-gray-100 py-4 px-6 sm:px-12 flex justify-between items-center bg-white sticky top-0 z-50">
           <div className="flex items-center gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/zen_logo.png" className="w-20" alt="Zenco Logo" />
           </div>
           <nav className="hidden md:flex gap-8 text-sm font-medium text-gray-600">
@@ -299,6 +303,7 @@ function AcknowledgementContent() {
       {/* Header */}
       <header className="w-full border-b border-gray-100 py-4 px-6 sm:px-12 flex justify-between items-center bg-white sticky top-0 z-50">
         <div className="flex items-center gap-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/zen_logo.png" className="w-20" alt="Zenco Logo" />
         </div>
         <nav className="hidden md:flex gap-8 text-sm font-medium text-gray-600">

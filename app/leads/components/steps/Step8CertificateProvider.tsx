@@ -3,10 +3,13 @@
 import { useEffect } from "react";
 
 type Props = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateData: (data: any) => void;
   onNext: () => void;
   isSaving: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   allFormData: any;
   currentDonorIndex: number;
 };
@@ -78,6 +81,7 @@ export default function CertificateProviderTab({ data, updateData, onNext, isSav
             step1Selection === "You and your partner" ||
             step1Selection === "You and someone else";
 
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const activeDonors = fetchedDonors.filter((d: any) => {
             if (d.is_lead) return isLeadSelected;
             return step1SelectedIds.includes(d.id);
@@ -139,15 +143,18 @@ export default function CertificateProviderTab({ data, updateData, onNext, isSav
     };
 
     init();
-  }, [allFormData?.who, currentDonorIndex, applicationId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allFormData?.who, currentDonorIndex, applicationId, data?.hasProvider]);
 
   useEffect(() => {
     if (isSaving) {
       handleFinalSave();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSaving]);
   const [openModal, setOpenModal] = useState(false);
   const [choice, setChoice] = useState<"yes" | "no" | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
   const [relationship, setRelationship] = useState<string>("");
   const [providers, setProviders] = useState<(Person & { id: string })[]>([]);
@@ -346,13 +353,13 @@ export default function CertificateProviderTab({ data, updateData, onNext, isSav
                         <p>We suggest using a friend or neighbour of the donor to be a certificate provider.</p>
                         <p>This person signs to confirm they have discussed the Lasting Power of Attorney with the Donor.</p>
                         <p>This person must be over 18 and have known the donor for a minimum of 2 years.</p>
-                        <p>This is very important: there are rules on who can't be a certificate provider, too.</p>
+                        <p>This is very important: there are rules on who can&apos;t be a certificate provider, too.</p>
                         <p>The certificate provider <u className="font-bold">must not</u> be:</p>
                         <ul className="list-disc ps-6 space-y-2">
                           <li>An attorney or replacement attorney</li>
-                          <li>A relative, or someone who's related to an attorney - this includes civil partners, spouses, in-laws and step-relatives</li>
-                          <li>The Donor's (unmarried) partner, or the partner of one of your attorneys - whether they live together or not</li>
-                          <li>The Donor's, or attorney's business partner or employee</li>
+                          <li>A relative, or someone who&apos;s related to an attorney - this includes civil partners, spouses, in-laws and step-relatives</li>
+                          <li>The Donor&apos;s (unmarried) partner, or the partner of one of your attorneys - whether they live together or not</li>
+                          <li>The Donor&apos;s, or attorney&apos;s business partner or employee</li>
                           <li>Someone who owns, manages, is a director of or works at a care home where they live, or anyone related to them</li>
                         </ul>
                       </div>
@@ -364,6 +371,7 @@ export default function CertificateProviderTab({ data, updateData, onNext, isSav
                   <div className="flex flex-col gap-4">
                     <p className="text-lg font-semibold">Please add the certificate provider details below.</p>
 
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {providers.map((p: any) => (
                       <div key={p.id} className="bg-[#3A4C5F] text-white rounded p-6 flex justify-between items-center ring-2 ring-blue-500">
                         <div className="flex items-center gap-4">
@@ -559,7 +567,7 @@ export default function CertificateProviderTab({ data, updateData, onNext, isSav
           </div>
 
           <div className="space-y-6">
-            <p className="text-xl font-bold text-[#334a5e]">What's their address?</p>
+            <p className="text-xl font-bold text-[#334a5e]">What&apos;s their address?</p>
             <div className="flex gap-4 items-end">
               <FormControl className="flex-grow">
                 <p className="text-sm font-semibold mb-2 text-gray-600">Postcode</p>
@@ -645,7 +653,7 @@ export default function CertificateProviderTab({ data, updateData, onNext, isSav
           </div>
 
           <div className="hidden">
-            <p className="text-xl font-bold text-[#334a5e]">What's their email address? (optional)</p>
+            <p className="text-xl font-bold text-[#334a5e]">What&apos;s their email address? (optional)</p>
             <TextField
               fullWidth
               value={""}

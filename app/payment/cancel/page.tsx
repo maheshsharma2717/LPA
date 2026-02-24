@@ -18,7 +18,7 @@ function CancelContent() {
 
                 <h1 className="text-3xl font-extrabold text-[#334a5e] mb-2">Payment Cancelled</h1>
                 <p className="text-gray-600 mb-8">
-                    The payment process was cancelled and you haven't been charged. You can try again when you're ready.
+                    The payment process was cancelled and you haven&apos;t been charged. You can try again when you&apos;re ready.
                 </p>
 
                 <div className="flex flex-col gap-3">
@@ -39,7 +39,7 @@ function CancelContent() {
             </div>
 
             <p className="mt-8 text-sm text-gray-400">
-                If you're having trouble paying, please call us on <span className="font-bold">0800 888 6508</span>
+                If you&apos;re having trouble paying, please call us on <span className="font-bold">0800 888 6508</span>
             </p>
         </div>
     );

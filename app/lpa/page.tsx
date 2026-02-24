@@ -8,6 +8,7 @@ export default function LPAStepOne() {
   const routePage = useRouter();
   const [currentStep, setCurrentStep] = useState("start");
   const [backHistory, setBackHistory] = useState<string[]>(["start"]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [stepNumber, setStepNumber] = useState(1);
 
   type OptionType = {
@@ -214,7 +215,7 @@ export default function LPAStepOne() {
             <>
               <div className="mt-6 space-y-6 text-[#6B7588] text-start leading-relaxed">
                 <h2 className="text-2xl sm:text-2xl font-extrabold text-[#3A3A3C] mb-4 leading-tight text-Start">
-                  Sorry, we can't continue
+                  Sorry, we can&apos;t continue
                 </h2>
                 <p>
                   You have said that the people this document is for are not
@@ -228,9 +229,9 @@ export default function LPAStepOne() {
                 </p>
 
                 <p>
-                  Unfortunately this means that you can't use our online service
+                  Unfortunately this means that you can&apos;t use our online service
                   to get a Lasting Power of Attorney in place. If you answered
-                  this question incorrectly then please click the'Back' button.
+                  this question incorrectly then please click the&apos;Back&apos; button.
                 </p>
               </div>
               <NeedHelp />
@@ -305,7 +306,7 @@ export default function LPAStepOne() {
 
                   <div>
                     <h3 className="font-semibold text-lg text-[#3A3A3C]">
-                      Secure your family's future.
+                      Secure your family&apos;s future.
                     </h3>
                     <p className="text-[#3A3A3C] leading-relaxed mt-1">
                       Guarantee access to finance when most needed and make

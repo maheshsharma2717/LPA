@@ -30,9 +30,9 @@ export default function LoginPage() {
             if (data.session) {
                 router.push("/leads");
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Login error:", err);
-            setError(err.message || "An error occurred during login");
+            setError(err instanceof Error ? err.message : "An error occurred during login");
         } finally {
             setLoading(false);
         }
@@ -44,9 +44,9 @@ export default function LoginPage() {
                 provider: 'google'
             });
             if (error) throw error;
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Google login error:", err);
-            setError(err.message);
+            setError(err instanceof Error ? err.message : "An error occurred");
         }
     };
 
@@ -55,6 +55,7 @@ export default function LoginPage() {
             {/* Header */}
             <header className="max-w-7xl container mx-auto py-4 px-6 sm:px-12 flex justify-between items-center">
                 <Link href="/" className="flex items-center gap-2">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src="zen_logo.png" className="w-20" alt="Zenco Logo" />
                 </Link>
             </header>
@@ -62,6 +63,7 @@ export default function LoginPage() {
             {/* Main */}
             <main className="grow flex items-center justify-center">
                 <div className="max-w-lg w-full p-5 sm:p-12">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src="signup-email.png" className="w-40 mb-6 mx-auto " alt="" />
                     <div className="flex flex-col items-center mb-8">
                         <h2 className="text-3xl font-bold text-zenco-dark text-center">
@@ -136,12 +138,13 @@ export default function LoginPage() {
                             onClick={handleGoogleLogin}
                             className="w-full flex items-center justify-center gap-3 border border-gray-300 py-3 rounded-xl font-semibold text-sm cursor-pointer hover:bg-gray-50 transition"
                         >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
                             Continue with Google
                         </button>
 
                         <p className="text-sm text-center text-[#212529] mt-6">
-                            Don't have an account?{" "}
+                            Don&apos;t have an account?{" "}
                             <Link href="/register" className="text-md text-center text-[#212529]  cursor-pointer">
                               <u>Sign up</u>  
                             </Link>

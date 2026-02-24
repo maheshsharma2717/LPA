@@ -5,14 +5,11 @@ import { supabase } from "@/lib/supabase";
 import {
   Box,
   FormControl,
-  InputLabel,
   MenuItem,
   Select,
-  SelectChangeEvent,
   CircularProgress,
   Alert,
 } from "@mui/material";
-import { log } from "console";
 
 type DocumentSelection =
   | "Health and Welfare"
@@ -21,10 +18,13 @@ type DocumentSelection =
   | "";
 
 type Props = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateData: (data: any) => void;
   onNext: () => void;
   isSaving: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   allFormData: any;
 };
 
@@ -37,7 +37,6 @@ type Donor = {
 };
 
 export default function Step2WhichDocuments({
-  data,
   updateData,
   onNext,
   isSaving,
@@ -51,7 +50,6 @@ export default function Step2WhichDocuments({
   const [error, setError] = useState<string | null>(null);
 
   const applicationId = allFormData?.who?.applicationId;
-  const selectedPeopleIds = allFormData?.who?.selectedPeopleIds || [];
 
   useEffect(() => {
     const init = async () => {
@@ -89,6 +87,7 @@ export default function Step2WhichDocuments({
           step1Selection === "You and your partner" ||
           step1Selection === "You and someone else";
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const activeDonors = fetchedDonors.filter((d: any) => {
           if (d.is_lead) return isLeadSelected;
           return step1SelectedIds.includes(d.id);
@@ -110,9 +109,11 @@ export default function Step2WhichDocuments({
 
             if (lpas && Array.isArray(lpas)) {
               const hasHealth = lpas.some(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (doc: any) => doc.lpa_type === "health_and_welfare",
               );
               const hasFinance = lpas.some(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (doc: any) => doc.lpa_type === "property_and_finance",
               );
 
@@ -144,6 +145,7 @@ export default function Step2WhichDocuments({
     if (isSaving) {
       handleSave();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSaving]);
 
   const handleSelectionChange = (donorId: string, value: DocumentSelection) => {
@@ -174,9 +176,11 @@ export default function Step2WhichDocuments({
           selection === "Property and Finance" || selection === "Both";
 
         const existingHealth = currentDocs.find(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (d: any) => d.lpa_type === "health_and_welfare",
         );
         const existingFinance = currentDocs.find(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (d: any) => d.lpa_type === "property_and_finance",
         );
 
@@ -330,7 +334,7 @@ export default function Step2WhichDocuments({
           Welfare for health decisions, Property and Finance for decisions about
           your finances, or choose Both.
         </p>
-        <div className="flex items-center gap-3 font-semibold">
+        <div className="flex items-end gap-3 font-semibold">
           <span className="">
             <svg
               xmlns="http://www.w3.org/2000/svg"

@@ -25,9 +25,10 @@ export async function POST(request: Request) {
         let event: Stripe.Event;
         try {
             event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
-        } catch (err: any) {
-            console.error('Webhook signature verification failed:', err.message);
-            return NextResponse.json({ error: `Webhook signature verification failed: ${err.message}` }, { status: 400 });
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+            console.error('Webhook signature verification failed:', errorMessage);
+            return NextResponse.json({ error: `Webhook signature verification failed: ${errorMessage}` }, { status: 400 });
         }
 
         switch (event.type) {
@@ -49,7 +50,7 @@ export async function POST(request: Request) {
                         stripe_payment_intent_id: session.payment_intent as string,
                         amount_pence: session.amount_total || 0,
                         status: 'succeeded',
-                        stripe_event_data: event.data.object as any,
+                        stripe_event_data: event.data.object as Record<string, unknown>,
                         paid_at: new Date().toISOString(),
                     }, { onConflict: 'stripe_checkout_session_id' });
 
@@ -91,7 +92,7 @@ export async function POST(request: Request) {
         }
 
         return NextResponse.json({ received: true });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Webhook error:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }

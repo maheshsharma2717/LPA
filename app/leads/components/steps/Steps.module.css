@@ -259,6 +259,11 @@ header {
     font-family: Arial, sans-serif;
 }
 
+.heading-border-bottom {
+    border-bottom: 2px solid transparent;
+    border-image: linear-gradient(0.25turn, transparent, #08B9ED, transparent) 1;
+}
+
 .zenco-list {
     display: flex;
     flex-direction: column;
@@ -382,7 +387,14 @@ header {
     font-weight: 800;
     font-size: 24px;
 }
-
+.elite{
+    background-color: var(--zenco-blue) !important;
+}
+.headingBorderBottom{
+    padding-bottom: 10px;
+    border-bottom: 2px solid transparent;
+    border-image: linear-gradient(0.25turn, transparent, #08B9ED, transparent) 1;
+}
 /* Footer */
 /* footer {
     background: var(--zenco-navy);

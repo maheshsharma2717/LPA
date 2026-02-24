@@ -13,19 +13,24 @@ import {
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import styles from "./Steps.module.css";
 
 type Props = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateData: (data: any) => void;
   onNext: () => void;
   isSaving: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   allFormData: any;
   currentDonorIndex: number;
 };
 
-export default function DonorTab({ onNext, isSaving, allFormData, updateData, currentDonorIndex }: Props) {
+export default function DonorTab({ onNext, allFormData, updateData, currentDonorIndex }: Props) {
   const [loading, setLoading] = useState(true);
   const [showManualAddress, setShowManualAddress] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [currentDonor, setCurrentDonor] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -81,6 +86,7 @@ export default function DonorTab({ onNext, isSaving, allFormData, updateData, cu
           step1Selection === "You and your partner" ||
           step1Selection === "You and someone else";
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const activeDonors = (fetchedDonors || []).filter((d: any) => {
           if (d.is_lead) return isLeadSelected;
           return step1SelectedIds.includes(d.id);
@@ -214,15 +220,15 @@ export default function DonorTab({ onNext, isSaving, allFormData, updateData, cu
   const donorName = `${currentDonor.first_name} ${currentDonor.last_name}`;
 
   return (
-    <section className="space-y-8 animate-in fade-in slide-in-from-top-4">
+    <section className="space-y-8  p-2 animate-in fade-in slide-in-from-top-4">
       <div className="flex flex-col gap-5">
-        <h1 className="text-center text-3xl font-bold text-zenco-dark">
+        <h1 className={`text-center text-3xl ${styles.headingBorderBottom} font-bold text-zenco-dark`}>
           Details for <span className="text-zenco-blue">{donorName}</span> (The Donor)
         </h1>
-
+ 
         {subStep === 0 && (
           <div className="flex flex-col gap-3 text-gray-600">
-            <p>The 'Donor' is the person appointing other people to make decisions on their behalf and must be:</p>
+            <p>The &apos;Donor&apos; is the person appointing other people to make decisions on their behalf and must be:</p>
             <ul className="list-none space-y-2">
               <li className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
@@ -238,7 +244,7 @@ export default function DonorTab({ onNext, isSaving, allFormData, updateData, cu
         )}
       </div>
 
-      <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm space-y-8">
+      <div className="space-y-8">
 
         {/* SUB-STEP 0: PERSONAL DETAILS */}
         {subStep === 0 && (
@@ -330,7 +336,7 @@ export default function DonorTab({ onNext, isSaving, allFormData, updateData, cu
               )}
 
               {showManualAddress && (
-                <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                <div className="flex flex-col gap-4 md:gap-6 animate-in fade-in slide-in-from-top-2">
                   <TextField
                     label="Address Line 1"
                     value={formData.address || ""}
@@ -343,7 +349,7 @@ export default function DonorTab({ onNext, isSaving, allFormData, updateData, cu
                     onChange={(e) => handleFormChange("addressLine2", e.target.value)}
                     fullWidth
                   />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                     <TextField
                       label="City"
                       value={formData.city || ""}

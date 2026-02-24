@@ -8,6 +8,7 @@ import {
   Alert,
 } from "@mui/material";
 import { supabase } from "@/lib/supabase";
+import styles from "./Steps.module.css";
 
 type LpaDoc = {
   id: string;
@@ -18,15 +19,18 @@ type LpaDoc = {
 };
 
 type Props = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateData: (data: any) => void;
   onNext: () => void;
   isSaving: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   allFormData: any;
   currentDonorIndex: number;
 };
 
-export default function HealthFinanceTab({ onNext, isSaving, allFormData, updateData, currentDonorIndex }: Props) {
+export default function HealthFinanceTab({ onNext, allFormData, updateData, currentDonorIndex }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,9 +61,9 @@ export default function HealthFinanceTab({ onNext, isSaving, allFormData, update
         const donorsRes = await fetch(`/api/donors?applicationId=${applicationId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const { data: donors } = await donorsRes.json();
+        const { data: fetchedDonors } = await donorsRes.json();
 
-        if (!donors || donors.length === 0) {
+        if (!fetchedDonors || fetchedDonors.length === 0) {
           setLoading(false);
           return;
         }
@@ -71,7 +75,8 @@ export default function HealthFinanceTab({ onNext, isSaving, allFormData, update
           step1Selection === "You and your partner" ||
           step1Selection === "You and someone else";
 
-        const activeDonors = donors.filter((d: any) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const activeDonors = (fetchedDonors || []).filter((d: any) => {
           if (d.is_lead) return isLeadSelected;
           return step1SelectedIds.includes(d.id);
         });
@@ -88,13 +93,15 @@ export default function HealthFinanceTab({ onNext, isSaving, allFormData, update
         const lpasRes = await fetch(`/api/lpa-documents?donorId=${firstDonor.id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const { data: docs } = await lpasRes.json();
+        const { data: existingDocs } = await lpasRes.json();
 
-        if (docs && Array.isArray(docs) && docs.length > 0) {
-          setLpaDocs(docs);
+        if (existingDocs && Array.isArray(existingDocs) && existingDocs.length > 0) {
+          setLpaDocs(existingDocs);
 
-          const healthDoc = docs.find((d: any) => d.lpa_type === "health_and_welfare");
-          const financeDoc = docs.find((d: any) => d.lpa_type === "property_and_finance");
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const healthDoc = existingDocs.find((d: any) => d.lpa_type === "health_and_welfare");
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const financeDoc = existingDocs.find((d: any) => d.lpa_type === "property_and_finance");
 
           if (healthDoc?.life_sustaining_treatment !== null && healthDoc?.life_sustaining_treatment !== undefined) {
             setLifeSustaining(healthDoc.life_sustaining_treatment);
@@ -117,6 +124,7 @@ export default function HealthFinanceTab({ onNext, isSaving, allFormData, update
       }
     };
     init();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [applicationId, currentDonorIndex, allFormData?.who]);
 
   const pages: ("health" | "finance")[] = [];
@@ -212,12 +220,9 @@ export default function HealthFinanceTab({ onNext, isSaving, allFormData, update
       {/* ═══════ HEALTH & WELFARE: LIFE-SUSTAINING TREATMENT ═══════ */}
       {currentPage === "health" && (
         <div className="space-y-6 animate-in fade-in">
-          <h1 className="text-center text-3xl font-bold text-zenco-dark">
+          <h1 className={`text-center text-3xl font-bold text-zenco-dark ${styles.headingBorderBottom}`}>
             Life-sustaining <span className="text-zenco-blue">Treatment</span>
           </h1>
-
-          <div className="h-1 bg-gradient-to-r from-zenco-blue to-blue-400 rounded-full" />
-
           <div className="flex flex-col gap-3 text-gray-700">
             <p>
               <span className="text-zenco-blue font-semibold">{donorName}</span>{" "}
@@ -269,11 +274,9 @@ export default function HealthFinanceTab({ onNext, isSaving, allFormData, update
       {/* ═══════ PROPERTY & FINANCE: WHEN ATTORNEYS CAN ACT ═══════ */}
       {currentPage === "finance" && (
         <div className="space-y-6 animate-in fade-in">
-          <h1 className="text-center text-3xl font-bold text-zenco-dark">
+          <h1 className={`text-center text-3xl font-bold text-zenco-dark ${styles.headingBorderBottom}`}>
             When do the <span className="text-zenco-blue">property and finance documents become effective?</span>
           </h1>
-
-          <div className="h-1 bg-gradient-to-r from-zenco-blue to-blue-400 rounded-full" />
 
           <div className="flex flex-col gap-4 text-gray-700">
             <p>
@@ -303,23 +306,34 @@ export default function HealthFinanceTab({ onNext, isSaving, allFormData, update
             {/* Option 1: As soon as registered */}
             <div
               onClick={() => setWhenCanAct("when_registered")}
-              className={`border-2 p-5 rounded-lg cursor-pointer transition-all ${whenCanAct === "when_registered"
-                ? "border-[#334a5e] bg-white shadow-md"
+                className={`border-2 p-5 rounded-lg cursor-pointer transition-all ${whenCanAct === "when_registered"
+                ? "border-[#334a5e] bg-[#334a5e] text-white shadow-md"
                 : "border-gray-300 hover:border-gray-400"
                 }`}
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 space-y-2">
-                  <p className="font-semibold text-zenco-dark">
+                  <p className={`font-semibold  ${whenCanAct === "when_registered"
+                ? "text-white"
+                : " text-zenco-dark"}`}>
                     As soon as the lasting power of attorney has been registered
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className={`text-sm  ${whenCanAct === "when_registered"
+                ? "text-white"
+                : " text-gray-500"
+                }`}>
                     (and also when the donor does not have the mental capacity)
                   </p>
-                  <p className="text-sm text-zenco-blue">
+                  <p className={`text-sm  ${whenCanAct === "when_registered"
+                ? "text-white"
+                : " text-zenco-blue"
+                }`}>
                     Most people choose this option because it is the most practical
                   </p>
-                  <p className="text-sm text-gray-600">
+                  <p className={`text-sm  ${whenCanAct === "when_registered"
+                ? "text-white"
+                : "text-gray-500"
+                }`}>
                     While you still have mental capacity, attorneys can only act with your consent. If you
                     later lose capacity, they can continue to act on your behalf for all decisions covered by
                     this lasting power of attorney.

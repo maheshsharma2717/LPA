@@ -13,6 +13,7 @@ import {
 import { supabase } from "@/lib/supabase";
 
 type Props = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   lead?: any;
   userId?: string;
   onComplete: () => void;
@@ -166,7 +167,7 @@ export default function InitialDetailsForm({
             for – you might just be helping someone else make it.
           </p>
           <p>
-            You'll be able to use these details in any documents you make using
+            You&apos;ll be able to use these details in any documents you make using
             our service.
           </p>
         </div>
@@ -244,8 +245,8 @@ export default function InitialDetailsForm({
               <div className="space-y-3">
                 <p>
                   If this person has been known by any other names enter them
-                  separated by a comma, for example 'Mary Smith, Mary
-                  Smith-Cooper'.
+                  separated by a comma, for example &apos;Mary Smith, Mary
+                  Smith-Cooper&apos;.
                 </p>
                 <p>
                   {" "}
@@ -343,7 +344,7 @@ export default function InitialDetailsForm({
       {/* Address */}
       <div className="space-y-4 leading-loose">
         <h3 className="font-semibold text-lg text-zenco-dark">
-          What's your address?
+          What&apos;s your address?
         </h3>
 
         {openAddress ? (

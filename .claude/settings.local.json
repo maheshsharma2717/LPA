@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(node --version:*)",
+      "Bash(npm:*)",
+      "Bash(supabase:*)",
+      "Bash(npx supabase:*)",
+      "Bash(where:*)",
+      "Bash(curl:*)",
+      "Bash(source:*)",
+      "Bash(TOKEN=\"eyJhbGciOiJFUzI1NiIsImtpZCI6Ijc3NmM0MTRiLTE1N2UtNDg1Mi1iN2ZhLTk0NDFiZjc1MGYxMyIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL29kaGxtcHJ0ZGJyemplenljY25vLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiIwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDIiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzcwNjQ5ODcyLCJpYXQiOjE3NzA2NDYyNzIsImVtYWlsIjoibGVhZEBscGEtb25saW5lLnRlc3QiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJuYW1lIjoiVGVzdCBMZWFkIn0sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NzA2NDYyNzJ9XSwic2Vzc2lvbl9pZCI6ImJmNGM1ZGU5LTliZGUtNGQ4NC04YzBlLWNlN2UzYzdmMDQyNSIsImlzX2Fub255bW91cyI6ZmFsc2V9.2zuE_iPy9E6AiEvYEeljBiTVT3DN-pMknYKz-gebnO-mhTC0mSQJG6rT4pAPSR5aNg1wpoAWKZvzQWRNRrx3eA\")",
+      "Bash(git init:*)",
+      "Bash(git status:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}

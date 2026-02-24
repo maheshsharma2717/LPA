@@ -45,11 +45,6 @@ export default function RegisterUser() {
           data: { session },
         } = await supabase.auth.getSession();
 
-        const nameParts = formData.name.trim().split(" ");
-        const firstName = nameParts[0];
-        const lastName =
-          nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
-
         if (session) {
           const nameParts = formData.name.trim().split(" ");
           const firstName = nameParts[0];
@@ -81,9 +76,9 @@ export default function RegisterUser() {
           setSuccess(true);
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Registration error:", err);
-      setError(err.message || "An error occurred during registration");
+      setError(err instanceof Error ? err.message : "An error occurred during registration");
     } finally {
       setLoading(false);
     }
@@ -113,7 +108,7 @@ export default function RegisterUser() {
             Check your email
           </h2>
           <p className="text-gray-600 mb-8">
-            We've sent a confirmation link to{" "}
+            We&apos;ve sent a confirmation link to{" "}
             <span className="font-semibold">{formData.email}</span>. Please
             verify your email to continue.
           </p>
@@ -133,6 +128,7 @@ export default function RegisterUser() {
       {/* Header */}
       <header className=" container mx-auto py-4 px-6 sm:px-12 flex justify-between items-center">
         <div className="flex items-center gap-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="zen_logo.png" className="w-28" alt="" />
         </div>
       </header>
@@ -140,6 +136,7 @@ export default function RegisterUser() {
       {/* Main */}
       <main className="grow flex items-center justify-center p-6 sm:p-12">
         <div className="xl:w-1/2 p-8 sm:p-12  ">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="signup-email.png" className="w-40 mb-6 mx-auto " alt="" />
 
           {/*  NAME & EMAIL */}
@@ -149,7 +146,7 @@ export default function RegisterUser() {
                 className="text-2xl sm:text-4xl font-bold text-[#3a3a3c] mb-2 text-center leading-tight"
                 style={{ lineHeight: 1.2 }}
               >
-                Let's start with the basics
+                Let&apos;s start with the basics
               </h2>
 
               <p
@@ -237,13 +234,14 @@ export default function RegisterUser() {
                         },
                       });
                       if (error) throw error;
-                    } catch (err: any) {
+                    } catch (err: unknown) {
                       console.error("Google sign-up error:", err);
-                      setError(err.message);
+                      setError(err instanceof Error ? err.message : "An error occurred");
                     }
                   }}
                   className="w-full flex items-center justify-center gap-3 border border-gray-300 py-3 rounded-sm font-semibold text-sm hover:bg-gray-50 transition"
                 >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
                     className="w-5 h-5"
@@ -292,7 +290,7 @@ export default function RegisterUser() {
               </h2>
 
               <p className="text-gray-600 mb-8">
-                You can come back later if you don't have time to finish your
+                You can come back later if you don&apos;t have time to finish your
                 documents now
               </p>
 

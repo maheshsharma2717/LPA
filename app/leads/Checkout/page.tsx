@@ -1,10 +1,28 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { FormControl, MenuItem, Select, CircularProgress, Box } from "@mui/material";
+import { CircularProgress, Box } from "@mui/material";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+
+interface BreakdownItem {
+  donor_name: string;
+  lpa_type: 'health_and_welfare' | 'property_and_finance';
+  opg_fee_pence: number;
+  our_fee_pence: number;
+  donors?: {
+    application_id: string;
+  };
+  application_id?: string;
+}
+
+interface Fees {
+  breakdown: BreakdownItem[];
+  our_fee_pence: number;
+  opg_fee_pence: number;
+  total_pence: number;
+}
 
 function CheckoutContent() {
   const router = useRouter();
@@ -13,7 +31,7 @@ function CheckoutContent() {
 
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
-  const [fees, setFees] = useState<any>(null);
+  const [fees, setFees] = useState<Fees | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -56,9 +74,10 @@ function CheckoutContent() {
         const data = await res.json();
         if (data.error) throw new Error(data.error);
         setFees(data);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Error fetching fees:", err);
-        setError(err.message || "Failed to load order details");
+        const errorMsg = err instanceof Error ? err.message : "Failed to load order details";
+        setError(errorMsg);
       } finally {
         setLoading(false);
       }
@@ -73,8 +92,6 @@ function CheckoutContent() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
-
-      const appId = applicationId || (fees?.breakdown?.[0]?.donors?.application_id); // Fallback logic if needed
 
       const res = await fetch("/api/create-checkout", {
         method: "POST",
@@ -91,9 +108,10 @@ function CheckoutContent() {
       if (data.checkout_url) {
         window.location.href = data.checkout_url;
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Payment error:", err);
-      setError(err.message || "Failed to initiate payment");
+      const errorMsg = err instanceof Error ? err.message : "Failed to initiate payment";
+      setError(errorMsg);
       setPaying(false);
     }
   };
@@ -144,6 +162,7 @@ function CheckoutContent() {
             <h1 className="text-2xl font-bold text-[#334a5e]">Your Order</h1>
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
               <div className="p-6 space-y-4">
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 {fees?.breakdown?.map((item: any, idx: number) => (
                   <div key={idx} className="flex justify-between items-start text-sm py-2 border-b border-gray-50 last:border-0">
                     <div>

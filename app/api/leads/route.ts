@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase, getServerSupabase, supabaseAdmin } from '@/lib/supabase';
+import { getServerSupabase, supabaseAdmin } from '@/lib/supabase';
 
 export async function GET(request: Request) {
     try {
@@ -49,7 +49,7 @@ export async function GET(request: Request) {
             lead: leadData,
             applications: appsData || [],
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Leads GET API error:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
@@ -96,7 +96,7 @@ export async function PATCH(request: Request) {
         }
 
         return NextResponse.json({ data });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Leads PATCH API error:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { Stepper, Step, StepLabel, Button, CircularProgress } from "@mui/material";
-import { steps } from "../step-config";
+import {useState} from "react";
+import {Stepper, Step, StepLabel, Button, CircularProgress} from "@mui/material";
+import {steps} from "../step-config";
 import WhoTab from "./steps/Step1Who";
 import WhichDoucmentsTab from "./steps/Step2WhichDocuments";
 import DonorTab from "./steps/Step3TheDonor";
@@ -19,7 +19,9 @@ type Props = {
   setActiveStep: (step: number) => void;
   completedSteps: number[];
   setCompletedSteps: React.Dispatch<React.SetStateAction<number[]>>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   formData: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setFormData: React.Dispatch<React.SetStateAction<any>>;
   onExitWizard: () => void;
   onFinish: () => void;
@@ -37,6 +39,7 @@ export default function WizardLayout({
   onFinish,
   currentDonorIndex
 }: Props) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const stepComponentMap: Record<string, any> = {
     who: WhoTab,
     "which-document": WhichDoucmentsTab,
@@ -86,41 +89,54 @@ export default function WizardLayout({
 
   return (
     <>
+
       <div className="space-y-10">
         {/* Horizontal Stepper */}
-        <Stepper
-          activeStep={activeStep}
-          alternativeLabel
-          sx={{
-            "& .MuiStepIcon-root.Mui-active": {
-              color: "#08B9ED",
-            },
-            "& .MuiStepIcon-root.Mui-completed": {
-              color: "#08B9ED",
-            },
-            "& .MuiStepLabel-label.Mui-active": {
-              fontWeight: 600,
-              color: "#1f2937",
-            },
-          }}
-        >
-          {steps.map((step, index) => (
-            <Step key={step.key} completed={completedSteps.includes(index)}>
-              <StepLabel
-                onClick={() => handleStepClick(index)}
-                sx={{ cursor: (completedSteps.includes(index) || index === activeStep) ? 'pointer' : 'default' }}
-              >
-                {step.label}
-              </StepLabel>
-            </Step>
-          ))}
-        </Stepper>
+        <div className="w-full">
+          <Stepper
+            activeStep={activeStep}
+            alternativeLabel
+            sx={{
+              "& .MuiStepIcon-root.Mui-active": {
+                color: "#28a745",
+              },
+              "& .MuiStepIcon-root.Mui-completed": {
+                color: "#28a745",
+              },
+              "& .MuiStepLabel-label.Mui-active": {
+                fontWeight: 600,
+                color: "#1f2937",
+              },
+              "& .MuiStepLabel-labelContainer": {
+                display: {xs: "none", md: "block"},
+              },
+            }}
+          >
+            {steps.map((step, index) => (
+              <Step key={step.key} completed={completedSteps.includes(index)}>
+                <StepLabel
+                  onClick={() => handleStepClick(index)}
+                  sx={{cursor: (completedSteps.includes(index) || index === activeStep) ? 'pointer' : 'default'}}
+                >
+                  {step.label}
+                </StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+
+          {/* Active Step Label for Mobile */}
+          <div className="text-center mt-4 md:hidden font-semibold text-zenco-dark text-lg">
+            {steps[activeStep].label}
+          </div>
+        </div>
 
         {/* Current Step Content */}
         <div>
           <CurrentStepComponent
             data={formData[steps[activeStep].key]}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             updateData={(data: any) =>
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               setFormData((prev: any) => ({
                 ...prev,
                 [steps[activeStep].key]: data,
@@ -138,7 +154,7 @@ export default function WizardLayout({
           <div className="flex justify-between pt-6">
             <Button
               onClick={handleBack}
-              sx={{ color: '#6b7280', textTransform: 'none' }}
+              sx={{color: '#6b7280', textTransform: 'none'}}
             >
               Back
             </Button>
@@ -152,7 +168,7 @@ export default function WizardLayout({
                 textTransform: "none",
                 borderRadius: "8px",
                 padding: "8px 32px",
-                "&:hover": { backgroundColor: "#1d4ed8" },
+                "&:hover": {backgroundColor: "#1d4ed8"},
               }}
             >
               {isSaving ? <CircularProgress size={24} color="inherit" /> : (activeStep === steps.length - 1 ? "Finish" : "Next")}

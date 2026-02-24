@@ -34,7 +34,9 @@ type Person = {
 };
 
 type Props = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateData: (data: any) => void;
   onNext: () => void;
   isSaving: boolean;
@@ -96,6 +98,7 @@ export default function Step1Who({
     if (isSaving) {
       handleContinue();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSaving]);
 
   const isLeadIncluded =
@@ -120,7 +123,8 @@ export default function Step1Who({
           headers: { Authorization: `Bearer ${token}` },
         });
         const { data: apps } = await appsRes.json();
-        let currentApp = apps?.find((a: any) => a.status === "draft");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const currentApp = apps?.find((a: any) => a.status === "draft");
 
         if (currentApp) {
           setApplicationId(currentApp.id);
@@ -131,6 +135,7 @@ export default function Step1Who({
           const { data: donors } = await donorsRes.json();
 
           if (donors && donors.length > 0) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const mappedPeople = donors.map((d: any) => ({
               id: d.id,
               title: d.title,
@@ -147,6 +152,7 @@ export default function Step1Who({
               postcode: d.postcode,
             }));
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const dbLeadDonor = mappedPeople.find((p: any) => p.isLead);
             setLeadPerson(
               dbLeadDonor || {
@@ -166,6 +172,7 @@ export default function Step1Who({
               },
             );
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const others = mappedPeople.filter((p: any) => !p.isLead);
             setPeople(others);
 
@@ -174,6 +181,7 @@ export default function Step1Who({
             } else if (others.length > 0) {
               // On reload, if we have others in DB but no selection in form data,
               // assume all non-lead donors in DB were selected.
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               setSelectedPeopleIds(others.map((p: any) => p.id));
             } else {
               setSelectedPeopleIds([]);
@@ -194,6 +202,7 @@ export default function Step1Who({
                 );
                 setViewMode("LIST");
               } else if (data?.selection === "Someone else") {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const count = others.filter((p: any) =>
                   data?.selectedPeopleIds?.includes(p.id),
                 ).length;
@@ -250,6 +259,7 @@ export default function Step1Who({
       }
     };
     init();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -260,6 +270,7 @@ export default function Step1Who({
       morePeople,
       applicationId,
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected, people, selectedPeopleIds, morePeople, applicationId]);
 
   const refinedHandleNextCategory = () => {
@@ -417,7 +428,6 @@ export default function Step1Who({
       } = await supabase.auth.getSession();
       if (!session) return;
       const token = session.access_token;
-      const userId = session.user.id;
 
       let appId = applicationId;
       if (!appId) {
@@ -476,7 +486,9 @@ export default function Step1Who({
         };
 
         const existingRecord = p.isLead
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ? currentDonors?.find((cd: any) => cd.is_lead)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           : currentDonors?.find((cd: any) => cd.id === p.id);
 
         if (existingRecord) {
@@ -621,7 +633,7 @@ export default function Step1Who({
             setViewMode("CATEGORIES");
             setSelectedPeopleIds([]);
           }}
-          className="underline text-[#08b9ed] font-medium hover:text-blue-700"
+          className="underline text-[#08b9ed] font-medium hover:text-blue-700 px-1"
         >
           click here to change who these documents are for.
         </button>
@@ -785,7 +797,7 @@ export default function Step1Who({
                   setMorePeople(true);
                   setViewMode("CATEGORIES");
                 }}
-                className="underline  font-medium"
+                className="underline text-[#08b9ed] font-medium hover:text-blue-700 px-1"
               >
                 click here to change who these documents are for.
               </button>
@@ -865,7 +877,7 @@ export default function Step1Who({
           </div>
 
           <p className="font-semibold text-zenco-dark -mb-2">
-            What's their date of birth?
+            What&apos;s their date of birth?
           </p>
           <TextField
             type="date"

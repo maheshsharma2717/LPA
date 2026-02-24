@@ -34,8 +34,8 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'LPA document not found' }, { status: 404 });
         }
 
-        const donor = lpaDoc.donors as any;
-        const application = donor.applications as any;
+        const donor = lpaDoc.donors as { applications: unknown };
+        const application = donor.applications as { id: string };
 
 
         const { data: docAttorneys } = await db
@@ -67,8 +67,8 @@ export async function POST(request: Request) {
             lpa_type: lpaDoc.lpa_type,
             donor,
             attorneys: {
-                primary: (docAttorneys || []).filter((a: any) => a.role === 'primary').map((a: any) => a.attorneys),
-                replacement: (docAttorneys || []).filter((a: any) => a.role === 'replacement').map((a: any) => a.attorneys),
+                primary: (docAttorneys || []).filter((a: { role: string; attorneys: unknown }) => a.role === 'primary').map((a: { attorneys: unknown }) => a.attorneys),
+                replacement: (docAttorneys || []).filter((a: { role: string; attorneys: unknown }) => a.role === 'replacement').map((a: { attorneys: unknown }) => a.attorneys),
             },
             applicants: applicants || [],
             people_to_notify: peopleToNotify || [],
@@ -105,7 +105,7 @@ export async function POST(request: Request) {
             pdf_url: signedUrl?.signedUrl,
             storage_path: storagePath,
         });
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error: unknown) {
+        return NextResponse.json({ error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
     }
 }

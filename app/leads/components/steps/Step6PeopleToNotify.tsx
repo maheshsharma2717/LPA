@@ -26,13 +26,16 @@ type Person = {
 type Props = {
   onNext: () => void;
   isSaving: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   allFormData: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateData: (data: any) => void;
   currentDonorIndex: number;
 };
 
 export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updateData, currentDonorIndex }: Props) {
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -80,6 +83,7 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
             step1Selection === "You and your partner" ||
             step1Selection === "You and someone else";
 
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const activeDonors = fetchedDonors.filter((d: any) => {
             if (d.is_lead) return isLeadSelected;
             return step1SelectedIds.includes(d.id);
@@ -125,12 +129,14 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
     };
 
     init();
-  }, [applicationId, currentDonorIndex, allFormData?.who]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [applicationId, currentDonorIndex, allFormData?.who, donorId]);
 
   useEffect(() => {
     if (isSaving) {
       handleSaveAndNext();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSaving]);
 
   const handleSaveAndNext = () => {
@@ -251,21 +257,21 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
             <div className={styles.dividerZenco}></div>
 
             <p className={styles.pZenco}>
-              You can let people know that you're going to register this document. They can raise any concerns they have about the
+              You can let people know that you&apos;re going to register this document. They can raise any concerns they have about the
               Lasting Powers of Attorney-for example, if there was any pressure or fraud in making it.
             </p>
             <p className={styles.pZenco}>
-              When the document is registered, the person applying to register must send a notice to each 'person to notify'.
+              When the document is registered, the person applying to register must send a notice to each &apos;person to notify&apos;.
             </p>
             <p className={styles.pZenco}>
-              You can't put any of the attorneys or replacement attorneys here.
+              You can&apos;t put any of the attorneys or replacement attorneys here.
             </p>
             <p className={styles.pZenco}>
               Choose people who care about your best interests and who would be willing to speak up if they were concerned.
             </p>
 
             <div className="text-zenco-blue font-medium mb-8">
-              Most people choose 'No' and do not enter anyone here.
+              Most people choose &apos;No&apos; and do not enter anyone here.
             </div>
 
             <div className="mx-auto">

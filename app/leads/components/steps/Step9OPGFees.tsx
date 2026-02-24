@@ -5,10 +5,13 @@ import { TextField, Box, CircularProgress, Alert } from "@mui/material";
 import { supabase } from "@/lib/supabase";
 
 type Props = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateData: (data: any) => void;
   onNext: () => void;
   isSaving: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   allFormData: any;
   currentDonorIndex: number;
 };
@@ -61,6 +64,7 @@ export default function OPGFeesTab({ data, updateData, onNext, isSaving, allForm
     });
     const { data: fetchedDonors } = await donorsRes.json();
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const activeDonors = (fetchedDonors || []).filter((d: any) => {
       if (d.is_lead) return isLeadSelected;
       return step1SelectedIds.includes(d.id);
@@ -102,7 +106,8 @@ export default function OPGFeesTab({ data, updateData, onNext, isSaving, allForm
     };
 
     init();
-  }, [currentDonorIndex]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentDonorIndex, applicationId, allFormData?.who]);
 
   const handleFinalSave = async () => {
     const donorId = await getDonorId();
@@ -156,6 +161,7 @@ export default function OPGFeesTab({ data, updateData, onNext, isSaving, allForm
     if (isSaving) {
       handleFinalSave();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSaving]);
 
   const toggleBenefit = (id: string) => {
@@ -219,7 +225,7 @@ export default function OPGFeesTab({ data, updateData, onNext, isSaving, allForm
   const evidenceData: Record<string, { title: string; desc: React.ReactNode }> = {
     "paid-employment": {
       title: "Paid employment",
-      desc: <>A <span className="text-cyan-500 font-bold">P60</span> or <span className="text-cyan-500 font-bold">3 months' consecutive wage slips</span> from your <span className="text-cyan-500 font-bold underline">current employment</span>,(from when returning documents e.g., if returning documents in May you would need to provide April, March & February).</>
+      desc: <>A <span className="text-cyan-500 font-bold">P60</span> or <span className="text-cyan-500 font-bold">3 months&apos; consecutive wage slips</span> from your <span className="text-cyan-500 font-bold underline">current employment</span>,(from when returning documents e.g., if returning documents in May you would need to provide April, March & February).</>
     },
     "self-employment": {
       title: "Self-employment",
@@ -284,7 +290,7 @@ export default function OPGFeesTab({ data, updateData, onNext, isSaving, allForm
               You must be able to supply evidence for at least one if selected.
             </p>
             <p className="text-xs text-gray-500">
-              Please note, if <span className="text-cyan-500 font-bold">{donorName}</span> have been awarded personal injury damages of more than £16,000 which were ignored when they were assessed for one of the qualifying benefits, they won't qualify for exemption.
+              Please note, if <span className="text-cyan-500 font-bold">{donorName}</span> have been awarded personal injury damages of more than £16,000 which were ignored when they were assessed for one of the qualifying benefits, they won&apos;t qualify for exemption.
             </p>
 
             <div className="pt-6">
@@ -343,7 +349,7 @@ export default function OPGFeesTab({ data, updateData, onNext, isSaving, allForm
               </p>
               <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-r-lg shadow-sm">
                 <p className="font-bold text-orange-800 leading-tight text-sm">
-                  You don't need these to finish your documents today, this is just for information as it is a good idea to get these ready while we post the documents to you.
+                  You don&apos;t need these to finish your documents today, this is just for information as it is a good idea to get these ready while we post the documents to you.
                 </p>
               </div>
             </div>
@@ -459,7 +465,7 @@ export default function OPGFeesTab({ data, updateData, onNext, isSaving, allForm
               </p>
               <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-r-lg shadow-sm">
                 <p className="font-bold text-orange-800 leading-tight text-sm">
-                  You don't need these to finish your documents today, this is just for information as it is a good idea to get these ready while we post the documents to you.
+                  You don&apos;t need these to finish your documents today, this is just for information as it is a good idea to get these ready while we post the documents to you.
                 </p>
               </div>
             </div>
@@ -523,7 +529,7 @@ export default function OPGFeesTab({ data, updateData, onNext, isSaving, allForm
                   <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 hover:shadow-md transition-shadow">
                     <p className="font-bold text-[#334a5e] mb-2 uppercase tracking-wide">Cheque</p>
                     <p className="text-sm text-gray-600 leading-relaxed italic">
-                      Send a cheque addressed to 'Office of the Public Guardian' with your application writing the name of the donor (<span className="text-cyan-500 font-bold">{donorName}</span>) on the back.
+                      Send a cheque addressed to &apos;Office of the Public Guardian&apos; with your application writing the name of the donor (<span className="text-cyan-500 font-bold">{donorName}</span>) on the back.
                     </p>
                   </div>
                   <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 hover:shadow-md transition-shadow">

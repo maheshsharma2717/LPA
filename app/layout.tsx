@@ -24,6 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+       {/* eslint-disable-next-line @next/next/no-page-custom-font */}
        <link precedence="default" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,600&amp;display=swap" rel="stylesheet"></link>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

@@ -15,6 +15,7 @@ import { supabase } from "@/lib/supabase";
 import { CircularProgress, FormControl, Select, MenuItem } from "@mui/material";
 
 interface Props {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   allFormData: any;
   onEdit: (stepIndex: number) => void;
   currentDonorIndex: number;
@@ -38,9 +39,11 @@ type Attorney = {
 
 export default function Step10({ allFormData, onEdit, currentDonorIndex }: Props) {
   const routePage = useRouter();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [donorDetails, setDonorDetails] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [attorneys, setAttorneys] = useState<Attorney[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [peopleToNotify, setPeopleToNotify] = useState<any[]>([]);
 
   // Attorney decision state — summary shows first, decision page only on Edit click
@@ -92,6 +95,7 @@ export default function Step10({ allFormData, onEdit, currentDonorIndex }: Props
             step1Selection === "You and your partner" ||
             step1Selection === "You and someone else";
 
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const activeDonors = fetchedDonors.filter((d: any) => {
             if (d.is_lead) return isLeadSelected;
             return step1SelectedIds.includes(d.id);
@@ -127,6 +131,7 @@ export default function Step10({ allFormData, onEdit, currentDonorIndex }: Props
     };
 
     fetchAllData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [applicationId, currentDonorIndex, allFormData?.who]);
 
   const decisions = allFormData?.["health-&-finances"] || {};
@@ -197,6 +202,7 @@ export default function Step10({ allFormData, onEdit, currentDonorIndex }: Props
       sno: 4,
       title: "People To Notify",
       desc: peopleToNotify.length > 0
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ? peopleToNotify.map((p: any) => p.first_name || p.firstName).join(", ")
         : "No people to notify selected.",
       icon: <Groups fontSize="small" />,
@@ -246,8 +252,10 @@ export default function Step10({ allFormData, onEdit, currentDonorIndex }: Props
       addressLines: [a.address_line_1, a.address_line_2, a.city, a.county, a.postcode, "United Kingdom"].filter(Boolean),
       dob: a.date_of_birth ? formatDate(a.date_of_birth) : "DOB not provided",
       email: a.email,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mobile: (a as any).mobile,
     })),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ...peopleToNotify.map((p: any) => ({
       name: `${p.first_name || p.firstName} ${p.last_name || p.lastName}`,
       addressLines: [p.address_line_1 || p.address, p.city, p.postcode].filter(Boolean),
@@ -298,7 +306,9 @@ export default function Step10({ allFormData, onEdit, currentDonorIndex }: Props
         return;
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const healthDoc = lpaDocs.find((d: any) => d.lpa_type === "health_and_welfare");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const financeDoc = lpaDocs.find((d: any) => d.lpa_type === "property_and_finance");
 
       // For each LPA doc, clear existing attorney links and re-create based on preferences
@@ -659,6 +669,7 @@ export default function Step10({ allFormData, onEdit, currentDonorIndex }: Props
                     }
 
                     // Sort them correctly (same as in Acknowledgement page)
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const sortedDonors = fetchedDonors.sort((a: any, b: any) =>
                       new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
                     );

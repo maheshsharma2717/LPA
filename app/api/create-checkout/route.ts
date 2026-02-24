@@ -66,15 +66,15 @@ export async function POST(request: Request) {
 
         if (lpaError) return NextResponse.json({ error: lpaError.message }, { status: 500 });
 
-        const incompleteDocs = (lpaDocuments || []).filter((d: any) => d.status !== 'complete');
+        const incompleteDocs = (lpaDocuments || []).filter((d: { status: string; id: string }) => d.status !== 'complete');
         if (incompleteDocs.length > 0) {
             return NextResponse.json({
                 error: 'All LPA documents must be complete before payment',
-                incomplete_ids: incompleteDocs.map((d: any) => d.id),
+                incomplete_ids: incompleteDocs.map((d: { id: string }) => d.id),
             }, { status: 400 });
         }
 
-        const donorIds = [...new Set((lpaDocuments || []).map((ld: any) => ld.donor_id))];
+        const donorIds = [...new Set((lpaDocuments || []).map((ld: { donor_id: string }) => ld.donor_id))];
         const { data: assessments } = await db
             .from('benefits_assessments')
             .select('donor_id, calculated_fee_tier')
@@ -90,7 +90,7 @@ export async function POST(request: Request) {
         const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
 
         for (const doc of lpaDocuments || []) {
-            const donor = doc.donors as any;
+            const donor = doc.donors as unknown as { first_name: string; last_name: string; application_id: string };
             const tier = tierByDonor[doc.donor_id] || 'full';
             const opgFee = calculateOpgFee(tier);
             const lpaTypeLabel = doc.lpa_type === 'health_and_welfare' ? 'Health & Welfare' : 'Property & Finance';
@@ -160,8 +160,8 @@ export async function POST(request: Request) {
             checkout_url: session.url,
             session_id: session.id,
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Create checkout error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
     }
 }
