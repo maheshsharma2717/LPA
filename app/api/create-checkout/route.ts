@@ -2,9 +2,11 @@ import { NextResponse } from 'next/server';
 import { getServerSupabase } from '@/lib/supabase';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'dummy_key', {
     apiVersion: '2026-01-28.clover',
 });
+
+export const dynamic = 'force-dynamic';
 
 const OUR_FEE_PER_LPA_PENCE = 9900;
 const OPG_FEE_FULL_PENCE = 8200;

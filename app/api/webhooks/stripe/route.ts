@@ -2,13 +2,20 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'dummy_key', {
     apiVersion: '2026-01-28.clover',
 });
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || 'dummy_secret';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
+    if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_WEBHOOK_SECRET) {
+        console.error('Missing Stripe environment variables');
+        return NextResponse.json({ error: 'Internal Server Error (Misconfigured Stripe)' }, { status: 500 });
+    }
+
     if (!supabaseAdmin) {
         console.error('supabaseAdmin is not initialized. Check SUPABASE_SERVICE_ROLE_KEY.');
         return NextResponse.json({ error: 'Internal Server Error (Admin client missing)' }, { status: 500 });
