@@ -46,20 +46,35 @@ const CATEGORIES = {
   UNLIMITED: ["Someone else"],
 };
 
-const options = [...CATEGORIES.SINGLE, ...CATEGORIES.DOUBLE, ...CATEGORIES.UNLIMITED];
+const options = [
+  ...CATEGORIES.SINGLE,
+  ...CATEGORIES.DOUBLE,
+  ...CATEGORIES.UNLIMITED,
+];
 
-export default function Step1Who({ data, updateData, onNext, isSaving }: Props) {
+export default function Step1Who({
+  data,
+  updateData,
+  onNext,
+  isSaving,
+}: Props) {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<string>(data?.selection || "You");
   const [morePeople, setMorePeople] = useState(data?.morePeople || false);
-  const [applicationId, setApplicationId] = useState<string | null>(data?.applicationId || null);
+  const [applicationId, setApplicationId] = useState<string | null>(
+    data?.applicationId || null,
+  );
   const [people, setPeople] = useState<Person[]>(data?.people || []);
-  const [selectedPeopleIds, setSelectedPeopleIds] = useState<string[]>(data?.selectedPeopleIds || []);
+  const [selectedPeopleIds, setSelectedPeopleIds] = useState<string[]>(
+    data?.selectedPeopleIds || [],
+  );
   const [openModal, setOpenModal] = useState(false);
   const [leadPerson, setLeadPerson] = useState<Person | null>(null);
 
   // New State for View Logic
-  const [viewMode, setViewMode] = useState<'CATEGORIES' | 'QUANTITY' | 'LIST'>('CATEGORIES');
+  const [viewMode, setViewMode] = useState<"CATEGORIES" | "QUANTITY" | "LIST">(
+    "CATEGORIES",
+  );
   const [selectionLimit, setSelectionLimit] = useState<number>(1);
   const [showManualAddress, setShowManualAddress] = useState(false);
 
@@ -83,26 +98,36 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
     }
   }, [isSaving]);
 
-  const isLeadIncluded = selected === "You" || selected === "You and your partner";
+  const isLeadIncluded =
+    selected === "You" || selected === "You and your partner";
 
   useEffect(() => {
     const init = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
         if (!session) return;
         const userId = session.user.id;
         const token = session.access_token;
 
-        const leadRes = await fetch(`/api/leads?userId=${userId}`, { headers: { Authorization: `Bearer ${token}` } });
+        const leadRes = await fetch(`/api/leads?userId=${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const { lead } = await leadRes.json();
 
-        const appsRes = await fetch(`/api/applications?userId=${userId}`, { headers: { Authorization: `Bearer ${token}` } });
+        const appsRes = await fetch(`/api/applications?userId=${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const { data: apps } = await appsRes.json();
-        let currentApp = apps?.find((a: any) => a.status === 'draft');
+        let currentApp = apps?.find((a: any) => a.status === "draft");
 
         if (currentApp) {
           setApplicationId(currentApp.id);
-          const donorsRes = await fetch(`/api/donors?applicationId=${currentApp.id}`, { headers: { Authorization: `Bearer ${token}` } });
+          const donorsRes = await fetch(
+            `/api/donors?applicationId=${currentApp.id}`,
+            { headers: { Authorization: `Bearer ${token}` } },
+          );
           const { data: donors } = await donorsRes.json();
 
           if (donors && donors.length > 0) {
@@ -123,11 +148,23 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
             }));
 
             const dbLeadDonor = mappedPeople.find((p: any) => p.isLead);
-            setLeadPerson(dbLeadDonor || {
-              id: userId, title: lead.title, firstName: lead.first_name, lastName: lead.last_name,
-              middleName: lead.middle_name, dob: lead.date_of_birth, isLead: true, relationship: 'self',
-              addressLine1: lead.address_line_1, addressLine2: lead.address_line_2, city: lead.city, county: lead.county, postcode: lead.postcode,
-            });
+            setLeadPerson(
+              dbLeadDonor || {
+                id: userId,
+                title: lead.title,
+                firstName: lead.first_name,
+                lastName: lead.last_name,
+                middleName: lead.middle_name,
+                dob: lead.date_of_birth,
+                isLead: true,
+                relationship: "self",
+                addressLine1: lead.address_line_1,
+                addressLine2: lead.address_line_2,
+                city: lead.city,
+                county: lead.county,
+                postcode: lead.postcode,
+              },
+            );
 
             const others = mappedPeople.filter((p: any) => !p.isLead);
             setPeople(others);
@@ -143,47 +180,67 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
             }
 
             if (donors.length === 1 && donors[0].is_lead) {
-
               setSelected("You");
               setMorePeople(false);
-              setViewMode('CATEGORIES');
+              setViewMode("CATEGORIES");
             } else {
               setMorePeople(true);
               if (CATEGORIES.SINGLE.includes(data?.selection)) {
                 setSelectionLimit(1);
-                setViewMode('LIST');
+                setViewMode("LIST");
               } else if (CATEGORIES.DOUBLE.includes(data?.selection)) {
-
-                setSelectionLimit(data?.selection === "You and your partner" ? 1 : 2);
-                setViewMode('LIST');
+                setSelectionLimit(
+                  data?.selection === "You and your partner" ? 1 : 2,
+                );
+                setViewMode("LIST");
               } else if (data?.selection === "Someone else") {
-                const count = others.filter((p: any) => data?.selectedPeopleIds?.includes(p.id)).length;
+                const count = others.filter((p: any) =>
+                  data?.selectedPeopleIds?.includes(p.id),
+                ).length;
                 setSelectionLimit(count > 1 ? 2 : 1);
-                setViewMode('LIST');
+                setViewMode("LIST");
               } else {
-
-                setViewMode(data?.selection ? 'LIST' : 'CATEGORIES');
+                setViewMode(data?.selection ? "LIST" : "CATEGORIES");
               }
             }
           } else {
-
             setLeadPerson({
-              id: userId, title: lead.title, firstName: lead.first_name, lastName: lead.last_name,
-              middleName: lead.middle_name, dob: lead.date_of_birth, isLead: true, relationship: 'self',
-              addressLine1: lead.address_line_1, addressLine2: lead.address_line_2, city: lead.city, county: lead.county, postcode: lead.postcode,
+              id: userId,
+              title: lead.title,
+              firstName: lead.first_name,
+              lastName: lead.last_name,
+              middleName: lead.middle_name,
+              dob: lead.date_of_birth,
+              isLead: true,
+              relationship: "self",
+              addressLine1: lead.address_line_1,
+              addressLine2: lead.address_line_2,
+              city: lead.city,
+              county: lead.county,
+              postcode: lead.postcode,
             });
 
             if (data?.selection && data.selection !== "You") {
               setMorePeople(true);
 
-              setViewMode('CATEGORIES');
+              setViewMode("CATEGORIES");
             }
           }
         } else {
           setLeadPerson({
-            id: userId, title: lead.title, firstName: lead.first_name, lastName: lead.last_name,
-            middleName: lead.middle_name, dob: lead.date_of_birth, isLead: true, relationship: 'self',
-            addressLine1: lead.address_line_1, addressLine2: lead.address_line_2, city: lead.city, county: lead.county, postcode: lead.postcode,
+            id: userId,
+            title: lead.title,
+            firstName: lead.first_name,
+            lastName: lead.last_name,
+            middleName: lead.middle_name,
+            dob: lead.date_of_birth,
+            isLead: true,
+            relationship: "self",
+            addressLine1: lead.address_line_1,
+            addressLine2: lead.address_line_2,
+            city: lead.city,
+            county: lead.county,
+            postcode: lead.postcode,
           });
         }
       } catch (err) {
@@ -201,10 +258,9 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
       people,
       selectedPeopleIds,
       morePeople,
-      applicationId
+      applicationId,
     });
   }, [selected, people, selectedPeopleIds, morePeople, applicationId]);
-
 
   const refinedHandleNextCategory = () => {
     if (selected === "You") {
@@ -214,51 +270,51 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
     setMorePeople(true);
 
     if (selected === "Someone else") {
-      setViewMode('QUANTITY');
+      setViewMode("QUANTITY");
     } else if (CATEGORIES.DOUBLE.includes(selected)) {
-
       if (selected === "You and your partner") {
         setSelectionLimit(1);
       } else {
         setSelectionLimit(2);
       }
-      setViewMode('LIST');
+      setViewMode("LIST");
       setSelectedPeopleIds([]);
     } else {
-
       setSelectionLimit(1);
-      setViewMode('LIST');
+      setViewMode("LIST");
       setSelectedPeopleIds([]);
     }
   };
 
   const handleQuantitySelection = (limit: number) => {
     setSelectionLimit(limit);
-    setViewMode('LIST');
+    setViewMode("LIST");
     setSelectedPeopleIds([]);
   };
 
   const togglePerson = (id: string) => {
     const limit = selectionLimit;
 
-    setSelectedPeopleIds(prev => {
-      if (prev.includes(id)) return prev.filter(pId => pId !== id);
+    setSelectedPeopleIds((prev) => {
+      if (prev.includes(id)) return prev.filter((pId) => pId !== id);
       if (prev.length < limit) return [...prev, id];
       return prev;
     });
   };
 
   const handleCreateApplication = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (!session) return null;
 
     const res = await fetch("/api/applications", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.access_token}`
+        Authorization: `Bearer ${session.access_token}`,
       },
-      body: JSON.stringify({ userId: session.user.id })
+      body: JSON.stringify({ userId: session.user.id }),
     });
     const { data: app } = await res.json();
     setApplicationId(app.id);
@@ -270,7 +326,9 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
 
     setLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) return;
       const token = session.access_token;
 
@@ -300,9 +358,9 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(donorBody)
+        body: JSON.stringify(donorBody),
       });
 
       const { data: donor } = await res.json();
@@ -323,10 +381,10 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
         postcode: donor.postcode,
       };
 
-      setPeople(prev => [...prev, p]);
+      setPeople((prev) => [...prev, p]);
 
       if (selectedPeopleIds.length < selectionLimit) {
-        setSelectedPeopleIds(prev => [...prev, donor.id]);
+        setSelectedPeopleIds((prev) => [...prev, donor.id]);
       }
 
       setOpenModal(false);
@@ -354,37 +412,38 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
   const handleContinue = async () => {
     setLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) return;
       const token = session.access_token;
       const userId = session.user.id;
 
       let appId = applicationId;
       if (!appId) {
-
         const createRes = await fetch("/api/applications", {
           method: "POST",
-          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-          body: JSON.stringify({ userId: session.user.id })
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ userId: session.user.id }),
         });
         const { data: app } = await createRes.json();
         appId = app.id;
         setApplicationId(appId);
       }
 
-
       const finalSelection: Person[] = [];
       if (isLeadIncluded && leadPerson) finalSelection.push(leadPerson);
-      people.forEach(p => {
+      people.forEach((p) => {
         if (selectedPeopleIds.includes(p.id!)) finalSelection.push(p);
       });
 
-
       const donorsRes = await fetch(`/api/donors?applicationId=${appId}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       const { data: currentDonors } = await donorsRes.json();
-
 
       /*
       const toDelete = currentDonors?.filter((cd: any) => {
@@ -423,14 +482,20 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
         if (existingRecord) {
           await fetch("/api/donors", {
             method: "PATCH",
-            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-            body: JSON.stringify({ id: existingRecord.id, ...donorBody })
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ id: existingRecord.id, ...donorBody }),
           });
         } else {
           await fetch("/api/donors", {
             method: "POST",
-            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-            body: JSON.stringify(donorBody)
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(donorBody),
           });
         }
       }
@@ -451,19 +516,21 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
     );
   }
 
-
   const renderCategories = () => (
     <div className="space-y-6">
-      <p className="font-semibold text-zenco-dark">Who are these documents for?</p>
-      <div className="grid grid-cols-1 gap-3">
+      <p className="text-xl font-medium text-black">
+        Who are these documents for?
+      </p>
+      <div className="grid grid-cols-1 border border-[#adb5bd]">
         {options.map((option) => (
           <button
             key={option}
             onClick={() => setSelected(option)}
-            className={`p-4 text-left rounded-xl border-2 transition-all ${selected === option
-              ? "border-zenco-blue bg-blue-50 text-zenco-dark font-semibold shadow-sm"
-              : "border-gray-100 hover:border-blue-100 text-gray-600"
-              }`}
+            className={`p-5 text-center border-0 transition-all ${
+              selected === option
+                ? "border-[#08b9ed] bg-[#35495E] text-white font-semibold shadow-sm"
+                : "border-gray-100 hover:border-blue-100 text-black"
+            }`}
           >
             {option}
           </button>
@@ -475,7 +542,7 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
           onClick={refinedHandleNextCategory}
           sx={{
             backgroundColor: "#08B9ED",
-            textTransform: 'none',
+            textTransform: "none",
             fontWeight: 600,
             "&:hover": { backgroundColor: "#07bdf5ff" },
           }}
@@ -489,26 +556,51 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
   const renderQuantitySelection = () => (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-4">
       <div className="flex items-center gap-2 mb-4">
-        <button onClick={() => setViewMode('CATEGORIES')} className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+        <button
+          onClick={() => setViewMode("CATEGORIES")}
+          className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
           Back
         </button>
       </div>
-      <p className="font-semibold text-zenco-dark">How many people do you need documents for?</p>
+      <p className="font-semibold text-zenco-dark">
+        How many people do you need documents for?
+      </p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <button
           onClick={() => handleQuantitySelection(1)}
-          className="p-6 rounded-xl border-2 border-gray-100 hover:border-zenco-blue hover:bg-blue-50 transition-all text-center"
+          className="p-6 rounded-xl border-2 border-gray-100 hover:border-[#08b9ed] hover:bg-blue-50 transition-all text-center"
         >
-          <span className="text-lg font-bold text-zenco-dark block">One Person</span>
-          <span className="text-sm text-gray-500">I need documents for 1 person</span>
+          <span className="text-lg font-bold text-zenco-dark block">
+            One Person
+          </span>
+          <span className="text-sm text-gray-500">
+            I need documents for 1 person
+          </span>
         </button>
         <button
           onClick={() => handleQuantitySelection(2)}
-          className="p-6 rounded-xl border-2 border-gray-100 hover:border-zenco-blue hover:bg-blue-50 transition-all text-center"
+          className="p-6 rounded-xl border-2 border-gray-100 hover:border-[#08b9ed] hover:bg-blue-50 transition-all text-center"
         >
-          <span className="text-lg font-bold text-zenco-dark block">Two People</span>
-          <span className="text-sm text-gray-500">I need documents for 2 people</span>
+          <span className="text-lg font-bold text-zenco-dark block">
+            Two People
+          </span>
+          <span className="text-sm text-gray-500">
+            I need documents for 2 people
+          </span>
         </button>
       </div>
     </div>
@@ -516,40 +608,53 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
 
   const renderList = () => (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-4">
-      <p className="text-gray-600">
-        You have chosen to make documents for <span className="text-zenco-blue font-semibold">{selected}</span>.
+      <p className="text-md text-black">
+        You have chosen to make documents for{" "}
+        <span className="text-[#08b9ed] font-semibold">{selected}</span>.
       </p>
       <p className="text-sm text-gray-500">
-        If you have made a mistake and need these documents for someone else then{" "}
+        If you have made a mistake and need these documents for someone else
+        then{" "}
         <button
           type="button"
           onClick={() => {
-
-            setViewMode('CATEGORIES');
+            setViewMode("CATEGORIES");
             setSelectedPeopleIds([]);
           }}
-          className="underline text-zenco-blue font-medium hover:text-blue-700"
+          className="underline text-[#08b9ed] font-medium hover:text-blue-700"
         >
           click here to change who these documents are for.
         </button>
       </p>
 
-      <div className="space-y-3">
+      <div className="">
         {/* Lead Details */}
         {isLeadIncluded && leadPerson && (
-          <div className="flex items-center justify-between p-4 rounded-xl border border-zenco-blue bg-blue-50/50">
+          <div className="flex items-center justify-between p-4 rounded-xl border-[#08b9ed] bg-blue-50/50">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-zenco-blue/10 flex items-center justify-center text-zenco-blue font-bold">
+              <div className="w-10 h-10 rounded-full bg-[#08b9ed]/10 flex items-center justify-center text-[#08b9ed] font-bold">
                 {leadPerson.firstName[0]}
               </div>
               <div>
-                <p className="font-semibold text-zenco-dark">{leadPerson.firstName} {leadPerson.lastName} (You)</p>
+                <p className="font-semibold text-zenco-dark">
+                  {leadPerson.firstName} {leadPerson.lastName} (You)
+                </p>
                 <p className="text-xs text-gray-500">Self</p>
               </div>
             </div>
-            <div className="w-6 h-6 rounded-full bg-zenco-blue flex items-center justify-center">
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+            <div className="w-6 h-6 rounded-full bg-[#08b9ed] flex items-center justify-center">
+              <svg
+                className="w-4 h-4 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={3}
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
             </div>
           </div>
@@ -565,30 +670,55 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
               key={person.id}
               disabled={disabled}
               onClick={() => togglePerson(person.id!)}
-              className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all ${isSelected
-                ? "border-zenco-blue bg-white shadow-sm"
-                : disabled
-                  ? "border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed"
-                  : "border-gray-200 bg-white hover:border-blue-200"
-                }`}
+              className={`w-full flex items-center justify-between p-4 border transition-all ${
+                isSelected
+                  ? "border-[#08b9ed] bg-white shadow-sm"
+                  : disabled
+                    ? "border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed"
+                    : "border-gray-200 bg-white hover:border-blue-200"
+              }`}
             >
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${isSelected ? "bg-zenco-blue/10 text-zenco-blue" : "bg-gray-100 text-gray-400"
-                  }`}>
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                    isSelected
+                      ? "bg-[#08b9ed]/10 text-[#08b9ed]"
+                      : "bg-gray-100 text-gray-400"
+                  }`}
+                >
                   {person.firstName[0]}
                 </div>
                 <div className="text-left">
-                  <p className={`font-semibold ${isSelected ? "text-zenco-dark" : "text-gray-600"}`}>
+                  <p
+                    className={`font-semibold ${isSelected ? "text-zenco-dark" : "text-black"}`}
+                  >
                     {person.firstName} {person.lastName}
                   </p>
-                  <p className="text-xs text-gray-400 capitalize">{person.relationship}</p>
+                  <p className="text-xs text-gray-400 capitalize">
+                    {person.relationship}
+                  </p>
                 </div>
               </div>
-              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? "bg-zenco-blue border-zenco-blue" : "border-gray-200 bg-white"
-                }`}>
+              <div
+                className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                  isSelected
+                    ? "bg-[#08b9ed] border-[#08b9ed]"
+                    : "border-gray-200 bg-white"
+                }`}
+              >
                 {isSelected && (
-                  <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  <svg
+                    className="w-3.5 h-3.5 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={3}
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                 )}
               </div>
@@ -604,12 +734,12 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
         sx={{
           mt: 2,
           py: 1.5,
-          borderColor: '#E5E7EB',
-          color: '#374151',
-          textTransform: 'none',
+          borderColor: "#E5E7EB",
+          color: "#374151",
+          textTransform: "none",
           fontWeight: 600,
-          borderRadius: '0.75rem',
-          '&:hover': { borderColor: '#D1D5DB', backgroundColor: '#F9FAFB' }
+          borderRadius: "0.75rem",
+          "&:hover": { borderColor: "#D1D5DB", backgroundColor: "#F9FAFB" },
         }}
       >
         + Add new person
@@ -621,7 +751,7 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
           onClick={handleContinue}
           sx={{
             backgroundColor: "#08B9ED",
-            textTransform: 'none',
+            textTransform: "none",
             fontWeight: 600,
             "&:hover": { backgroundColor: "#07bdf5ff" },
           }}
@@ -635,42 +765,58 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-3">
-        <h2 className="text-2xl font-bold text-zenco-dark">
-          Who is the <span className="text-zenco-blue">Lasting Power of Attorney</span> for?
-        </h2>
+        <h3 className="text-2xl font-semibold text-zenco-dark">
+          Who is the{" "}
+          <span className="text-[#08b9ed]">Lasting Power of Attorney</span> for?
+        </h3>
 
         {!morePeople ? (
           <div className="space-y-6">
-            <p className="text-gray-600">You have chosen to make documents for <span className="text-zenco-blue font-semibold">yourself only</span>.</p>
-            <p className="text-sm text-gray-500">
-              If you have made a mistake and need these documents for someone else then{" "}
+            <p className="text-black">
+              You have chosen to make documents for{" "}
+              <span className="text-[#08b9ed]">yourself only</span>.
+            </p>
+            <p className="">
+              If you have made a mistake and need these documents for someone
+              else then
               <button
                 type="button"
                 onClick={() => {
                   setMorePeople(true);
-                  setViewMode('CATEGORIES');
+                  setViewMode("CATEGORIES");
                 }}
-                className="underline text-zenco-blue font-medium hover:text-blue-700"
+                className="underline  font-medium"
               >
                 click here to change who these documents are for.
               </button>
             </p>
-            <div className="flex justify-start">
-            </div>
+
+            <p>
+              Click the continue button to continue making Lasting Power of
+              Attorney documents for yourself.
+            </p>
+            <div className="flex justify-start"></div>
             {/* Continue button for "You" only flow (implied in original layout or handled by WizardLayout) */}
             {/* If we strictly follow the new flow, "You" is just another leaf. But original code had special "You" view. Keeping it. */}
           </div>
         ) : (
           <>
-            {viewMode === 'CATEGORIES' && renderCategories()}
-            {viewMode === 'QUANTITY' && renderQuantitySelection()}
-            {viewMode === 'LIST' && renderList()}
+            {viewMode === "CATEGORIES" && renderCategories()}
+            {viewMode === "QUANTITY" && renderQuantitySelection()}
+            {viewMode === "LIST" && renderList()}
           </>
         )}
       </div>
 
-      <Dialog open={openModal} onClose={() => setOpenModal(false)} fullWidth maxWidth="sm">
-        <DialogTitle className="font-bold text-zenco-dark">Add person</DialogTitle>
+      <Dialog
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle className="font-bold text-zenco-dark">
+          Add person
+        </DialogTitle>
         <DialogContent className="flex flex-col gap-6 mt-2">
           <p className="font-semibold text-zenco-dark -mb-2">Full legal name</p>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -679,7 +825,9 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
               <Select
                 value={newPerson.title}
                 label="Title"
-                onChange={(e) => setNewPerson({ ...newPerson, title: e.target.value })}
+                onChange={(e) =>
+                  setNewPerson({ ...newPerson, title: e.target.value })
+                }
               >
                 <MenuItem value="Mr">Mr</MenuItem>
                 <MenuItem value="Mrs">Mrs</MenuItem>
@@ -692,40 +840,54 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
             <TextField
               label="First Name"
               fullWidth
-              sx={{ md: { gridColumn: 'span 1' } }}
+              sx={{ md: { gridColumn: "span 1" } }}
               value={newPerson.firstName}
-              onChange={(e) => setNewPerson({ ...newPerson, firstName: e.target.value })}
+              onChange={(e) =>
+                setNewPerson({ ...newPerson, firstName: e.target.value })
+              }
             />
             <TextField
               label="Middle names"
               fullWidth
               value={newPerson.middleName}
-              onChange={(e) => setNewPerson({ ...newPerson, middleName: e.target.value })}
+              onChange={(e) =>
+                setNewPerson({ ...newPerson, middleName: e.target.value })
+              }
             />
             <TextField
               label="Last Name"
               fullWidth
               value={newPerson.lastName}
-              onChange={(e) => setNewPerson({ ...newPerson, lastName: e.target.value })}
+              onChange={(e) =>
+                setNewPerson({ ...newPerson, lastName: e.target.value })
+              }
             />
           </div>
 
-          <p className="font-semibold text-zenco-dark -mb-2">What's their date of birth?</p>
+          <p className="font-semibold text-zenco-dark -mb-2">
+            What's their date of birth?
+          </p>
           <TextField
             type="date"
             fullWidth
             InputLabelProps={{ shrink: true }}
             value={newPerson.dob}
-            onChange={(e) => setNewPerson({ ...newPerson, dob: e.target.value })}
+            onChange={(e) =>
+              setNewPerson({ ...newPerson, dob: e.target.value })
+            }
           />
 
-          <p className="font-semibold text-zenco-dark -mb-2">What is their relationship to you?</p>
+          <p className="font-semibold text-zenco-dark -mb-2">
+            What is their relationship to you?
+          </p>
           <FormControl fullWidth>
             <InputLabel>Relationship</InputLabel>
             <Select
               value={newPerson.relationship}
               label="Relationship"
-              onChange={(e) => setNewPerson({ ...newPerson, relationship: e.target.value })}
+              onChange={(e) =>
+                setNewPerson({ ...newPerson, relationship: e.target.value })
+              }
             >
               <MenuItem value="partner">Partner</MenuItem>
               <MenuItem value="parent">Parent</MenuItem>
@@ -736,14 +898,18 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
             </Select>
           </FormControl>
 
-          <p className="font-semibold text-zenco-dark -mb-2">What is their address?</p>
+          <p className="font-semibold text-zenco-dark -mb-2">
+            What is their address?
+          </p>
           <div className="grid grid-cols-1 gap-4">
             <div className="flex gap-4 items-end">
               <TextField
                 label="Postcode"
                 fullWidth
                 value={newPerson.postcode}
-                onChange={(e) => setNewPerson({ ...newPerson, postcode: e.target.value })}
+                onChange={(e) =>
+                  setNewPerson({ ...newPerson, postcode: e.target.value })
+                }
               />
               <Button
                 variant="contained"
@@ -775,26 +941,34 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
                   label="Address Line 1"
                   fullWidth
                   value={newPerson.addressLine1}
-                  onChange={(e) => setNewPerson({ ...newPerson, addressLine1: e.target.value })}
+                  onChange={(e) =>
+                    setNewPerson({ ...newPerson, addressLine1: e.target.value })
+                  }
                 />
                 <TextField
                   label="Address Line 2 (Optional)"
                   fullWidth
                   value={newPerson.addressLine2}
-                  onChange={(e) => setNewPerson({ ...newPerson, addressLine2: e.target.value })}
+                  onChange={(e) =>
+                    setNewPerson({ ...newPerson, addressLine2: e.target.value })
+                  }
                 />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <TextField
                     label="City"
                     fullWidth
                     value={newPerson.city}
-                    onChange={(e) => setNewPerson({ ...newPerson, city: e.target.value })}
+                    onChange={(e) =>
+                      setNewPerson({ ...newPerson, city: e.target.value })
+                    }
                   />
                   <TextField
                     label="County (Optional)"
                     fullWidth
                     value={newPerson.county}
-                    onChange={(e) => setNewPerson({ ...newPerson, county: e.target.value })}
+                    onChange={(e) =>
+                      setNewPerson({ ...newPerson, county: e.target.value })
+                    }
                   />
                 </div>
               </div>
@@ -802,7 +976,12 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
           </div>
         </DialogContent>
         <DialogActions className="p-4 gap-2">
-          <Button onClick={() => setOpenModal(false)} sx={{ color: 'gray', textTransform: 'none' }}>Cancel</Button>
+          <Button
+            onClick={() => setOpenModal(false)}
+            sx={{ color: "gray", textTransform: "none" }}
+          >
+            Cancel
+          </Button>
           <Button
             variant="contained"
             onClick={handleAddPerson}
@@ -815,7 +994,11 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
               "&:hover": { backgroundColor: "#07bdf5ff" },
             }}
           >
-            {loading ? <CircularProgress size={24} color="inherit" /> : "Add Person"}
+            {loading ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              "Add Person"
+            )}
           </Button>
         </DialogActions>
       </Dialog>

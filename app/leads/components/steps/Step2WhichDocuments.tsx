@@ -12,8 +12,13 @@ import {
   CircularProgress,
   Alert,
 } from "@mui/material";
+import { log } from "console";
 
-type DocumentSelection = "Health and Welfare" | "Property and Finance" | "Both" | "";
+type DocumentSelection =
+  | "Health and Welfare"
+  | "Property and Finance"
+  | "Both"
+  | "";
 
 type Props = {
   data: any;
@@ -40,12 +45,14 @@ export default function Step2WhichDocuments({
 }: Props) {
   const [loading, setLoading] = useState(true);
   const [donors, setDonors] = useState<Donor[]>([]);
-  const [selections, setSelections] = useState<Record<string, DocumentSelection>>({});
+  const [selections, setSelections] = useState<
+    Record<string, DocumentSelection>
+  >({});
   const [error, setError] = useState<string | null>(null);
 
   const applicationId = allFormData?.who?.applicationId;
   const selectedPeopleIds = allFormData?.who?.selectedPeopleIds || [];
- 
+
   useEffect(() => {
     const init = async () => {
       if (!applicationId) {
@@ -54,13 +61,18 @@ export default function Step2WhichDocuments({
       }
 
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
         if (!session) return;
         const token = session.access_token;
 
-        const donorsRes = await fetch(`/api/donors?applicationId=${applicationId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const donorsRes = await fetch(
+          `/api/donors?applicationId=${applicationId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
         const { data: fetchedDonors } = await donorsRes.json();
 
         if (!fetchedDonors) {
@@ -69,14 +81,13 @@ export default function Step2WhichDocuments({
           return;
         }
 
-      
         const step1Selection = allFormData?.who?.selection;
         const step1SelectedIds = allFormData?.who?.selectedPeopleIds || [];
 
         const isLeadSelected =
           step1Selection === "You" ||
           step1Selection === "You and your partner" ||
-          step1Selection === "You and someone else"; 
+          step1Selection === "You and someone else";
 
         const activeDonors = fetchedDonors.filter((d: any) => {
           if (d.is_lead) return isLeadSelected;
@@ -89,25 +100,32 @@ export default function Step2WhichDocuments({
 
         await Promise.all(
           activeDonors.map(async (donor: Donor) => {
-
-
-            const lpasRes = await fetch(`/api/lpa-documents?donorId=${donor.id}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
+            const lpasRes = await fetch(
+              `/api/lpa-documents?donorId=${donor.id}`,
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              },
+            );
             const { data: lpas } = await lpasRes.json();
 
             if (lpas && Array.isArray(lpas)) {
-              const hasHealth = lpas.some((doc: any) => doc.lpa_type === "health_and_welfare");
-              const hasFinance = lpas.some((doc: any) => doc.lpa_type === "property_and_finance");
+              const hasHealth = lpas.some(
+                (doc: any) => doc.lpa_type === "health_and_welfare",
+              );
+              const hasFinance = lpas.some(
+                (doc: any) => doc.lpa_type === "property_and_finance",
+              );
 
               if (hasHealth && hasFinance) initialSelections[donor.id] = "Both";
-              else if (hasHealth) initialSelections[donor.id] = "Health and Welfare";
-              else if (hasFinance) initialSelections[donor.id] = "Property and Finance";
+              else if (hasHealth)
+                initialSelections[donor.id] = "Health and Welfare";
+              else if (hasFinance)
+                initialSelections[donor.id] = "Property and Finance";
               else initialSelections[donor.id] = "";
             } else {
               initialSelections[donor.id] = "";
             }
-          })
+          }),
         );
 
         setSelections(initialSelections);
@@ -120,7 +138,7 @@ export default function Step2WhichDocuments({
     };
 
     init();
-  }, [applicationId, allFormData?.who]); 
+  }, [applicationId, allFormData?.who]);
 
   useEffect(() => {
     if (isSaving) {
@@ -134,52 +152,86 @@ export default function Step2WhichDocuments({
 
   const handleSave = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) return;
       const token = session.access_token;
 
       for (const donor of donors) {
         const selection = selections[donor.id];
-        if (!selection) continue; 
+        if (!selection) continue;
         const lpasRes = await fetch(`/api/lpa-documents?donorId=${donor.id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const { data: currentLpas } = await lpasRes.json();
         const currentDocs = Array.isArray(currentLpas) ? currentLpas : [];
 
-        const needsHealth = selection === "Health and Welfare" || selection === "Both";
-        const needsFinance = selection === "Property and Finance" || selection === "Both";
+        const needsHealth =
+          selection === "Health and Welfare" || selection === "Both";
+        const needsFinance =
+          selection === "Property and Finance" || selection === "Both";
 
-        const existingHealth = currentDocs.find((d: any) => d.lpa_type === "health_and_welfare");
-        const existingFinance = currentDocs.find((d: any) => d.lpa_type === "property_and_finance");
+        const existingHealth = currentDocs.find(
+          (d: any) => d.lpa_type === "health_and_welfare",
+        );
+        const existingFinance = currentDocs.find(
+          (d: any) => d.lpa_type === "property_and_finance",
+        );
 
         if (needsHealth && !existingHealth) {
           console.log("Creating Health & Welfare document for", donor.id);
           const res = await fetch("/api/lpa-documents", {
             method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ donor_id: donor.id, lpa_type: "health_and_welfare", status: "draft" }),
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              donor_id: donor.id,
+              lpa_type: "health_and_welfare",
+              status: "draft",
+            }),
           });
           const result = await res.json();
           if (result.error) {
             console.error("Failed to create Health document:", result.error);
-            setError(`Failed to create Health document for ${donor.first_name}`);
+            setError(
+              `Failed to create Health document for ${donor.first_name}`,
+            );
             return;
           }
         } else if (!needsHealth && existingHealth) {
-          console.log("Soft-deleting Health & Welfare document", existingHealth.id);
+          console.log(
+            "Soft-deleting Health & Welfare document",
+            existingHealth.id,
+          );
           const res = await fetch(`/api/lpa-documents`, {
             method: "PATCH",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ id: existingHealth.id, deleted_at: new Date().toISOString() }),
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              id: existingHealth.id,
+              deleted_at: new Date().toISOString(),
+            }),
           });
           const result = await res.json();
-          if (result.error) console.error("Failed to delete Health document:", result.error);
+          if (result.error)
+            console.error("Failed to delete Health document:", result.error);
         } else if (needsHealth && existingHealth && existingHealth.deleted_at) {
-          console.log("Reactivating Health & Welfare document", existingHealth.id);
+          console.log(
+            "Reactivating Health & Welfare document",
+            existingHealth.id,
+          );
           await fetch("/api/lpa-documents", {
             method: "PATCH",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
             body: JSON.stringify({ id: existingHealth.id, deleted_at: null }),
           });
         }
@@ -188,35 +240,64 @@ export default function Step2WhichDocuments({
           console.log("Creating Property & Finance document for", donor.id);
           const res = await fetch("/api/lpa-documents", {
             method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ donor_id: donor.id, lpa_type: "property_and_finance", status: "draft" }),
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              donor_id: donor.id,
+              lpa_type: "property_and_finance",
+              status: "draft",
+            }),
           });
           const result = await res.json();
           if (result.error) {
             console.error("Failed to create Finance document:", result.error);
-            setError(`Failed to create Finance document for ${donor.first_name}`);
+            setError(
+              `Failed to create Finance document for ${donor.first_name}`,
+            );
             return;
           }
         } else if (!needsFinance && existingFinance) {
-          console.log("Soft-deleting Property & Finance document", existingFinance.id);
+          console.log(
+            "Soft-deleting Property & Finance document",
+            existingFinance.id,
+          );
           const res = await fetch(`/api/lpa-documents`, {
             method: "PATCH",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ id: existingFinance.id, deleted_at: new Date().toISOString() }),
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              id: existingFinance.id,
+              deleted_at: new Date().toISOString(),
+            }),
           });
           const result = await res.json();
-          if (result.error) console.error("Failed to delete Finance document:", result.error);
-        } else if (needsFinance && existingFinance && existingFinance.deleted_at) {
-          console.log("Reactivating Property & Finance document", existingFinance.id);
+          if (result.error)
+            console.error("Failed to delete Finance document:", result.error);
+        } else if (
+          needsFinance &&
+          existingFinance &&
+          existingFinance.deleted_at
+        ) {
+          console.log(
+            "Reactivating Property & Finance document",
+            existingFinance.id,
+          );
           await fetch("/api/lpa-documents", {
             method: "PATCH",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
             body: JSON.stringify({ id: existingFinance.id, deleted_at: null }),
           });
         }
       }
 
-      updateData({ selections }); 
+      updateData({ selections });
       onNext();
     } catch (err) {
       console.error("Error saving documents:", err);
@@ -239,45 +320,77 @@ export default function Step2WhichDocuments({
   return (
     <section className="space-y-8 animate-in fade-in slide-in-from-top-4">
       <div className="flex flex-col gap-5">
-        <h1 className="text-3xl font-bold text-zenco-dark">
-          Which <span className="text-zenco-blue">Lasting Power of Attorney</span> documents do you need?
+        <h1 className="text-2xl font-bold text-black">
+          Which{" "}
+          <span className="text-[#08b9ed]">Lasting Power of Attorney</span>{" "}
+          documents do you need?
         </h1>
-        <p className="text-gray-600">
-          You need to choose which type of documents you want. Choose{" "}
-          <strong className="text-zenco-dark">Health and Welfare</strong> for health decisions,{" "}
-          <strong className="text-zenco-dark">Property and Finance</strong> for decisions about your finances, or choose{" "}
-          <strong className="text-zenco-dark">Both</strong>.
+        <p className="text-black">
+          You need to choose which type of documents you want. Choose Health and
+          Welfare for health decisions, Property and Finance for decisions about
+          your finances, or choose Both.
         </p>
-        <div className="bg-blue-50 border-l-4 border-zenco-blue p-4 rounded-r-md">
-          <p className="text-sm text-zenco-dark">
-            <span className="font-bold">💡 Recommendation:</span> We strongly recommend taking both documents for peace of mind and the best protection.
+        <div className="flex items-center gap-3 font-semibold">
+          <span className="">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 640 640"
+              width="24"
+              height="24"
+              fill="currentColor"
+              className="text-[#08b9ed]"
+            >
+              <path d="M420.9 448C428.2 425.7 442.8 405.5 459.3 388.1C492 353.7 512 307.2 512 256C512 150 426 64 320 64C214 64 128 150 128 256C128 307.2 148 353.7 180.7 388.1C197.2 405.5 211.9 425.7 219.1 448L420.8 448zM416 496L224 496L224 512C224 556.2 259.8 592 304 592L336 592C380.2 592 416 556.2 416 512L416 496zM312 176C272.2 176 240 208.2 240 248C240 261.3 229.3 272 216 272C202.7 272 192 261.3 192 248C192 181.7 245.7 128 312 128C325.3 128 336 138.7 336 152C336 165.3 325.3 176 312 176z" />
+            </svg>
+          </span>
+          <p className="text-sm text-black">
+            We strongly recommend taking both documents for peace of mind and
+            the best protection.
           </p>
         </div>
       </div>
 
       <div className="flex flex-col gap-6">
         {donors.map((donor) => (
-          <div key={donor.id} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-            <h3 className="text-xl font-bold text-zenco-dark mb-4">
-              Which documents does <span className="text-zenco-blue">{donor.first_name} {donor.last_name}</span> need?
+          <div
+            key={donor.id}
+            className=""
+          >
+            <h3 className="text-xl font-medium text-black mb-4">
+              Which documents does{" "}
+              <span className="text-[#08b9ed]">
+                {donor.first_name} {donor.last_name}
+              </span>{" "}
+             need?
             </h3>
             <FormControl fullWidth>
-              <InputLabel>Document Selection</InputLabel>
+              <p>Document Selection</p>
               <Select
                 value={selections[donor.id] || ""}
-                label="Document Selection"
-                onChange={(e) => handleSelectionChange(donor.id, e.target.value as DocumentSelection)}
+                // label="Document Selection"
+                onChange={(e) =>
+                  handleSelectionChange(
+                    donor.id,
+                    e.target.value as DocumentSelection,
+                  )
+                }
               >
-                <MenuItem value="Health and Welfare">Health and Welfare</MenuItem>
-                <MenuItem value="Property and Finance">Property and Finance</MenuItem>
-                <MenuItem value="Both">Both (Recommended)</MenuItem>
+                <MenuItem value="Health and Welfare">
+                  Health and Welfare
+                </MenuItem>
+                <MenuItem value="Property and Finance">
+                  Property and Finance
+                </MenuItem>
+                <MenuItem value="Both">Both</MenuItem>
               </Select>
             </FormControl>
           </div>
         ))}
 
         {donors.length === 0 && (
-          <Alert severity="info">No people selected. Please go back and select who this LPA is for.</Alert>
+          <Alert severity="info">
+            No people selected. Please go back and select who this LPA is for.
+          </Alert>
         )}
       </div>
     </section>

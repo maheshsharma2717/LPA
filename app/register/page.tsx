@@ -139,7 +139,7 @@ export default function RegisterUser() {
 
       {/* Main */}
       <main className="grow flex items-center justify-center p-6 sm:p-12">
-        <div className=" w-full p-8 sm:p-12  ">
+        <div className="xl:w-1/2 p-8 sm:p-12  ">
           <img src="signup-email.png" className="w-40 mb-6 mx-auto " alt="" />
 
           {/*  NAME & EMAIL */}
