@@ -60,14 +60,14 @@ export default function LoginPage() {
             </header>
 
             {/* Main */}
-            <main className="grow flex items-center justify-center p-6 sm:p-12">
-                <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-8 sm:p-12 border border-blue-50">
+            <main className="grow flex items-center justify-center">
+                <div className="max-w-lg w-full p-5 sm:p-12">
                       <img src="signup-email.png" className="w-40 mb-6 mx-auto " alt="" />
                     <div className="flex flex-col items-center mb-8">
                         <h2 className="text-3xl font-bold text-zenco-dark text-center">
                             Welcome back
                         </h2>
-                        <p className="text-gray-500 mt-2">Log in to your account</p>
+                        <p className="text-[#3A3A3C] mt-2 text-xl font-medium">Log in to your account</p>
                     </div>
 
                     {error && (
@@ -88,7 +88,7 @@ export default function LoginPage() {
                                 onChange={(e) =>
                                     setFormData({ ...formData, email: e.target.value })
                                 }
-                                className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:ring-2 focus:ring-zenco-blue focus:outline-none"
+                                className="w-full rounded border border-gray-300 bg-white px-4 py-3 focus:ring-2 focus:ring-[#08B9ED] focus:outline-none"
                                 placeholder="you@example.com"
                             />
                         </div>
@@ -112,7 +112,7 @@ export default function LoginPage() {
                                 onChange={(e) =>
                                     setFormData({ ...formData, password: e.target.value })
                                 }
-                                className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:ring-2 focus:ring-zenco-blue focus:outline-none"
+                                className="w-full rounded border border-gray-300 bg-white px-4 py-3 focus:ring-2 focus:ring-[#08B9ED] focus:outline-none"
                                 placeholder="••••••••"
                             />
                         </div>
@@ -120,7 +120,7 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-[#08B9ED] text-white py-3 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50"
+                            className="w-full bg-[#08B9ED] text-white py-3 rounded font-semibold hover:opacity-90 transition disabled:opacity-50 cursor-pointer"
                         >
                             {loading ? "Logging in..." : "Log in"}
                         </button>
@@ -134,16 +134,16 @@ export default function LoginPage() {
                         <button
                             type="button"
                             onClick={handleGoogleLogin}
-                            className="w-full flex items-center justify-center gap-3 border border-gray-300 py-3 rounded-xl font-semibold text-sm hover:bg-gray-50 transition"
+                            className="w-full flex items-center justify-center gap-3 border border-gray-300 py-3 rounded-xl font-semibold text-sm cursor-pointer hover:bg-gray-50 transition"
                         >
                             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
                             Continue with Google
                         </button>
 
-                        <p className="text-sm text-center text-gray-600 mt-6">
+                        <p className="text-sm text-center text-[#212529] mt-6">
                             Don't have an account?{" "}
-                            <Link href="/register" className="text-zenco-blue font-medium hover:underline">
-                                Sign up
+                            <Link href="/register" className="text-md text-center text-[#212529]  cursor-pointer">
+                              <u>Sign up</u>  
                             </Link>
                         </p>
                     </form>
