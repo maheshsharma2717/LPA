@@ -49,6 +49,9 @@ function DetailsPageContent() {
     "opg-fees": {},
   });
 
+  // localStorage key scoped per user
+  const storageKey = (userId: string) => `lpa_wizard_state_${userId}`;
+
   useEffect(() => {
     const checkUser = async () => {
       try {
@@ -84,7 +87,23 @@ function DetailsPageContent() {
         setLead(leadData);
         setApplications(appsData || []);
 
-        // Auto-complete initial form if lead is already filled out
+        // Restore wizard state from localStorage
+        const saved = localStorage.getItem(storageKey(user.id));
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            if (parsed.formData) setFormData(parsed.formData);
+            if (parsed.completedSteps) setCompletedSteps(parsed.completedSteps);
+            if (typeof parsed.activeStep === "number") setActiveStep(parsed.activeStep);
+            if (typeof parsed.initialCompleted === "boolean") {
+              setInitialCompleted(parsed.initialCompleted);
+            }
+          } catch {
+            // corrupted storage, ignore
+          }
+        }
+
+        // Always auto-complete initial form if lead data already exists in DB
         if (leadData?.first_name && leadData?.address_line_1) {
           setInitialCompleted(true);
         }
@@ -98,6 +117,13 @@ function DetailsPageContent() {
 
     checkUser();
   }, [router]);
+
+  // Persist wizard state to localStorage whenever it changes
+  useEffect(() => {
+    if (!user) return;
+    const state = { activeStep, completedSteps, initialCompleted, formData };
+    localStorage.setItem(storageKey(user.id), JSON.stringify(state));
+  }, [activeStep, completedSteps, initialCompleted, formData, user]);
 
   // Sync state with URL but also handle wizard reset when transitioning between donors
   useEffect(() => {
@@ -120,6 +146,14 @@ function DetailsPageContent() {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push("/login");
+  };
+
+  // Clear persisted state on wizard completion
+  const handleWizardComplete = () => {
+    if (user) {
+      localStorage.removeItem(storageKey(user.id));
+    }
+    setWizardCompleted(true);
   };
 
   if (loading) {
@@ -151,26 +185,6 @@ function DetailsPageContent() {
 
       <main className="grow flex justify-center sm:p-12">
         <div className="max-w-5xl w-full">
-          {/*  bg-white rounded-2xl shadow-lg */}
-          {/* {!initialCompleted ? (
-                        <InitialDetailsForm
-                            lead={lead}
-                            userId={user?.id}
-                            onComplete={() => setInitialCompleted(true)}
-                        />
-                    ) : (
-                        <WizardLayout
-                            activeStep={activeStep}
-                            setActiveStep={setActiveStep}
-                            completedSteps={completedSteps}
-                            setCompletedSteps={setCompletedSteps}
-                            formData={formData}
-                            setFormData={setFormData}
-                            onExitWizard={() => setInitialCompleted(false)}
-                            onFinish={() => setWizardCompleted(true)}
-                        />
-                    )
-                    } */}
           {!initialCompleted && (
             <InitialDetailsForm
               lead={lead}
@@ -188,7 +202,7 @@ function DetailsPageContent() {
               formData={formData}
               setFormData={setFormData}
               onExitWizard={() => setInitialCompleted(false)}
-              onFinish={() => setWizardCompleted(true)}
+              onFinish={handleWizardComplete}
               currentDonorIndex={currentDonorIndex}
             />
           )}
@@ -208,3 +222,4 @@ function DetailsPageContent() {
     </div>
   );
 }
+
