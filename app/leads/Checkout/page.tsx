@@ -143,7 +143,7 @@ function CheckoutContent() {
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 bg-zenco-blue rounded-full"></div>
             <span className="text-xl font-bold text-zenco-dark tracking-tight">
-              ZENCO<span className="text-zenco-blue">LEGAL</span>
+              LOGO<span className="text-zenco-blue">here</span>
             </span>
           </Link>
         </div>

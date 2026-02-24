@@ -185,7 +185,7 @@ export default function LPAStepOne() {
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 bg-[#08b9ed] rounded-full"></div>
           <span className="text-lg font-bold text-zenco-dark tracking-tight">
-            ZENCO<span className="text-[#08b9ed]">LEGAL</span>
+            LOGO<span className="text-[#08b9ed]">here</span>
           </span>
         </div>
         {/* <div className="text-sm font-medium text-gray-500">

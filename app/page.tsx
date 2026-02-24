@@ -9,7 +9,7 @@ export default function Home() {
         <div className="flex items-center gap-2">
           {/* Placeholder Logo */}
           <div className="w-8 h-8 bg-zenco-blue rounded-full"></div>
-          <span className="text-xl font-bold text-zenco-dark tracking-tight">ZENCO<span className="text-zenco-blue">LEGAL</span></span>
+          <span className="text-xl font-bold text-zenco-dark tracking-tight">Logo<span className="text-zenco-blue">here</span></span>
         </div>
         <nav className="hidden md:flex gap-8 text-sm font-medium text-gray-600">
           <Link href="#" className="hover:text-zenco-blue transition-colors">Products</Link>
@@ -109,7 +109,7 @@ export default function Home() {
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-6">
               <div className="w-6 h-6 bg-zenco-blue rounded-full"></div>
-              <span className="text-xl font-bold tracking-tight">ZENCO<span className="text-zenco-blue">LEGAL</span></span>
+              <span className="text-xl font-bold tracking-tight">LOGO<span className="text-zenco-blue">here</span></span>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
               Providing affordable and accessible legal documents for everyone. Secure your future today with Zenco Legal.
