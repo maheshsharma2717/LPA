@@ -14,11 +14,13 @@ export async function GET(request: Request) {
         const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
         const db = getServerSupabase(token);
 
-        const { data: leadData, error: leadError } = await db
+        const { data: leads, error: leadError } = await db
             .from('leads')
             .select('*')
             .eq('id', userId)
-            .single();
+            .limit(1);
+
+        const leadData = leads?.[0];
 
         if (leadError && leadError.code !== 'PGRST116') {
             console.error('Error fetching lead:', leadError);
@@ -65,7 +67,7 @@ export async function PATCH(request: Request) {
         const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
         console.log('PATCH /api/leads hit...', { hasToken: !!token });
 
-       
+
         const db = supabaseAdmin || getServerSupabase(token);
 
         if (!db) {
@@ -73,14 +75,16 @@ export async function PATCH(request: Request) {
             return NextResponse.json({ error: 'Database client not configured. [ERR_DB_NULL]' }, { status: 500 });
         }
 
-        const { data, error } = await db
+        const { data: leads, error: error } = await db
             .from('leads')
             .upsert({
                 id: userId,
                 ...updateData
             })
             .select()
-            .maybeSingle();
+            .limit(1);
+
+        const data = leads?.[0];
 
         if (error) {
             console.error('Error updating lead:', error);

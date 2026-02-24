@@ -133,8 +133,11 @@ export default function Step1Who({ data, updateData, onNext, isSaving }: Props) 
             setPeople(others);
 
             if (data?.selectedPeopleIds && data.selectedPeopleIds.length > 0) {
-
               setSelectedPeopleIds(data.selectedPeopleIds);
+            } else if (others.length > 0) {
+              // On reload, if we have others in DB but no selection in form data,
+              // assume all non-lead donors in DB were selected.
+              setSelectedPeopleIds(others.map((p: any) => p.id));
             } else {
               setSelectedPeopleIds([]);
             }

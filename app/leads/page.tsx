@@ -62,15 +62,13 @@ function DetailsPageContent() {
         }
         setUser(user);
 
-        const { data: leadData, error: leadError } = await supabase
+        const { data: leads, error: leadError } = await supabase
           .from("leads")
           .select("*")
           .eq("id", user.id)
-          .single();
+          .limit(1);
 
-        if (leadError && leadError.code !== "PGRST116") {
-          throw leadError;
-        }
+        const leadData = leads?.[0];
 
 
         const { data: appsData, error: appsError } = await supabase
@@ -85,6 +83,11 @@ function DetailsPageContent() {
 
         setLead(leadData);
         setApplications(appsData || []);
+
+        // Auto-complete initial form if lead is already filled out
+        if (leadData?.first_name && leadData?.address_line_1) {
+          setInitialCompleted(true);
+        }
       } catch (err: any) {
         console.error("Unexpected error:", err);
         setError(err.message || "An unexpected error occurred");
@@ -95,6 +98,24 @@ function DetailsPageContent() {
 
     checkUser();
   }, [router]);
+
+  // Sync state with URL but also handle wizard reset when transitioning between donors
+  useEffect(() => {
+    const idxStr = searchParams.get("currentDonorIndex");
+    const newIndex = parseInt(idxStr || "0");
+
+    if (newIndex !== currentDonorIndex) {
+      setCurrentDonorIndex(newIndex);
+
+      // If it's a secondary donor, jump directly to Step 3 (index 2)
+      if (newIndex > 0) {
+        setActiveStep(2); // Jump to "About You (Donor)" step
+        setWizardCompleted(false);
+        setCompletedSteps([0, 1]); // Mark Who and Which Document as completed
+        setInitialCompleted(true);
+      }
+    }
+  }, [searchParams, currentDonorIndex]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
