@@ -50,7 +50,7 @@ export async function POST(request: Request) {
                         stripe_payment_intent_id: session.payment_intent as string,
                         amount_pence: session.amount_total || 0,
                         status: 'succeeded',
-                        stripe_event_data: event.data.object as Record<string, unknown>,
+                        stripe_event_data: event.data.object as unknown as Record<string, unknown>,
                         paid_at: new Date().toISOString(),
                     }, { onConflict: 'stripe_checkout_session_id' });
 
