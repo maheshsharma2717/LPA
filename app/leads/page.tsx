@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import Step10 from "./components/Step10";
+import { steps } from "./step-config";
 import"./components/steps/Steps.module.css";
 export default function DetailsPage() {
   return (
@@ -32,14 +33,19 @@ function DetailsPageContent() {
   const [applications, setApplications] = useState<any[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<string | null>(null);
-  const [activeStep, setActiveStep] = useState(0);
   const searchParams = useSearchParams();
+  
+  const stepParam = searchParams.get("step");
+  const initialStepIndex = steps.findIndex(s => s.key === stepParam);
+  const [activeStep, setActiveStep] = useState(0);
+  
   const [currentDonorIndex, setCurrentDonorIndex] = useState(
     parseInt(searchParams.get("currentDonorIndex") || "0")
   );
 
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [wizardCompleted, setWizardCompleted] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [formData, setFormData] = useState<any>({
@@ -61,9 +67,9 @@ function DetailsPageContent() {
     const checkUser = async () => {
       try {
         const {
-          data: { user },
-          error: userError,
-        } = await supabase.auth.getUser();
+          data: { session },
+        } = await supabase.auth.getSession();
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
         if (userError || !user) {
           router.push("/login");
           return;
@@ -94,13 +100,17 @@ function DetailsPageContent() {
         setApplications(appsData || []);
 
         // Restore wizard state from localStorage
+        let restoredStep = 0;
+        let parsedCompletedSteps: number[] = [];
         const saved = localStorage.getItem(storageKey(user.id));
         if (saved) {
           try {
             const parsed = JSON.parse(saved);
             if (parsed.formData) setFormData(parsed.formData);
-            if (parsed.completedSteps) setCompletedSteps(parsed.completedSteps);
-            if (typeof parsed.activeStep === "number") setActiveStep(parsed.activeStep);
+            if (parsed.completedSteps) parsedCompletedSteps = parsed.completedSteps;
+            if (typeof parsed.activeStep === "number") {
+              restoredStep = parsed.activeStep;
+            }
             if (typeof parsed.initialCompleted === "boolean") {
               setInitialCompleted(parsed.initialCompleted);
             }
@@ -108,6 +118,84 @@ function DetailsPageContent() {
             // corrupted storage, ignore
           }
         }
+
+        // --- NEW: Hydrate from DB if local storage is missing or lacks applicationId ---
+        const activeApp = appsData?.find((a: any) => a.status === 'draft');
+        if (activeApp && (!saved || !(JSON.parse(saved).formData?.who?.applicationId))) {
+          try {
+            const {
+          data: { session },
+        } = await supabase.auth.getSession();
+          if (!session) return;
+        const token = session.access_token;
+            // Fetch donors for this app
+            const donorsRes = await fetch(`/api/donors?applicationId=${activeApp.id}`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            const { data: donors } = await donorsRes.json();
+            
+            if (donors && donors.length > 0) {
+              const leadDonor = donors.find((d: any) => d.is_lead);
+              const otherDonors = donors.filter((d: any) => !d.is_lead);
+              
+              let selection = "";
+              if (leadDonor && otherDonors.length === 1 && otherDonors[0].relationship_to_lead === "partner") {
+                selection = "You and your partner";
+              } else if (leadDonor && otherDonors.length > 0) {
+                selection = "You and someone else";
+              } else if (leadDonor) {
+                selection = "You";
+              } else {
+                selection = "Someone else";
+              }
+
+              const newWhoData = {
+                applicationId: activeApp.id,
+                selection,
+                selectedPeopleIds: donors.map((d: any) => d.id)
+              };
+
+              // Fetch LPA documents to reconstruct Step 2 selections
+              const newDocSelections: any = {};
+              await Promise.all(donors.map(async (donor: any) => {
+                const lpasRes = await fetch(`/api/lpa-documents?donorId=${donor.id}`, {
+                  headers: { Authorization: `Bearer ${token}` }
+                });
+                const { data: lpas } = await lpasRes.json();
+                
+                if (lpas && Array.isArray(lpas)) {
+                  const hasHealth = lpas.some((doc: any) => doc.lpa_type === 'health_and_welfare' && !doc.deleted_at);
+                  const hasFinance = lpas.some((doc: any) => doc.lpa_type === 'property_and_finance' && !doc.deleted_at);
+                  if (hasHealth && hasFinance) newDocSelections[donor.id] = "Both";
+                  else if (hasHealth) newDocSelections[donor.id] = "Health and Welfare";
+                  else if (hasFinance) newDocSelections[donor.id] = "Property and Finance";
+                }
+              }));
+
+              setFormData((prev: any) => ({
+                ...prev,
+                who: { ...prev.who, ...newWhoData },
+                "which-document": { ...prev["which-document"], selections: newDocSelections }
+              }));
+            }
+          } catch (err) {
+            console.error("Failed to hydrate state from DB", err);
+          }
+        }
+
+        // URL parameter takes precedence over localStorage
+        if (stepParam) {
+          const paramIndex = steps.findIndex(s => s.key === stepParam);
+          if (paramIndex !== -1) restoredStep = paramIndex;
+        }
+
+        let initialCompletedSteps = parsedCompletedSteps || [];
+        if (restoredStep > 0 && initialCompletedSteps.length === 0) {
+           initialCompletedSteps = Array.from({length: restoredStep}, (_, i) => i);
+        }
+        setCompletedSteps(initialCompletedSteps);
+        
+        setActiveStep(restoredStep);
 
         // Always auto-complete initial form if lead data already exists in DB
         if (leadData?.first_name && leadData?.address_line_1) {
@@ -117,6 +205,7 @@ function DetailsPageContent() {
         console.error("Unexpected error:", err);
         setError(err instanceof Error ? err.message : "An unexpected error occurred");
       } finally {
+        setIsInitialized(true);
         setLoading(false);
       }
     };
@@ -126,10 +215,10 @@ function DetailsPageContent() {
 
   // Persist wizard state to localStorage whenever it changes
   useEffect(() => {
-    if (!user) return;
+    if (!user || !isInitialized) return;
     const state = { activeStep, completedSteps, initialCompleted, formData };
     localStorage.setItem(storageKey(user.id), JSON.stringify(state));
-  }, [activeStep, completedSteps, initialCompleted, formData, user]);
+  }, [activeStep, completedSteps, initialCompleted, formData, user, isInitialized]);
 
   // Sync state with URL but also handle wizard reset when transitioning between donors
   useEffect(() => {
@@ -162,7 +251,7 @@ function DetailsPageContent() {
     setWizardCompleted(true);
   };
 
-  if (loading) {
+  if (loading || !isInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-zenco-blue"></div>

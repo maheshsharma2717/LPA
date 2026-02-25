@@ -1,6 +1,7 @@
 "use client";
 
-import {useState} from "react";
+import {useState, useEffect} from "react";
+import {useRouter, usePathname, useSearchParams} from "next/navigation";
 import {Stepper, Step, StepLabel, Button, CircularProgress} from "@mui/material";
 import {steps} from "../step-config";
 import WhoTab from "./steps/Step1Who";
@@ -55,6 +56,20 @@ export default function WizardLayout({
   const CurrentStepComponent = stepComponentMap[steps[activeStep].key];
 
   const [isSaving, setIsSaving] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const currentStepKey = steps[activeStep].key;
+    const currentParam = searchParams.get('step');
+    
+    if (currentParam !== currentStepKey) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('step', currentStepKey);
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    }
+  }, [activeStep, pathname, router, searchParams]);
 
   const handleNext = async () => {
     setIsSaving(true);

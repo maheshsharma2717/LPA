@@ -129,10 +129,31 @@ export default function CertificateProviderTab({ data, updateData, onNext, isSav
 
             setProviders([person]);
             setSelectedProviderId(person.id);
+          } else {
+            // Restore from local cache if DB is empty
+            if (data?.hasProvider !== undefined) {
+              setChoice(data.hasProvider ? "yes" : "no");
+            }
+            if (data?.relationship) {
+              setRelationship(data.relationship);
+            }
+            if (data?.providers && data.providers.length > 0) {
+              setProviders(data.providers);
+              setSelectedProviderId(data.providers[0].id);
+            }
           }
-          else if (data?.hasProvider !== undefined) {
-            setChoice(data.hasProvider ? "yes" : "no");
-          }
+        } else {
+           // No LPA doc yet, restore from local cache
+           if (data?.hasProvider !== undefined) {
+             setChoice(data.hasProvider ? "yes" : "no");
+           }
+           if (data?.relationship) {
+             setRelationship(data.relationship);
+           }
+           if (data?.providers && data.providers.length > 0) {
+             setProviders(data.providers);
+             setSelectedProviderId(data.providers[0].id);
+           }
         }
       } catch (err) {
         console.error("Error loading Step 8:", err);
@@ -254,7 +275,12 @@ export default function CertificateProviderTab({ data, updateData, onNext, isSav
         }
       }
 
-      updateData({ hasProvider: choice === "yes", relationship });
+      // Add "providers" to the update so the local cache (localStorage) actually gets the array
+      updateData({ 
+        hasProvider: choice === "yes", 
+        relationship,
+        providers: choice === "yes" ? providers : []
+      });
       onNext();
     } catch (err) {
       console.error("Error saving certificate provider:", err);

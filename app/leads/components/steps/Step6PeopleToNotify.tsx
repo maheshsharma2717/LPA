@@ -110,14 +110,26 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
           });
           const { data: fetchedPeople } = await peopleRes.json();
 
-          if (fetchedPeople) {
+          if (fetchedPeople && fetchedPeople.length > 0) {
             setPeople(fetchedPeople);
-            setHasPeople(fetchedPeople.length > 0);
+            setHasPeople(true);
+          } else {
+             // Fallback to local form data if DB is empty (e.g., rapid back navigation before DB settled OR just local session state)
+             if (allFormData["people-to-Notify"]?.people) {
+               setPeople(allFormData["people-to-Notify"].people);
+             }
+             if (allFormData["people-to-Notify"]?.hasPeople !== undefined) {
+               setHasPeople(allFormData["people-to-Notify"].hasPeople);
+             }
           }
-        }
-
-        if (allFormData["people-to-Notify"]?.hasPeople !== undefined) {
-          setHasPeople(allFormData["people-to-Notify"].hasPeople);
+        } else {
+             // No LPA doc yet, rely purely on local state
+             if (allFormData["people-to-Notify"]?.people) {
+               setPeople(allFormData["people-to-Notify"].people);
+             }
+             if (allFormData["people-to-Notify"]?.hasPeople !== undefined) {
+               setHasPeople(allFormData["people-to-Notify"].hasPeople);
+             }
         }
 
       } catch (err) {
