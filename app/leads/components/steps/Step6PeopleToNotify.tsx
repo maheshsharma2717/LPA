@@ -1,15 +1,9 @@
 "use client";
-import {
-  SquarePen,
-  UserPlus,
-  UserRound,
-  X,
-  Trash2,
-} from "lucide-react";
+import { SquarePen, UserPlus, UserRound, X, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import styles from "./Steps.module.css";
 import { supabase } from "@/lib/supabase";
-import { CircularProgress, Alert } from "@mui/material";
+import { CircularProgress, Alert, Button } from "@mui/material";
 
 type Person = {
   id: string;
@@ -25,6 +19,7 @@ type Person = {
 
 type Props = {
   onNext: () => void;
+  onBack: () => void;
   isSaving: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   allFormData: any;
@@ -33,7 +28,14 @@ type Props = {
   currentDonorIndex: number;
 };
 
-export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updateData, currentDonorIndex }: Props) {
+export default function PeopleToNotifyTab({
+  onNext,
+  onBack,
+  isSaving,
+  allFormData,
+  updateData,
+  currentDonorIndex,
+}: Props) {
   const [loading, setLoading] = useState(true);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<string | null>(null);
@@ -65,13 +67,18 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
       }
 
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
         if (!session) return;
         const token = session.access_token;
 
-        const donorsRes = await fetch(`/api/donors?applicationId=${applicationId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const donorsRes = await fetch(
+          `/api/donors?applicationId=${applicationId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
         const { data: fetchedDonors } = await donorsRes.json();
 
         let activeDonorId = donorId;
@@ -96,42 +103,47 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
           return;
         }
 
-        const lpaDocsRes = await fetch(`/api/lpa-documents?donorId=${activeDonorId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const lpaDocsRes = await fetch(
+          `/api/lpa-documents?donorId=${activeDonorId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
         const { data: lpaDocs } = await lpaDocsRes.json();
 
         if (lpaDocs && lpaDocs.length > 0) {
           const firstLpaId = lpaDocs[0].id;
           setLpaDocId(firstLpaId);
 
-          const peopleRes = await fetch(`/api/people-to-notify?lpaDocId=${firstLpaId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const peopleRes = await fetch(
+            `/api/people-to-notify?lpaDocId=${firstLpaId}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            },
+          );
           const { data: fetchedPeople } = await peopleRes.json();
 
           if (fetchedPeople && fetchedPeople.length > 0) {
             setPeople(fetchedPeople);
             setHasPeople(true);
           } else {
-             // Fallback to local form data if DB is empty (e.g., rapid back navigation before DB settled OR just local session state)
-             if (allFormData["people-to-Notify"]?.people) {
-               setPeople(allFormData["people-to-Notify"].people);
-             }
-             if (allFormData["people-to-Notify"]?.hasPeople !== undefined) {
-               setHasPeople(allFormData["people-to-Notify"].hasPeople);
-             }
+            // Fallback to local form data if DB is empty (e.g., rapid back navigation before DB settled OR just local session state)
+            if (allFormData["people-to-Notify"]?.people) {
+              setPeople(allFormData["people-to-Notify"].people);
+            }
+            if (allFormData["people-to-Notify"]?.hasPeople !== undefined) {
+              setHasPeople(allFormData["people-to-Notify"].hasPeople);
+            }
           }
         } else {
-             // No LPA doc yet, rely purely on local state
-             if (allFormData["people-to-Notify"]?.people) {
-               setPeople(allFormData["people-to-Notify"].people);
-             }
-             if (allFormData["people-to-Notify"]?.hasPeople !== undefined) {
-               setHasPeople(allFormData["people-to-Notify"].hasPeople);
-             }
+          // No LPA doc yet, rely purely on local state
+          if (allFormData["people-to-Notify"]?.people) {
+            setPeople(allFormData["people-to-Notify"].people);
+          }
+          if (allFormData["people-to-Notify"]?.hasPeople !== undefined) {
+            setHasPeople(allFormData["people-to-Notify"].hasPeople);
+          }
         }
-
       } catch (err) {
         console.error("Error loading people to notify:", err);
         setError("Failed to load data.");
@@ -141,14 +153,14 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
     };
 
     init();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [applicationId, currentDonorIndex, allFormData?.who, donorId]);
 
   useEffect(() => {
     if (isSaving) {
       handleSaveAndNext();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSaving]);
 
   const handleSaveAndNext = () => {
@@ -191,19 +203,26 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
 
     setIsSubmitting(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) return;
       const token = session.access_token;
 
       if (editingPerson) {
         const res = await fetch("/api/people-to-notify", {
           method: "PATCH",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify({ id: editingPerson.id, ...formData }),
         });
         const { data: updated } = await res.json();
         if (updated) {
-          setPeople((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+          setPeople((prev) =>
+            prev.map((p) => (p.id === updated.id ? updated : p)),
+          );
         }
       } else {
         if (people.length >= 5) {
@@ -214,7 +233,10 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
 
         const res = await fetch("/api/people-to-notify", {
           method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify({ lpa_document_id: lpaDocId, ...formData }),
         });
         const { data: created } = await res.json();
@@ -231,12 +253,23 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
       setIsSubmitting(false);
     }
   };
-
+ const handleBack = async () => {
+    setLoading(true);
+    try {
+      onBack();
+    } catch (err) {
+      console.error("Error saving reversing step:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleDeletePerson = async (id: string) => {
     if (!confirm("Are you sure you want to remove this person?")) return;
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) return;
       const token = session.access_token;
 
@@ -255,31 +288,39 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
     }
   };
 
-  if (loading) return <div className="flex justify-center p-10"><CircularProgress /></div>;
+  if (loading)
+    return (
+      <div className="flex justify-center p-10">
+        <CircularProgress />
+      </div>
+    );
 
   return (
     <>
       <main className="grow flex justify-center">
         <div className="max-w-6xl w-full grid grid-cols-1 gap-10">
           <div className="lg:col-span-2">
-            <h4 className={styles.stepHeading}>
-              People to notify
-            </h4>
+            <h4 className={styles.stepHeading}>People to notify</h4>
 
             <div className={styles.dividerZenco}></div>
 
             <p className={styles.pZenco}>
-              You can let people know that you&apos;re going to register this document. They can raise any concerns they have about the
-              Lasting Powers of Attorney-for example, if there was any pressure or fraud in making it.
+              You can let people know that you&apos;re going to register this
+              document. They can raise any concerns they have about the Lasting
+              Powers of Attorney-for example, if there was any pressure or fraud
+              in making it.
             </p>
             <p className={styles.pZenco}>
-              When the document is registered, the person applying to register must send a notice to each &apos;person to notify&apos;.
+              When the document is registered, the person applying to register
+              must send a notice to each &apos;person to notify&apos;.
             </p>
             <p className={styles.pZenco}>
-              You can&apos;t put any of the attorneys or replacement attorneys here.
+              You can&apos;t put any of the attorneys or replacement attorneys
+              here.
             </p>
             <p className={styles.pZenco}>
-              Choose people who care about your best interests and who would be willing to speak up if they were concerned.
+              Choose people who care about your best interests and who would be
+              willing to speak up if they were concerned.
             </p>
 
             <div className="text-zenco-blue font-medium mb-8">
@@ -294,13 +335,17 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
               <div className="space-y-3">
                 <button
                   onClick={() => setHasPeople(false)}
-                  className={hasPeople === false ? styles.btnDark : styles.btnWhite}
+                  className={
+                    hasPeople === false ? styles.btnDark : styles.btnWhite
+                  }
                 >
                   No, there are no people to notify
                 </button>
                 <button
                   onClick={() => setHasPeople(true)}
-                  className={hasPeople === true ? styles.btnDark : styles.btnWhite}
+                  className={
+                    hasPeople === true ? styles.btnDark : styles.btnWhite
+                  }
                 >
                   Yes, there are people to notify
                 </button>
@@ -311,7 +356,7 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
                   <button
                     onClick={openAddModal}
                     disabled={people.length >= 5}
-                    className={`${styles.btnWhite} mb-6 ${people.length >= 5 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`${styles.btnWhite} mb-6 ${people.length >= 5 ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
                     <UserPlus size={18} />
                     Add new person to notify
@@ -339,10 +384,12 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
                               <UserRound size={30} className="text-gray-400" />
                               <div>
                                 <p className="font-bold text-zenco-dark text-lg">
-                                  {person.title} {person.first_name} {person.last_name}
+                                  {person.title} {person.first_name}{" "}
+                                  {person.last_name}
                                 </p>
                                 <p className="text-sm text-gray-600">
-                                  {person.address_line_1}, {person.city}, {person.postcode}
+                                  {person.address_line_1}, {person.city},{" "}
+                                  {person.postcode}
                                 </p>
 
                                 <div className="flex gap-4 mt-1">
@@ -354,7 +401,9 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
                                     Update details
                                   </p>
                                   <p
-                                    onClick={() => handleDeletePerson(person.id)}
+                                    onClick={() =>
+                                      handleDeletePerson(person.id)
+                                    }
                                     className="text-sm flex items-center gap-1 text-red-600 hover:underline cursor-pointer"
                                   >
                                     <Trash2 size={13} />
@@ -371,6 +420,32 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
                 </div>
               )}
             </div>
+            <div className="flex justify-between pt-4">
+              <button onClick={handleBack} className={`cursor-pointer`}>
+          ← back
+        </button>
+              {/* <Button
+                variant="contained"
+                onClick={handleSaveAndNext}
+                sx={{
+                  backgroundColor: "#08B9ED",
+                  textTransform: "none",
+                  fontWeight: 600,
+                  "&:hover": { backgroundColor: "#07bdf5ff" },
+                }}
+              >
+                Save and Continue
+              </Button> */}
+              <button
+                onClick={handleSaveAndNext}
+                className={`px-10 py-3 rounded text-white font-bold shadow-lg transition-all flex items-center justify-center min-w-45 
+               bg-[#06b6d4] hover:bg-cyan-600
+              `}
+              >
+                Save and continue
+              </button>
+              
+            </div>
           </div>
         </div>
       </main>
@@ -380,7 +455,9 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
           <div className="bg-white w-full max-w-md rounded shadow-lg overflow-hidden animate-in zoom-in-95">
             {/* Header */}
             <div className="bg-[#3b5c77] text-white flex justify-between items-center px-4 py-3">
-              <h3 className="font-semibold">{editingPerson ? "Update person" : "Add person"}</h3>
+              <h3 className="font-semibold">
+                {editingPerson ? "Update person" : "Add person"}
+              </h3>
               <X
                 className="cursor-pointer hover:rotate-90 transition"
                 onClick={() => setShowModal(false)}
@@ -390,60 +467,97 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
             {/* Body */}
             <div className="p-5 space-y-4">
               <div>
-                <label className="text-sm font-semibold block mb-1">Title</label>
+                <label className="text-sm font-semibold block mb-1">
+                  Title
+                </label>
                 <select
                   className="w-full border p-2 rounded mb-3 focus:ring-2 focus:ring-blue-500 outline-none"
                   value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, title: e.target.value })
+                  }
                 >
-                  {["Mr", "Mrs", "Miss", "Ms", "Mx", "Dr", "Rev", "Prof", "Lady", "Lord"].map((t) => (
-                    <option key={t} value={t}>{t}</option>
+                  {[
+                    "Mr",
+                    "Mrs",
+                    "Miss",
+                    "Ms",
+                    "Mx",
+                    "Dr",
+                    "Rev",
+                    "Prof",
+                    "Lady",
+                    "Lord",
+                  ].map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
                   ))}
                 </select>
 
                 <div className="flex gap-3">
                   <div className="flex-1">
-                    <label className="text-sm font-semibold block mb-1">First Name</label>
+                    <label className="text-sm font-semibold block mb-1">
+                      First Name
+                    </label>
                     <input
                       className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
                       value={formData.first_name}
-                      onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, first_name: e.target.value })
+                      }
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="text-sm font-semibold block mb-1">Last Name</label>
+                    <label className="text-sm font-semibold block mb-1">
+                      Last Name
+                    </label>
                     <input
                       className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
                       value={formData.last_name}
-                      onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, last_name: e.target.value })
+                      }
                     />
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="text-sm font-semibold block mb-1">Address Line 1</label>
+                <label className="text-sm font-semibold block mb-1">
+                  Address Line 1
+                </label>
                 <input
                   className="w-full border p-2 rounded mb-3 focus:ring-2 focus:ring-blue-500 outline-none"
                   value={formData.address_line_1}
-                  onChange={(e) => setFormData({ ...formData, address_line_1: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, address_line_1: e.target.value })
+                  }
                 />
 
                 <div className="flex gap-3">
                   <div className="flex-1">
-                    <label className="text-sm font-semibold block mb-1">City</label>
+                    <label className="text-sm font-semibold block mb-1">
+                      City
+                    </label>
                     <input
                       className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
                       value={formData.city}
-                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, city: e.target.value })
+                      }
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="text-sm font-semibold block mb-1">Postcode</label>
+                    <label className="text-sm font-semibold block mb-1">
+                      Postcode
+                    </label>
                     <input
                       className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
                       value={formData.postcode}
-                      onChange={(e) => setFormData({ ...formData, postcode: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, postcode: e.target.value })
+                      }
                     />
                   </div>
                 </div>
@@ -454,7 +568,11 @@ export default function PeopleToNotifyTab({ onNext, isSaving, allFormData, updat
                 disabled={isSubmitting}
                 className="w-full bg-[#00a8cc] hover:bg-[#008aaa] text-white py-3 rounded font-semibold transition-colors flex justify-center items-center gap-2"
               >
-                {isSubmitting ? <CircularProgress size={20} color="inherit" /> : "Save and continue"}
+                {isSubmitting ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  "Save and continue"
+                )}
               </button>
             </div>
           </div>

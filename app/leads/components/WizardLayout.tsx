@@ -71,9 +71,9 @@ export default function WizardLayout({
     }
   }, [activeStep, pathname, router, searchParams]);
 
-  const handleNext = async () => {
-    setIsSaving(true);
-  };
+  // const handleNext = async () => {
+  //   setIsSaving(true);
+  // };
 
   const onNavigateNext = () => {
     setCompletedSteps((prev) =>
@@ -158,6 +158,7 @@ export default function WizardLayout({
               }))
             }
             onNext={onNavigateNext}
+            onBack={handleBack}
             isSaving={isSaving}
             allFormData={formData}
             currentDonorIndex={currentDonorIndex}
@@ -165,7 +166,7 @@ export default function WizardLayout({
         </div>
 
         {/* Navigation Buttons - Show only if not hidden by step config */}
-        {!steps[activeStep].hideNext && (
+        {/* {!steps[activeStep].hideNext && (
           <div className="flex justify-between pt-6">
             <Button
               onClick={handleBack}
@@ -189,7 +190,7 @@ export default function WizardLayout({
               {isSaving ? <CircularProgress size={24} color="inherit" /> : (activeStep === steps.length - 1 ? "Finish" : "Next")}
             </Button>
           </div>
-        )}
+        )} */}
       </div></>
 
   );

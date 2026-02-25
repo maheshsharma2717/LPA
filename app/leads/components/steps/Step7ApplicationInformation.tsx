@@ -18,13 +18,14 @@ type Props = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateData: (data: any) => void;
   onNext: () => void;
+  onBack: () => void;
   isSaving: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   allFormData: any;
   currentDonorIndex: number;
 };
 
-export default function ApplicationInfoTab({ onNext, isSaving, allFormData, updateData, currentDonorIndex }: Props) {
+export default function ApplicationInfoTab({ onNext,onBack, isSaving, allFormData, updateData, currentDonorIndex }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -245,7 +246,16 @@ export default function ApplicationInfoTab({ onNext, isSaving, allFormData, upda
   const currentDisplayApplicant = selectedRole === "donor"
     ? donorRecord
     : attorneyRecords.find(a => a.id === selectedAttorneyId);
-
+const handleBack = async () => {
+    setLoading(true);
+    try {
+      onBack();
+    } catch (err) {
+      console.error("Error saving reversing step:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <main className="grow flex items-center justify-center pb-20">
       <div className="max-w-3xl w-full">
@@ -398,12 +408,12 @@ export default function ApplicationInfoTab({ onNext, isSaving, allFormData, upda
                     <div>
                       <p className="font-semibold text-lg">{donorRecord.name}</p>
                       <p className={`${selectedRecipientId === donorRecord.id ? 'text-gray-300' : 'text-gray-500'}`}>{donorRecord.email}</p>
-                      <button className={`text-sm font-medium hover:underline flex items-center gap-1 mt-1 ${selectedRecipientId === donorRecord.id ? 'text-cyan-300' : 'text-cyan-500'}`}>
+                      {/* <button className={`text-sm font-medium hover:underline flex items-center gap-1 mt-1 ${selectedRecipientId === donorRecord.id ? 'text-cyan-300' : 'text-cyan-500'}`}>
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                           <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                         </svg>
                         Update this person&apos;s details
-                      </button>
+                      </button> */}
                     </div>
                   </div>
                   <input type="checkbox" checked={selectedRecipientId === donorRecord.id} readOnly className="w-6 h-6 accent-white" />
@@ -425,12 +435,12 @@ export default function ApplicationInfoTab({ onNext, isSaving, allFormData, upda
                     <div>
                       <p className="font-semibold text-lg">{person.name}</p>
                       <p className={`${selectedRecipientId === person.id ? 'text-gray-300' : 'text-gray-500'}`}>{person.email}</p>
-                      <button className={`text-sm font-medium hover:underline flex items-center gap-1 mt-1 ${selectedRecipientId === person.id ? 'text-cyan-300' : 'text-cyan-500'}`}>
+                      {/* <button className={`text-sm font-medium hover:underline flex items-center gap-1 mt-1 ${selectedRecipientId === person.id ? 'text-cyan-300' : 'text-cyan-500'}`}>
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                           <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                         </svg>
                         Update this person&apos;s details
-                      </button>
+                      </button> */}
                     </div>
                   </div>
                   <input
@@ -457,12 +467,12 @@ export default function ApplicationInfoTab({ onNext, isSaving, allFormData, upda
                     <div>
                       <p className="font-semibold text-lg">{person.name}</p>
                       <p className={`${selectedRecipientId === person.id ? 'text-gray-300' : 'text-gray-500'}`}>{person.email}</p>
-                      <button className={`text-sm font-medium hover:underline flex items-center gap-1 mt-1 ${selectedRecipientId === person.id ? 'text-cyan-300' : 'text-cyan-500'}`}>
+                      {/* <button className={`text-sm font-medium hover:underline flex items-center gap-1 mt-1 ${selectedRecipientId === person.id ? 'text-cyan-300' : 'text-cyan-500'}`}>
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                           <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                         </svg>
                         Update this person&apos;s details
-                      </button>
+                      </button> */}
                     </div>
                   </div>
                   <input
@@ -478,26 +488,21 @@ export default function ApplicationInfoTab({ onNext, isSaving, allFormData, upda
         )}
 
         <div className="flex items-center justify-between mt-12 mb-10">
-          <button
-            onClick={() => currentView === "receiving" ? setCurrentView("applying") : null}
-            className="flex items-center gap-2 text-gray-400 font-semibold hover:text-gray-600 transition-colors"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-            </svg>
-            <span>Back</span>
-          </button>
+          <button onClick={handleBack} className={`cursor-pointer`}>
+          ← back
+        </button>
 
           <button
             onClick={handleSave}
             disabled={isSubmitting}
-            className={`px-10 py-3 rounded text-white font-bold shadow-lg transition-all flex items-center justify-center min-w-[180px] ${currentView === "applying"
+            className={`px-10 py-3 rounded text-white font-bold shadow-lg transition-all flex items-center justify-center min-w-45 ${currentView === "applying"
               ? "bg-[#2563eb] hover:bg-blue-700"
               : "bg-[#06b6d4] hover:bg-cyan-600"
               }`}
           >
             {isSubmitting ? <CircularProgress size={24} color="inherit" /> : "Save and continue"}
           </button>
+          
         </div>
       </div>
     </main>

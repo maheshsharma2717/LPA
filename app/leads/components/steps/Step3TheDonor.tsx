@@ -9,7 +9,7 @@ import {
   TextField,
   CircularProgress,
   Alert,
-  Box
+  Box,
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
@@ -21,13 +21,20 @@ type Props = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateData: (data: any) => void;
   onNext: () => void;
+  onBack: () => void;
   isSaving: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   allFormData: any;
   currentDonorIndex: number;
 };
 
-export default function DonorTab({ onNext, allFormData, updateData, currentDonorIndex }: Props) {
+export default function DonorTab({
+  onNext,
+  onBack,
+  allFormData,
+  updateData,
+  currentDonorIndex,
+}: Props) {
   const [loading, setLoading] = useState(true);
   const [showManualAddress, setShowManualAddress] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -52,7 +59,7 @@ export default function DonorTab({ onNext, allFormData, updateData, currentDonor
     landline: "",
     city: "",
     county: "",
-    addressLine2: ""
+    addressLine2: "",
   });
 
   const applicationId = allFormData?.who?.applicationId;
@@ -65,13 +72,18 @@ export default function DonorTab({ onNext, allFormData, updateData, currentDonor
       }
 
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
         if (!session) return;
         const token = session.access_token;
 
-        const donorsRes = await fetch(`/api/donors?applicationId=${applicationId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const donorsRes = await fetch(
+          `/api/donors?applicationId=${applicationId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
         const { data: fetchedDonors } = await donorsRes.json();
 
         if (!fetchedDonors) {
@@ -97,14 +109,26 @@ export default function DonorTab({ onNext, allFormData, updateData, currentDonor
         if (firstDonor) {
           setCurrentDonor(firstDonor);
 
-          let day = "", month = "", year = "";
+          let day = "",
+            month = "",
+            year = "";
           if (firstDonor.date_of_birth) {
             const date = new Date(firstDonor.date_of_birth);
             day = String(date.getDate());
 
             const months = [
-              "January", "February", "March", "April", "May", "June",
-              "July", "August", "September", "October", "November", "December"
+              "January",
+              "February",
+              "March",
+              "April",
+              "May",
+              "June",
+              "July",
+              "August",
+              "September",
+              "October",
+              "November",
+              "December",
             ];
             month = months[date.getMonth()];
             year = String(date.getFullYear());
@@ -125,10 +149,9 @@ export default function DonorTab({ onNext, allFormData, updateData, currentDonor
             city: firstDonor.city || "",
             county: firstDonor.county || "",
             mobile: "",
-            landline: ""
+            landline: "",
           });
         }
-
       } catch (err) {
         console.error("Error loading Step 3:", err);
         setError("Failed to load donor details.");
@@ -142,7 +165,6 @@ export default function DonorTab({ onNext, allFormData, updateData, currentDonor
 
   const handleInternalNext = async () => {
     if (subStep === 0) {
-
       setSubStep(1);
       window.scrollTo(0, 0);
     } else {
@@ -151,30 +173,50 @@ export default function DonorTab({ onNext, allFormData, updateData, currentDonor
       setIsSubmitting(false);
     }
   };
-
-  const handleInternalBack = () => {
-    if (subStep === 1) {
-      setSubStep(0);
-      window.scrollTo(0, 0);
+const handleBack = async () => {
+    setLoading(true);
+    try {
+      onBack();
+    } catch (err) {
+      console.error("Error saving reversing step:", err);
+    } finally {
+      setLoading(false);
     }
   };
+  // const handleInternalBack = () => {
+  //   if (subStep === 1) {
+  //     setSubStep(0);
+  //     window.scrollTo(0, 0);
+  //   }
+  // };
 
   const handleSave = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) return;
       const token = session.access_token;
 
       const monthIdx = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
       ].indexOf(formData.month);
 
       let dob = null;
       if (formData.year && formData.month && formData.day) {
-
-        const m = String(monthIdx + 1).padStart(2, '0');
-        const d = String(formData.day).padStart(2, '0');
+        const m = String(monthIdx + 1).padStart(2, "0");
+        const d = String(formData.day).padStart(2, "0");
         dob = `${formData.year}-${m}-${d}`;
       }
 
@@ -191,13 +233,15 @@ export default function DonorTab({ onNext, allFormData, updateData, currentDonor
         city: formData.city,
         county: formData.county,
         postcode: formData.postcode,
-
       };
 
       await fetch("/api/donors", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(body)
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
       });
 
       updateData({ donorId: currentDonor.id });
@@ -213,83 +257,200 @@ export default function DonorTab({ onNext, allFormData, updateData, currentDonor
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  if (loading) return <Box p={4} display="flex" justifyContent="center"><CircularProgress /></Box>;
+  if (loading)
+    return (
+      <Box p={4} display="flex" justifyContent="center">
+        <CircularProgress />
+      </Box>
+    );
   if (error) return <Alert severity="error">{error}</Alert>;
-  if (!currentDonor) return <Alert severity="info">No donor found. Please go back.</Alert>;
+  if (!currentDonor)
+    return <Alert severity="info">No donor found. Please go back.</Alert>;
 
   const donorName = `${currentDonor.first_name} ${currentDonor.last_name}`;
 
   return (
     <section className="space-y-8  p-2 animate-in fade-in slide-in-from-top-4">
       <div className="flex flex-col gap-5">
-        <h1 className={`text-center text-3xl ${styles.headingBorderBottom} font-bold text-zenco-dark`}>
-          Details for <span className="text-zenco-blue">{donorName}</span> (The Donor)
+        <h1
+          className={`text-center text-3xl ${styles.headingBorderBottom} font-bold text-zenco-dark`}
+        >
+          Details for <span className="text-zenco-blue">{donorName}</span> (The
+          Donor)
         </h1>
- 
+
         {subStep === 0 && (
           <div className="flex flex-col gap-3 text-gray-600">
-            <p>The &apos;Donor&apos; is the person appointing other people to make decisions on their behalf and must be:</p>
+            <p>
+              The &apos;Donor&apos; is the person appointing other people to
+              make decisions on their behalf and must be:
+            </p>
             <ul className="list-none space-y-2">
               <li className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                <svg
+                  className="w-5 h-5 text-green-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
                 Aged 18 or over.
               </li>
               <li className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                Have mental capacity to make decisions at the time their Lasting Power of Attorney is being made.
+                <svg
+                  className="w-5 h-5 text-green-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                Have mental capacity to make decisions at the time their Lasting
+                Power of Attorney is being made.
               </li>
             </ul>
-            <p>The Donor is the only one who can make decisions about their Lasting Power of Attorney and the people it should involve.</p>
+            <p>
+              The Donor is the only one who can make decisions about their
+              Lasting Power of Attorney and the people it should involve.
+            </p>
           </div>
         )}
       </div>
 
       <div className="space-y-8">
-
         {/* SUB-STEP 0: PERSONAL DETAILS */}
         {subStep === 0 && (
           <div className="space-y-8 animate-in fade-in">
-            <h3 className="font-semibold text-lg text-zenco-dark border-b pb-2">Full legal name</h3>
+            <h3 className="font-semibold text-lg text-zenco-dark border-b pb-2">
+              Full legal name
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <FormControl fullWidth>
                 <InputLabel>Title</InputLabel>
-                <Select value={formData.title} label="Title" onChange={(e) => handleFormChange("title", e.target.value)}>
-                  {["Mr", "Mrs", "Miss", "Ms", "Mx", "Dr", "Rev", "Prof", "Lady", "Lord"].map((t) => (
-                    <MenuItem key={t} value={t}>{t}</MenuItem>
+                <Select
+                  value={formData.title}
+                  label="Title"
+                  onChange={(e) => handleFormChange("title", e.target.value)}
+                >
+                  {[
+                    "Mr",
+                    "Mrs",
+                    "Miss",
+                    "Ms",
+                    "Mx",
+                    "Dr",
+                    "Rev",
+                    "Prof",
+                    "Lady",
+                    "Lord",
+                  ].map((t) => (
+                    <MenuItem key={t} value={t}>
+                      {t}
+                    </MenuItem>
                   ))}
                 </Select>
               </FormControl>
-              <TextField label="First Name" value={formData.firstName} onChange={(e) => handleFormChange("firstName", e.target.value)} fullWidth />
-              <TextField label="Last Name" value={formData.lastName} onChange={(e) => handleFormChange("lastName", e.target.value)} fullWidth />
+              <TextField
+                label="First Name"
+                value={formData.firstName}
+                onChange={(e) => handleFormChange("firstName", e.target.value)}
+                fullWidth
+              />
+              <TextField
+                label="Last Name"
+                value={formData.lastName}
+                onChange={(e) => handleFormChange("lastName", e.target.value)}
+                fullWidth
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <TextField label="Middle names (if any)" value={formData.middleName} onChange={(e) => handleFormChange("middleName", e.target.value)} fullWidth />
-              <TextField label="Preferred Name (Optional)" value={formData.preferredName} onChange={(e) => handleFormChange("preferredName", e.target.value)} fullWidth />
+              <TextField
+                label="Middle names (if any)"
+                value={formData.middleName}
+                onChange={(e) => handleFormChange("middleName", e.target.value)}
+                fullWidth
+              />
+              <TextField
+                label="Preferred Name (Optional)"
+                value={formData.preferredName}
+                onChange={(e) =>
+                  handleFormChange("preferredName", e.target.value)
+                }
+                fullWidth
+              />
             </div>
 
-            <h3 className="font-semibold text-lg text-zenco-dark border-b pb-2 mt-8">Date of birth</h3>
+            <h3 className="font-semibold text-lg text-zenco-dark border-b pb-2 mt-8">
+              Date of birth
+            </h3>
             <div className="grid grid-cols-3 gap-6">
               <FormControl fullWidth>
                 <InputLabel>Day</InputLabel>
-                <Select value={formData.day} label="Day" onChange={(e) => handleFormChange("day", e.target.value)}>
-                  {[...Array(31)].map((_, i) => <MenuItem key={i + 1} value={String(i + 1)}>{i + 1}</MenuItem>)}
+                <Select
+                  value={formData.day}
+                  label="Day"
+                  onChange={(e) => handleFormChange("day", e.target.value)}
+                >
+                  {[...Array(31)].map((_, i) => (
+                    <MenuItem key={i + 1} value={String(i + 1)}>
+                      {i + 1}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
               <FormControl fullWidth>
                 <InputLabel>Month</InputLabel>
-                <Select value={formData.month} label="Month" onChange={(e) => handleFormChange("month", e.target.value)}>
-                  {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map((m) => (
-                    <MenuItem key={m} value={m}>{m}</MenuItem>
+                <Select
+                  value={formData.month}
+                  label="Month"
+                  onChange={(e) => handleFormChange("month", e.target.value)}
+                >
+                  {[
+                    "January",
+                    "February",
+                    "March",
+                    "April",
+                    "May",
+                    "June",
+                    "July",
+                    "August",
+                    "September",
+                    "October",
+                    "November",
+                    "December",
+                  ].map((m) => (
+                    <MenuItem key={m} value={m}>
+                      {m}
+                    </MenuItem>
                   ))}
                 </Select>
               </FormControl>
               <FormControl fullWidth>
                 <InputLabel>Year</InputLabel>
-                <Select value={formData.year} label="Year" onChange={(e) => handleFormChange("year", e.target.value)}>
+                <Select
+                  value={formData.year}
+                  label="Year"
+                  onChange={(e) => handleFormChange("year", e.target.value)}
+                >
                   {Array.from({ length: 110 }, (_, i) => {
                     const y = new Date().getFullYear() - i;
-                    return <MenuItem key={y} value={String(y)}>{y}</MenuItem>
+                    return (
+                      <MenuItem key={y} value={String(y)}>
+                        {y}
+                      </MenuItem>
+                    );
                   })}
                 </Select>
               </FormControl>
@@ -300,7 +461,9 @@ export default function DonorTab({ onNext, allFormData, updateData, currentDonor
         {/* SUB-STEP 1: ADDRESS & CONTACT DETAILS */}
         {subStep === 1 && (
           <div className="space-y-8 animate-in fade-in">
-            <h3 className="font-semibold text-lg text-zenco-dark border-b pb-2">Address & Contact</h3>
+            <h3 className="font-semibold text-lg text-zenco-dark border-b pb-2">
+              Address & Contact
+            </h3>
             <div className="space-y-4">
               <div className="flex gap-4 items-end">
                 <TextField
@@ -318,7 +481,7 @@ export default function DonorTab({ onNext, allFormData, updateData, currentDonor
                     height: "56px",
                     textTransform: "none",
                     fontWeight: 600,
-                    "&:hover": { backgroundColor: "#07bdf5ff" }
+                    "&:hover": { backgroundColor: "#07bdf5ff" },
                   }}
                 >
                   Search
@@ -340,13 +503,17 @@ export default function DonorTab({ onNext, allFormData, updateData, currentDonor
                   <TextField
                     label="Address Line 1"
                     value={formData.address || ""}
-                    onChange={(e) => handleFormChange("address", e.target.value)}
+                    onChange={(e) =>
+                      handleFormChange("address", e.target.value)
+                    }
                     fullWidth
                   />
                   <TextField
                     label="Address Line 2 (Optional)"
                     value={formData.addressLine2 || ""}
-                    onChange={(e) => handleFormChange("addressLine2", e.target.value)}
+                    onChange={(e) =>
+                      handleFormChange("addressLine2", e.target.value)
+                    }
                     fullWidth
                   />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
@@ -359,7 +526,9 @@ export default function DonorTab({ onNext, allFormData, updateData, currentDonor
                     <TextField
                       label="County (Optional)"
                       value={formData.county || ""}
-                      onChange={(e) => handleFormChange("county", e.target.value)}
+                      onChange={(e) =>
+                        handleFormChange("county", e.target.value)
+                      }
                       fullWidth
                     />
                   </div>
@@ -372,15 +541,11 @@ export default function DonorTab({ onNext, allFormData, updateData, currentDonor
 
       {/* Internal Navigation Buttons */}
       <div className="flex justify-between pt-6">
-        <Button
-          onClick={handleInternalBack}
-          sx={{ color: '#6b7280', textTransform: 'none', opacity: subStep === 0 ? 0 : 1 }}
-          disabled={subStep === 0}
-        >
-          Back
-        </Button>
+        <button onClick={handleBack} className={`cursor-pointer`}>
+          ← back
+        </button>
 
-        <Button
+        {/* <Button
           variant="contained"
           onClick={handleInternalNext}
           disabled={isSubmitting}
@@ -393,7 +558,24 @@ export default function DonorTab({ onNext, allFormData, updateData, currentDonor
           }}
         >
           {subStep === 1 ? (isSubmitting ? <CircularProgress size={24} color="inherit" /> : "Save and Continue") : "Save and Continue"}
-        </Button>
+        </Button> */}
+        <button
+          onClick={handleInternalNext}
+          disabled={isSubmitting}
+          className={`px-10 py-3 rounded text-white font-bold shadow-lg transition-all flex items-center justify-center min-w-45 
+               bg-[#06b6d4] hover:bg-cyan-600 cursor-pointer
+              `}
+        >
+          {subStep === 1 ? (
+            isSubmitting ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              "Save and Continue"
+            )
+          ) : (
+            "Save and Continue"
+          )}
+        </button>
       </div>
     </section>
   );

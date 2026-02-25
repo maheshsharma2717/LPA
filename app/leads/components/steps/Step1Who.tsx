@@ -39,6 +39,7 @@ type Props = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateData: (data: any) => void;
   onNext: () => void;
+  onBack: () => void;
   isSaving: boolean;
 };
 
@@ -58,6 +59,7 @@ export default function Step1Who({
   data,
   updateData,
   onNext,
+  onBack,
   isSaving,
 }: Props) {
   const [loading, setLoading] = useState(true);
@@ -272,6 +274,18 @@ export default function Step1Who({
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected, people, selectedPeopleIds, morePeople, applicationId]);
+
+const handleBack = async () => {
+    setLoading(true);
+    try {
+      onBack();
+    } catch (err) {
+      console.error("Error saving reversing step:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const refinedHandleNextCategory = () => {
     if (selected === "You") {
@@ -641,7 +655,7 @@ export default function Step1Who({
 
       <div className="">
         {/* Lead Details */}
-        {isLeadIncluded && leadPerson && (
+        {/* {isLeadIncluded && leadPerson && (
           <div className="flex items-center justify-between p-4 rounded-xl border-[#08b9ed] bg-blue-50/50">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-[#08b9ed]/10 flex items-center justify-center text-[#08b9ed] font-bold">
@@ -670,7 +684,7 @@ export default function Step1Who({
               </svg>
             </div>
           </div>
-        )}
+        )} */}
 
         {people.map((person) => {
           const isSelected = selectedPeopleIds.includes(person.id!);
@@ -682,39 +696,39 @@ export default function Step1Who({
               key={person.id}
               disabled={disabled}
               onClick={() => togglePerson(person.id!)}
-              className={`w-full flex items-center justify-between p-4 border transition-all ${
+              className={`w-full flex items-center justify-between p-4 border transition-all border-[#adb5bd] ${
                 isSelected
-                  ? "border-[#08b9ed] bg-white shadow-sm"
+                  ? "bg-[#35495e]"
                   : disabled
-                    ? "border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed"
+                    ? " opacity-50 cursor-not-allowed"
                     : "border-gray-200 bg-white hover:border-blue-200"
               }`}
             >
               <div className="flex items-center gap-3">
-                <div
+                {/* <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
                     isSelected
-                      ? "bg-[#08b9ed]/10 text-[#08b9ed]"
+                      ? "bg-[#08b9ed]/10 text-white"
                       : "bg-gray-100 text-gray-400"
                   }`}
                 >
                   {person.firstName[0]}
-                </div>
+                </div> */}
                 <div className="text-left">
                   <p
-                    className={`font-semibold ${isSelected ? "text-zenco-dark" : "text-black"}`}
+                    className={`font-semibold ${isSelected ? "text-white" : "text-black"}`}
                   >
                     {person.firstName} {person.lastName}
                   </p>
-                  <p className="text-xs text-gray-400 capitalize">
+                  {/* <p className="text-xs text-gray-400 capitalize">
                     {person.relationship}
-                  </p>
+                  </p> */}
                 </div>
               </div>
               <div
-                className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                className={`w-6 h-6 border-2 flex items-center justify-center transition-all ${
                   isSelected
-                    ? "bg-[#08b9ed] border-[#08b9ed]"
+                    ? "border-white border-3 rounded"
                     : "border-gray-200 bg-white"
                 }`}
               >
@@ -750,15 +764,17 @@ export default function Step1Who({
           color: "#374151",
           textTransform: "none",
           fontWeight: 600,
-          borderRadius: "0.75rem",
           "&:hover": { borderColor: "#D1D5DB", backgroundColor: "#F9FAFB" },
         }}
       >
         + Add new person
       </Button>
 
-      <div className="flex justify-end pt-4">
-        <Button
+      <div className="flex justify-between pt-4">
+         <button onClick={handleBack} className={`cursor-pointer`}>
+         ← back
+        </button>
+        {/* <Button
           variant="contained"
           onClick={handleContinue}
           sx={{
@@ -769,7 +785,15 @@ export default function Step1Who({
           }}
         >
           Continue
-        </Button>
+        </Button> */}
+         <button
+          onClick={handleContinue}
+          className={`px-10 py-3 rounded text-white font-bold shadow-lg transition-all flex items-center justify-center min-w-45 
+                       bg-[#06b6d4] hover:bg-cyan-600 cursor-pointer
+                      `}
+        >
+          Continue
+        </button>
       </div>
     </div>
   );

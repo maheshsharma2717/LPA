@@ -9,6 +9,7 @@ import {
   Select,
   CircularProgress,
   Alert,
+  Button,
 } from "@mui/material";
 
 type DocumentSelection =
@@ -23,6 +24,7 @@ type Props = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateData: (data: any) => void;
   onNext: () => void;
+  onBack: () => void;
   isSaving: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   allFormData: any;
@@ -39,6 +41,7 @@ type Donor = {
 export default function Step2WhichDocuments({
   updateData,
   onNext,
+  onBack,
   isSaving,
   allFormData,
 }: Props) {
@@ -145,8 +148,30 @@ export default function Step2WhichDocuments({
     if (isSaving) {
       handleSave();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSaving]);
+
+  const handleBack = async () => {
+    setLoading(true);
+    try {
+      onBack();
+    } catch (err) {
+      console.error("Error saving reversing step:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleContinue = async () => {
+    setLoading(true);
+    try {
+      handleSave();
+    } catch (err) {
+      console.error("Error saving step:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSelectionChange = (donorId: string, value: DocumentSelection) => {
     setSelections((prev) => ({ ...prev, [donorId]: value }));
@@ -154,7 +179,6 @@ export default function Step2WhichDocuments({
 
   const handleSave = async () => {
     try {
-      
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -356,16 +380,13 @@ export default function Step2WhichDocuments({
 
       <div className="flex flex-col gap-6">
         {donors.map((donor) => (
-          <div
-            key={donor.id}
-            className=""
-          >
+          <div key={donor.id} className="">
             <h3 className="text-xl font-medium text-black mb-4">
               Which documents does{" "}
               <span className="text-[#08b9ed]">
                 {donor.first_name} {donor.last_name}
               </span>{" "}
-             need?
+              need?
             </h3>
             <FormControl fullWidth>
               <p>Document Selection</p>
@@ -396,6 +417,19 @@ export default function Step2WhichDocuments({
             No people selected. Please go back and select who this LPA is for.
           </Alert>
         )}
+      </div>
+      <div className="flex justify-between pt-4">
+        <button onClick={handleBack} className={`cursor-pointer`}>
+          ← back
+        </button>
+        <button
+          onClick={handleContinue}
+          className={`px-10 py-3 rounded text-white font-bold shadow-lg transition-all flex items-center justify-center min-w-45 
+                       bg-[#06b6d4] hover:bg-cyan-600 cursor-pointer
+                      `}
+        >
+          Continue
+        </button>
       </div>
     </section>
   );
