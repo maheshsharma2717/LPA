@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import {useState, useEffect} from "react";
 import {
   Dialog,
   DialogTitle,
@@ -15,7 +15,7 @@ import {
   MenuItem,
   CircularProgress,
 } from "@mui/material";
-import { supabase } from "@/lib/supabase";
+import {supabase} from "@/lib/supabase";
 
 type Person = {
   id?: string;
@@ -100,7 +100,7 @@ export default function Step1Who({
     if (isSaving) {
       handleContinue();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSaving]);
 
   const isLeadIncluded =
@@ -110,21 +110,21 @@ export default function Step1Who({
     const init = async () => {
       try {
         const {
-          data: { session },
+          data: {session},
         } = await supabase.auth.getSession();
         if (!session) return;
         const userId = session.user.id;
         const token = session.access_token;
 
         const leadRes = await fetch(`/api/leads?userId=${userId}`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {Authorization: `Bearer ${token}`},
         });
-        const { lead } = await leadRes.json();
+        const {lead} = await leadRes.json();
 
         const appsRes = await fetch(`/api/applications?userId=${userId}`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {Authorization: `Bearer ${token}`},
         });
-        const { data: apps } = await appsRes.json();
+        const {data: apps} = await appsRes.json();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const currentApp = apps?.find((a: any) => a.status === "draft");
 
@@ -132,9 +132,9 @@ export default function Step1Who({
           setApplicationId(currentApp.id);
           const donorsRes = await fetch(
             `/api/donors?applicationId=${currentApp.id}`,
-            { headers: { Authorization: `Bearer ${token}` } },
+            {headers: {Authorization: `Bearer ${token}`}},
           );
-          const { data: donors } = await donorsRes.json();
+          const {data: donors} = await donorsRes.json();
 
           if (donors && donors.length > 0) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -261,7 +261,7 @@ export default function Step1Who({
       }
     };
     init();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -272,10 +272,10 @@ export default function Step1Who({
       morePeople,
       applicationId,
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected, people, selectedPeopleIds, morePeople, applicationId]);
 
-const handleBack = async () => {
+  const handleBack = async () => {
     setLoading(true);
     try {
       onBack();
@@ -329,7 +329,7 @@ const handleBack = async () => {
 
   const handleCreateApplication = async () => {
     const {
-      data: { session },
+      data: {session},
     } = await supabase.auth.getSession();
     if (!session) return null;
 
@@ -339,9 +339,9 @@ const handleBack = async () => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${session.access_token}`,
       },
-      body: JSON.stringify({ userId: session.user.id }),
+      body: JSON.stringify({userId: session.user.id}),
     });
-    const { data: app } = await res.json();
+    const {data: app} = await res.json();
     setApplicationId(app.id);
     return app.id;
   };
@@ -352,7 +352,7 @@ const handleBack = async () => {
     setLoading(true);
     try {
       const {
-        data: { session },
+        data: {session},
       } = await supabase.auth.getSession();
       if (!session) return;
       const token = session.access_token;
@@ -388,7 +388,7 @@ const handleBack = async () => {
         body: JSON.stringify(donorBody),
       });
 
-      const { data: donor } = await res.json();
+      const {data: donor} = await res.json();
 
       const p: Person = {
         id: donor.id,
@@ -438,7 +438,7 @@ const handleBack = async () => {
     setLoading(true);
     try {
       const {
-        data: { session },
+        data: {session},
       } = await supabase.auth.getSession();
       if (!session) return;
       const token = session.access_token;
@@ -451,9 +451,9 @@ const handleBack = async () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ userId: session.user.id }),
+          body: JSON.stringify({userId: session.user.id}),
         });
-        const { data: app } = await createRes.json();
+        const {data: app} = await createRes.json();
         appId = app.id;
         setApplicationId(appId);
       }
@@ -465,9 +465,9 @@ const handleBack = async () => {
       });
 
       const donorsRes = await fetch(`/api/donors?applicationId=${appId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {Authorization: `Bearer ${token}`},
       });
-      const { data: currentDonors } = await donorsRes.json();
+      const {data: currentDonors} = await donorsRes.json();
 
       /*
       const toDelete = currentDonors?.filter((cd: any) => {
@@ -512,7 +512,7 @@ const handleBack = async () => {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ id: existingRecord.id, ...donorBody }),
+            body: JSON.stringify({id: existingRecord.id, ...donorBody}),
           });
         } else {
           await fetch("/api/donors", {
@@ -552,11 +552,10 @@ const handleBack = async () => {
           <button
             key={option}
             onClick={() => setSelected(option)}
-            className={`p-5 text-center border-0 transition-all ${
-              selected === option
+            className={`p-5 text-center border-0 transition-all ${selected === option
                 ? "border-[#08b9ed] bg-[#35495E] text-white font-semibold shadow-sm"
                 : "border-gray-100 hover:border-blue-100 text-black"
-            }`}
+              }`}
           >
             {option}
           </button>
@@ -570,7 +569,7 @@ const handleBack = async () => {
             backgroundColor: "#08B9ED",
             textTransform: "none",
             fontWeight: 600,
-            "&:hover": { backgroundColor: "#07bdf5ff" },
+            "&:hover": {backgroundColor: "#07bdf5ff"},
           }}
         >
           Next
@@ -696,13 +695,12 @@ const handleBack = async () => {
               key={person.id}
               disabled={disabled}
               onClick={() => togglePerson(person.id!)}
-              className={`w-full flex items-center justify-between p-4 border transition-all border-[#adb5bd] ${
-                isSelected
+              className={`w-full flex items-center justify-between p-4 border transition-all border-[#adb5bd] ${isSelected
                   ? "bg-[#35495e]"
                   : disabled
                     ? " opacity-50 cursor-not-allowed"
                     : "border-gray-200 bg-white hover:border-blue-200"
-              }`}
+                }`}
             >
               <div className="flex items-center gap-3">
                 {/* <div
@@ -726,11 +724,10 @@ const handleBack = async () => {
                 </div>
               </div>
               <div
-                className={`w-6 h-6 border-2 flex items-center justify-center transition-all ${
-                  isSelected
+                className={`w-6 h-6 border-2 flex items-center justify-center transition-all ${isSelected
                     ? "border-white border-3 rounded"
                     : "border-gray-200 bg-white"
-                }`}
+                  }`}
               >
                 {isSelected && (
                   <svg
@@ -764,15 +761,15 @@ const handleBack = async () => {
           color: "#374151",
           textTransform: "none",
           fontWeight: 600,
-          "&:hover": { borderColor: "#D1D5DB", backgroundColor: "#F9FAFB" },
+          "&:hover": {borderColor: "#D1D5DB", backgroundColor: "#F9FAFB"},
         }}
       >
         + Add new person
       </Button>
 
       <div className="flex justify-between pt-4">
-         <button onClick={handleBack} className={`cursor-pointer`}>
-         ← back
+        <button onClick={handleBack} className={`cursor-pointer`}>
+          ← back
         </button>
         {/* <Button
           variant="contained"
@@ -786,7 +783,7 @@ const handleBack = async () => {
         >
           Continue
         </Button> */}
-         <button
+        <button
           onClick={handleContinue}
           className={`px-10 py-3 rounded text-white font-bold shadow-lg transition-all flex items-center justify-center min-w-45 
                        bg-[#06b6d4] hover:bg-cyan-600 cursor-pointer
@@ -831,9 +828,31 @@ const handleBack = async () => {
               Click the continue button to continue making Lasting Power of
               Attorney documents for yourself.
             </p>
-            <div className="flex justify-start"></div>
-            {/* Continue button for "You" only flow (implied in original layout or handled by WizardLayout) */}
-            {/* If we strictly follow the new flow, "You" is just another leaf. But original code had special "You" view. Keeping it. */}
+            <div className="flex justify-between pt-4">
+              <button onClick={handleBack} className={`cursor-pointer`}>
+                ← back
+              </button>
+              {/* <Button
+          variant="contained"
+          onClick={handleContinue}
+          sx={{
+            backgroundColor: "#08B9ED",
+            textTransform: "none",
+            fontWeight: 600,
+            "&:hover": { backgroundColor: "#07bdf5ff" },
+          }}
+        >
+          Continue
+        </Button> */}
+              <button
+                onClick={handleContinue}
+                className={`px-10 py-3 rounded text-white font-bold shadow-lg transition-all flex items-center justify-center min-w-45 
+                       bg-[#06b6d4] hover:bg-cyan-600 cursor-pointer
+                      `}
+              >
+                Continue
+              </button>
+            </div>
           </div>
         ) : (
           <>
@@ -862,7 +881,7 @@ const handleBack = async () => {
                 value={newPerson.title}
                 label="Title"
                 onChange={(e) =>
-                  setNewPerson({ ...newPerson, title: e.target.value })
+                  setNewPerson({...newPerson, title: e.target.value})
                 }
               >
                 <MenuItem value="Mr">Mr</MenuItem>
@@ -876,10 +895,10 @@ const handleBack = async () => {
             <TextField
               label="First Name"
               fullWidth
-              sx={{ md: { gridColumn: "span 1" } }}
+              sx={{md: {gridColumn: "span 1"}}}
               value={newPerson.firstName}
               onChange={(e) =>
-                setNewPerson({ ...newPerson, firstName: e.target.value })
+                setNewPerson({...newPerson, firstName: e.target.value})
               }
             />
             <TextField
@@ -887,7 +906,7 @@ const handleBack = async () => {
               fullWidth
               value={newPerson.middleName}
               onChange={(e) =>
-                setNewPerson({ ...newPerson, middleName: e.target.value })
+                setNewPerson({...newPerson, middleName: e.target.value})
               }
             />
             <TextField
@@ -895,7 +914,7 @@ const handleBack = async () => {
               fullWidth
               value={newPerson.lastName}
               onChange={(e) =>
-                setNewPerson({ ...newPerson, lastName: e.target.value })
+                setNewPerson({...newPerson, lastName: e.target.value})
               }
             />
           </div>
@@ -906,10 +925,10 @@ const handleBack = async () => {
           <TextField
             type="date"
             fullWidth
-            InputLabelProps={{ shrink: true }}
+            InputLabelProps={{shrink: true}}
             value={newPerson.dob}
             onChange={(e) =>
-              setNewPerson({ ...newPerson, dob: e.target.value })
+              setNewPerson({...newPerson, dob: e.target.value})
             }
           />
 
@@ -922,7 +941,7 @@ const handleBack = async () => {
               value={newPerson.relationship}
               label="Relationship"
               onChange={(e) =>
-                setNewPerson({ ...newPerson, relationship: e.target.value })
+                setNewPerson({...newPerson, relationship: e.target.value})
               }
             >
               <MenuItem value="partner">Partner</MenuItem>
@@ -944,7 +963,7 @@ const handleBack = async () => {
                 fullWidth
                 value={newPerson.postcode}
                 onChange={(e) =>
-                  setNewPerson({ ...newPerson, postcode: e.target.value })
+                  setNewPerson({...newPerson, postcode: e.target.value})
                 }
               />
               <Button
@@ -954,7 +973,7 @@ const handleBack = async () => {
                   textTransform: "none",
                   borderRadius: "8px",
                   height: "56px",
-                  "&:hover": { backgroundColor: "#07bdf5ff" },
+                  "&:hover": {backgroundColor: "#07bdf5ff"},
                 }}
               >
                 Search
@@ -978,7 +997,7 @@ const handleBack = async () => {
                   fullWidth
                   value={newPerson.addressLine1}
                   onChange={(e) =>
-                    setNewPerson({ ...newPerson, addressLine1: e.target.value })
+                    setNewPerson({...newPerson, addressLine1: e.target.value})
                   }
                 />
                 <TextField
@@ -986,7 +1005,7 @@ const handleBack = async () => {
                   fullWidth
                   value={newPerson.addressLine2}
                   onChange={(e) =>
-                    setNewPerson({ ...newPerson, addressLine2: e.target.value })
+                    setNewPerson({...newPerson, addressLine2: e.target.value})
                   }
                 />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -995,7 +1014,7 @@ const handleBack = async () => {
                     fullWidth
                     value={newPerson.city}
                     onChange={(e) =>
-                      setNewPerson({ ...newPerson, city: e.target.value })
+                      setNewPerson({...newPerson, city: e.target.value})
                     }
                   />
                   <TextField
@@ -1003,7 +1022,7 @@ const handleBack = async () => {
                     fullWidth
                     value={newPerson.county}
                     onChange={(e) =>
-                      setNewPerson({ ...newPerson, county: e.target.value })
+                      setNewPerson({...newPerson, county: e.target.value})
                     }
                   />
                 </div>
@@ -1014,7 +1033,7 @@ const handleBack = async () => {
         <DialogActions className="p-4 gap-2">
           <Button
             onClick={() => setOpenModal(false)}
-            sx={{ color: "gray", textTransform: "none" }}
+            sx={{color: "gray", textTransform: "none"}}
           >
             Cancel
           </Button>
@@ -1027,7 +1046,7 @@ const handleBack = async () => {
               textTransform: "none",
               borderRadius: "8px",
               padding: "10px 24px",
-              "&:hover": { backgroundColor: "#07bdf5ff" },
+              "&:hover": {backgroundColor: "#07bdf5ff"},
             }}
           >
             {loading ? (
