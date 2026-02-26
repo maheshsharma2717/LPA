@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import {useState} from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import {useRouter} from "next/navigation";
+import {supabase} from "@/lib/supabase";
 
 export default function RegisterUser() {
   const router = useRouter();
@@ -30,11 +30,15 @@ export default function RegisterUser() {
   const handleRegister = async () => {
     setLoading(true);
     setError(null);
-
+    debugger;
     try {
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      const {data: authData, error: authError} = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/leads`,
+        }
+
       });
 
       if (authError) throw authError;
@@ -42,7 +46,7 @@ export default function RegisterUser() {
       if (authData.user) {
         // Check if we have a session. If not, email confirmation might be required.
         const {
-          data: { session },
+          data: {session},
         } = await supabase.auth.getSession();
 
         if (session) {
@@ -69,9 +73,11 @@ export default function RegisterUser() {
           if (!response.ok) {
             const errorData = await response.json();
             console.error("API registration error:", errorData.error);
+            router.push("/leads");
+          } else {
+            setSuccess(true);
           }
 
-          router.push("/leads");
         } else {
           setSuccess(true);
         }
@@ -144,14 +150,14 @@ export default function RegisterUser() {
             <>
               <h2
                 className="text-2xl sm:text-4xl font-bold text-[#3a3a3c] mb-2 text-center leading-tight"
-                style={{ lineHeight: 1.2 }}
+                style={{lineHeight: 1.2}}
               >
                 Let&apos;s start with the basics
               </h2>
 
               <p
                 className="text-[#04724e] text-center font-medium mt-4 text-lg"
-                style={{ lineHeight: 1.5 }}
+                style={{lineHeight: 1.5}}
               >
                 People in your situation usually finish their documents in 15
                 minutes
@@ -169,7 +175,7 @@ export default function RegisterUser() {
                     type="text"
                     value={formData.name}
                     onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
+                      setFormData({...formData, name: e.target.value})
                     }
                     className="w-full rounded-sm border-2 bg-white border-[#ced4da] px-4 py-3 focus:border-0 focus:ring-2 focus:ring-[#86b7fe] focus:outline-none"
                   />
@@ -184,7 +190,7 @@ export default function RegisterUser() {
                     type="email"
                     value={formData.email}
                     onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
+                      setFormData({...formData, email: e.target.value})
                     }
                     className="w-full rounded-sm border-2 bg-white border-[#ced4da] px-4 py-3 focus:border-0 focus:ring-2 focus:ring-[#86b7fe] focus:outline-none"
                   />
@@ -197,7 +203,7 @@ export default function RegisterUser() {
                     id="marketing"
                     checked={formData.marketing}
                     onChange={(e) =>
-                      setFormData({ ...formData, marketing: e.target.checked })
+                      setFormData({...formData, marketing: e.target.checked})
                     }
                     className="bordern rounded-sm p-7 w-5  h-5 mt-0.5 cursor-pointer accent-zenco-blue"
                   />
@@ -227,7 +233,7 @@ export default function RegisterUser() {
                   type="button"
                   onClick={async () => {
                     try {
-                      const { error } = await supabase.auth.signInWithOAuth({
+                      const {error} = await supabase.auth.signInWithOAuth({
                         provider: "google",
                         options: {
                           redirectTo: `${window.location.origin}/leads`,
@@ -256,7 +262,7 @@ export default function RegisterUser() {
                   </Link>
                 </p>
 
-          </div>
+              </div>
               <div className="text-[#3A3A3C] text-center">
                 <div className="flex justify-center items-center">
                   <svg
@@ -311,7 +317,7 @@ export default function RegisterUser() {
                     type={showPassword ? "text" : "password"}
                     value={formData.password}
                     onChange={(e) =>
-                      setFormData({ ...formData, password: e.target.value })
+                      setFormData({...formData, password: e.target.value})
                     }
                     className="w-full rounded-xl border border-gray-300 px-4 py-3 pr-12 focus:ring-2 focus:ring-zenco-blue focus:outline-none"
                   />
