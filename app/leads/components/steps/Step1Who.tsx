@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import {useState, useEffect} from "react";
 import {
   Dialog,
   DialogTitle,
@@ -15,7 +15,7 @@ import {
   MenuItem,
   CircularProgress,
 } from "@mui/material";
-import { supabase } from "@/lib/supabase";
+import {supabase} from "@/lib/supabase";
 
 type Person = {
   id?: string;
@@ -116,21 +116,21 @@ export default function Step1Who({
     const init = async () => {
       try {
         const {
-          data: { session },
+          data: {session},
         } = await supabase.auth.getSession();
         if (!session) return;
         const userId = session.user.id;
         const token = session.access_token;
 
         const leadRes = await fetch(`/api/leads?userId=${userId}`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {Authorization: `Bearer ${token}`},
         });
-        const { lead } = await leadRes.json();
+        const {lead} = await leadRes.json();
 
         const appsRes = await fetch(`/api/applications?userId=${userId}`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {Authorization: `Bearer ${token}`},
         });
-        const { data: apps } = await appsRes.json();
+        const {data: apps} = await appsRes.json();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const currentApp = apps?.find((a: any) => a.status === "draft");
 
@@ -138,9 +138,9 @@ export default function Step1Who({
           setApplicationId(currentApp.id);
           const donorsRes = await fetch(
             `/api/donors?applicationId=${currentApp.id}`,
-            { headers: { Authorization: `Bearer ${token}` } },
+            {headers: {Authorization: `Bearer ${token}`}},
           );
-          const { data: donors } = await donorsRes.json();
+          const {data: donors} = await donorsRes.json();
 
           if (donors && donors.length > 0) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -346,7 +346,7 @@ export default function Step1Who({
 
   const handleCreateApplication = async () => {
     const {
-      data: { session },
+      data: {session},
     } = await supabase.auth.getSession();
     if (!session) return null;
 
@@ -356,9 +356,9 @@ export default function Step1Who({
         "Content-Type": "application/json",
         Authorization: `Bearer ${session.access_token}`,
       },
-      body: JSON.stringify({ userId: session.user.id }),
+      body: JSON.stringify({userId: session.user.id}),
     });
-    const { data: app } = await res.json();
+    const {data: app} = await res.json();
     setApplicationId(app.id);
     return app.id;
   };
@@ -369,7 +369,7 @@ export default function Step1Who({
     setLoading(true);
     try {
       const {
-        data: { session },
+        data: {session},
       } = await supabase.auth.getSession();
       if (!session) return;
       const token = session.access_token;
@@ -408,7 +408,7 @@ export default function Step1Who({
         body: JSON.stringify(donorBody),
       });
 
-      const { data: donor } = await res.json();
+      const {data: donor} = await res.json();
 
       const p: Person = {
         id: donor.id,
@@ -464,7 +464,7 @@ export default function Step1Who({
     setLoading(true);
     try {
       const {
-        data: { session },
+        data: {session},
       } = await supabase.auth.getSession();
       if (!session) return;
       const token = session.access_token;
@@ -477,9 +477,9 @@ export default function Step1Who({
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ userId: session.user.id }),
+          body: JSON.stringify({userId: session.user.id}),
         });
-        const { data: app } = await createRes.json();
+        const {data: app} = await createRes.json();
         appId = app.id;
         setApplicationId(appId);
       }
@@ -491,9 +491,9 @@ export default function Step1Who({
       });
 
       const donorsRes = await fetch(`/api/donors?applicationId=${appId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {Authorization: `Bearer ${token}`},
       });
-      const { data: currentDonors } = await donorsRes.json();
+      const {data: currentDonors} = await donorsRes.json();
 
       /*
       const toDelete = currentDonors?.filter((cd: any) => {
@@ -541,7 +541,7 @@ export default function Step1Who({
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ id: existingRecord.id, ...donorBody }),
+            body: JSON.stringify({id: existingRecord.id, ...donorBody}),
           });
         } else {
           await fetch("/api/donors", {
@@ -581,11 +581,10 @@ export default function Step1Who({
           <button
             key={option}
             onClick={() => setSelected(option)}
-            className={`p-5 text-center border-0 transition-all ${
-              selected === option
+            className={`p-5 text-center border-0 transition-all ${selected === option
                 ? "border-[#08b9ed] bg-[#35495E] text-white font-semibold shadow-sm"
                 : "border-gray-100 hover:border-blue-100 text-black"
-            }`}
+              }`}
           >
             {option}
           </button>
@@ -599,7 +598,7 @@ export default function Step1Who({
             backgroundColor: "#08B9ED",
             textTransform: "none",
             fontWeight: 600,
-            "&:hover": { backgroundColor: "#07bdf5ff" },
+            "&:hover": {backgroundColor: "#07bdf5ff"},
           }}
         >
           Next
@@ -755,8 +754,7 @@ export default function Step1Who({
                 </div>
               </div>
               <div
-                className={`w-6 h-6 border-2 flex items-center justify-center transition-all ${
-                  isSelected
+                className={`w-6 h-6 border-2 flex items-center justify-center transition-all ${isSelected
                     ? "border-white border-3 rounded"
                     : "border-[#6B7588] rounded bg-white border-3"
                 }`}
@@ -873,9 +871,31 @@ export default function Step1Who({
               Click the continue button to continue making Lasting Power of
               Attorney documents for yourself.
             </p>
-            <div className="flex justify-start"></div>
-            {/* Continue button for "You" only flow (implied in original layout or handled by WizardLayout) */}
-            {/* If we strictly follow the new flow, "You" is just another leaf. But original code had special "You" view. Keeping it. */}
+            <div className="flex justify-between pt-4">
+              <button onClick={handleBack} className={`cursor-pointer`}>
+                ← back
+              </button>
+              {/* <Button
+          variant="contained"
+          onClick={handleContinue}
+          sx={{
+            backgroundColor: "#08B9ED",
+            textTransform: "none",
+            fontWeight: 600,
+            "&:hover": { backgroundColor: "#07bdf5ff" },
+          }}
+        >
+          Continue
+        </Button> */}
+              <button
+                onClick={handleContinue}
+                className={`px-10 py-3 rounded text-white font-bold shadow-lg transition-all flex items-center justify-center min-w-45 
+                       bg-[#06b6d4] hover:bg-cyan-600 cursor-pointer
+                      `}
+              >
+                Continue
+              </button>
+            </div>
           </div>
         ) : (
           <>
