@@ -343,7 +343,7 @@ export default function LPAStepOne() {
                 {/* Button */}
                 <button
                   onClick={() => routePage.push("/register")}
-                  className="w-full bg-[#08b9ed] hover:bg-cyan-700 text-white font-semibold py-3 rounded-md transition"
+                  className="w-full bg-[#08b9ed] hover:bg-cyan-700 text-white font-semibold py-3 rounded-md transition cursor-pointer"
                 >
                   Continue online
                 </button>

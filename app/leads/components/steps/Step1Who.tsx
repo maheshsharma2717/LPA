@@ -23,7 +23,10 @@ type Person = {
   firstName: string;
   lastName: string;
   middleName?: string;
-  dob: string;
+  // dob: string;
+  day: string;
+  month: string;
+  year: string;
   isLead: boolean;
   relationship: string;
   addressLine1: string;
@@ -87,7 +90,10 @@ export default function Step1Who({
     firstName: "",
     lastName: "",
     middleName: "",
-    dob: "",
+    // dob: "",
+    day: "",
+    month: "",
+    year: "",
     relationship: "other",
     addressLine1: "",
     addressLine2: "",
@@ -100,7 +106,7 @@ export default function Step1Who({
     if (isSaving) {
       handleContinue();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSaving]);
 
   const isLeadIncluded =
@@ -144,7 +150,10 @@ export default function Step1Who({
               firstName: d.first_name,
               lastName: d.last_name,
               middleName: d.middle_name,
-              dob: d.date_of_birth,
+              // dob: d.date_of_birth,
+              day: d.day,
+              month: d.month,
+              year: d.year,
               isLead: d.is_lead,
               relationship: d.relationship_to_lead,
               addressLine1: d.address_line_1,
@@ -163,7 +172,10 @@ export default function Step1Who({
                 firstName: lead.first_name,
                 lastName: lead.last_name,
                 middleName: lead.middle_name,
-                dob: lead.date_of_birth,
+                // dob: lead.date_of_birth,
+                day: lead.day,
+                month: lead.month,
+                year: lead.year,
                 isLead: true,
                 relationship: "self",
                 addressLine1: lead.address_line_1,
@@ -221,7 +233,10 @@ export default function Step1Who({
               firstName: lead.first_name,
               lastName: lead.last_name,
               middleName: lead.middle_name,
-              dob: lead.date_of_birth,
+              // dob: lead.date_of_birth,
+              day: lead.day,
+              month: lead.month,
+              year: lead.year,
               isLead: true,
               relationship: "self",
               addressLine1: lead.address_line_1,
@@ -244,7 +259,10 @@ export default function Step1Who({
             firstName: lead.first_name,
             lastName: lead.last_name,
             middleName: lead.middle_name,
-            dob: lead.date_of_birth,
+            // dob: lead.date_of_birth,
+            day: lead.day,
+            month: lead.month,
+            year: lead.year,
             isLead: true,
             relationship: "self",
             addressLine1: lead.address_line_1,
@@ -261,7 +279,7 @@ export default function Step1Who({
       }
     };
     init();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -272,10 +290,10 @@ export default function Step1Who({
       morePeople,
       applicationId,
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected, people, selectedPeopleIds, morePeople, applicationId]);
 
-const handleBack = async () => {
+  const handleBack = async () => {
     setLoading(true);
     try {
       onBack();
@@ -285,7 +303,6 @@ const handleBack = async () => {
       setLoading(false);
     }
   };
-
 
   const refinedHandleNextCategory = () => {
     if (selected === "You") {
@@ -370,7 +387,10 @@ const handleBack = async () => {
         first_name: newPerson.firstName,
         last_name: newPerson.lastName,
         middle_name: newPerson.middleName,
-        date_of_birth: newPerson.dob,
+        // date_of_birth: newPerson.dob,
+        day: newPerson.day,
+        month: newPerson.month,
+        year: newPerson.year,
         relationship_to_lead: newPerson.relationship,
         address_line_1: newPerson.addressLine1,
         address_line_2: newPerson.addressLine2,
@@ -396,7 +416,10 @@ const handleBack = async () => {
         firstName: donor.first_name,
         lastName: donor.last_name,
         middleName: donor.middle_name,
-        dob: donor.date_of_birth,
+        // dob: donor.date_of_birth,
+        day: donor.day,
+        month: donor.month,
+        year: donor.year,
         isLead: false,
         relationship: donor.relationship_to_lead,
         addressLine1: donor.address_line_1,
@@ -419,7 +442,10 @@ const handleBack = async () => {
         firstName: "",
         lastName: "",
         middleName: "",
-        dob: "",
+        // dob: "",
+        day: "",
+        month: "",
+        year: "",
         relationship: "other",
         addressLine1: "",
         addressLine2: "",
@@ -490,7 +516,10 @@ const handleBack = async () => {
           first_name: p.firstName,
           last_name: p.lastName,
           middle_name: p.middleName,
-          date_of_birth: p.dob,
+          // date_of_birth: p.dob,
+          day: p.day,
+          month: p.month,
+          year: p.year,
           relationship_to_lead: p.relationship,
           address_line_1: p.addressLine1,
           address_line_2: p.addressLine2,
@@ -500,10 +529,10 @@ const handleBack = async () => {
         };
 
         const existingRecord = p.isLead
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ? currentDonors?.find((cd: any) => cd.is_lead)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          : currentDonors?.find((cd: any) => cd.id === p.id);
+          ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            currentDonors?.find((cd: any) => cd.is_lead)
+          : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            currentDonors?.find((cd: any) => cd.id === p.id);
 
         if (existingRecord) {
           await fetch("/api/donors", {
@@ -653,7 +682,7 @@ const handleBack = async () => {
         </button>
       </p>
 
-      <div className="">
+      <div className="flex flex-col gap-1">
         {/* Lead Details */}
         {/* {isLeadIncluded && leadPerson && (
           <div className="flex items-center justify-between p-4 rounded-xl border-[#08b9ed] bg-blue-50/50">
@@ -696,12 +725,12 @@ const handleBack = async () => {
               key={person.id}
               disabled={disabled}
               onClick={() => togglePerson(person.id!)}
-              className={`w-full flex items-center justify-between p-4 border transition-all border-[#adb5bd] ${
+              className={`w-full flex items-center justify-between p-5 border transition-all border-[#adb5bd] cursor-pointer ${
                 isSelected
                   ? "bg-[#35495e]"
                   : disabled
                     ? " opacity-50 cursor-not-allowed"
-                    : "border-gray-200 bg-white hover:border-blue-200"
+                    : "border-gray-200 bg-white"
               }`}
             >
               <div className="flex items-center gap-3">
@@ -729,7 +758,7 @@ const handleBack = async () => {
                 className={`w-6 h-6 border-2 flex items-center justify-center transition-all ${
                   isSelected
                     ? "border-white border-3 rounded"
-                    : "border-gray-200 bg-white"
+                    : "border-[#6B7588] rounded bg-white border-3"
                 }`}
               >
                 {isSelected && (
@@ -759,20 +788,33 @@ const handleBack = async () => {
         onClick={() => setOpenModal(true)}
         sx={{
           mt: 2,
-          py: 1.5,
-          borderColor: "#E5E7EB",
+          py: 1.9,
+          borderColor: "#8f90a6",
+          backgroundColor: "#fafafa",
           color: "#374151",
           textTransform: "none",
           fontWeight: 600,
-          "&:hover": { borderColor: "#D1D5DB", backgroundColor: "#F9FAFB" },
+          // "&:hover": { borderColor: "#8f90a6", backgroundColor: "#fafafa" },
         }}
       >
-        + Add new person
+        <div className="flex justify-center items-center gap-3 text-lg text-[#334A5E]">
+          <span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 640 512"
+              className="w-6 h-6"
+              fill="currentColor"
+            >
+              <path d="M285.7 304c98.5 0 178.3 79.8 178.3 178.3 0 16.4-13.3 29.7-29.7 29.7L77.7 512C61.3 512 48 498.7 48 482.3 48 383.8 127.8 304 226.3 304l59.4 0zM528 80c13.3 0 24 10.7 24 24l0 48 48 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-48 0 0 48c0 13.3-10.7 24-24 24s-24-10.7-24-24l0-48-48 0c-13.3 0-24-10.7-24-24s10.7-24 24-24l48 0 0-48c0-13.3 10.7-24 24-24zM256 248a120 120 0 1 1 0-240 120 120 0 1 1 0 240z" />
+            </svg>
+          </span>
+          <p>Add new person</p>
+        </div>
       </Button>
 
       <div className="flex justify-between pt-4">
-         <button onClick={handleBack} className={`cursor-pointer`}>
-         ← back
+        <button onClick={handleBack} className={`cursor-pointer`}>
+          ← back
         </button>
         {/* <Button
           variant="contained"
@@ -786,7 +828,7 @@ const handleBack = async () => {
         >
           Continue
         </Button> */}
-         <button
+        <button
           onClick={handleContinue}
           className={`px-10 py-3 rounded text-white font-bold shadow-lg transition-all flex items-center justify-center min-w-45 
                        bg-[#06b6d4] hover:bg-cyan-600 cursor-pointer
@@ -821,7 +863,7 @@ const handleBack = async () => {
                   setMorePeople(true);
                   setViewMode("CATEGORIES");
                 }}
-                className="underline text-[#08b9ed] font-medium hover:text-blue-700 px-1"
+                className="underline text-[#08b9ed] font-medium px-1"
               >
                 click here to change who these documents are for.
               </button>
@@ -850,193 +892,348 @@ const handleBack = async () => {
         fullWidth
         maxWidth="sm"
       >
-        <DialogTitle className="font-bold text-zenco-dark">
-          Add person
-        </DialogTitle>
-        <DialogContent className="flex flex-col gap-6 mt-2">
-          <p className="font-semibold text-zenco-dark -mb-2">Full legal name</p>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <FormControl fullWidth>
-              <InputLabel>Title</InputLabel>
-              <Select
-                value={newPerson.title}
-                label="Title"
-                onChange={(e) =>
-                  setNewPerson({ ...newPerson, title: e.target.value })
-                }
+        <DialogTitle className="bg-[#40688b]">
+          <div className="flex justify-between items-center ">
+            <p className="text-white font-bold"> Add person</p>
+            <span onClick={() => setOpenModal(false)}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 384 512"
+                className="w-5 h-5 text-black cursor-pointer transition"
+                fill="currentColor"
               >
-                <MenuItem value="Mr">Mr</MenuItem>
-                <MenuItem value="Mrs">Mrs</MenuItem>
-                <MenuItem value="Ms">Ms</MenuItem>
-                <MenuItem value="Miss">Miss</MenuItem>
-                <MenuItem value="Dr">Dr</MenuItem>
-                <MenuItem value="Other">Other</MenuItem>
-              </Select>
-            </FormControl>
-            <TextField
-              label="First Name"
-              fullWidth
-              sx={{ md: { gridColumn: "span 1" } }}
-              value={newPerson.firstName}
-              onChange={(e) =>
-                setNewPerson({ ...newPerson, firstName: e.target.value })
-              }
-            />
-            <TextField
-              label="Middle names"
-              fullWidth
-              value={newPerson.middleName}
-              onChange={(e) =>
-                setNewPerson({ ...newPerson, middleName: e.target.value })
-              }
-            />
-            <TextField
-              label="Last Name"
-              fullWidth
-              value={newPerson.lastName}
-              onChange={(e) =>
-                setNewPerson({ ...newPerson, lastName: e.target.value })
-              }
-            />
+                <path d="M376.6 84.5c11.3-13.6 9.5-33.8-4.1-45.1s-33.8-9.5-45.1 4.1L192 206 56.6 43.5C45.3 29.9 25.1 28.1 11.5 39.4S-3.9 70.9 7.4 84.5L150.3 256 7.4 427.5c-11.3 13.6-9.5 33.8 4.1 45.1s33.8 9.5 45.1-4.1L192 306 327.4 468.5c11.3 13.6 31.5 15.4 45.1 4.1s15.4-31.5 4.1-45.1L233.7 256 376.6 84.5z" />
+              </svg>
+            </span>
           </div>
+        </DialogTitle>
+        <div className="p-4">
+          <DialogContent className="flex flex-col gap-6">
+            <p className="text-xl font-semibold text-zenco-dark mb-2">
+              Full legal name
+            </p>
+            <div className="text-[#6B7588]">
+              <FormControl className="w-full sm:w-1/2">
+                <h6 className="font-medium mb-2">Title</h6>
+                <Select
+                  value={newPerson.title}
+                  onChange={(e) =>
+                    setNewPerson({ ...newPerson, title: e.target.value })
+                  }
+                  fullWidth
+                >
+                  <MenuItem value="Choose...">Choose...</MenuItem>
+                  <MenuItem value="Mr">Mr</MenuItem>
+                  <MenuItem value="Mrs">Mrs</MenuItem>
+                  <MenuItem value="Ms">Ms</MenuItem>
+                  <MenuItem value="Miss">Miss</MenuItem>
+                  <MenuItem value="Dr">Dr</MenuItem>
+                  <MenuItem value="Other">Other</MenuItem>
+                </Select>
+              </FormControl>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormControl fullWidth>
+                  <p>First Name</p>
+                  <TextField
+                    fullWidth
+                    value={newPerson.firstName}
+                    onChange={(e) =>
+                      setNewPerson({ ...newPerson, firstName: e.target.value })
+                    }
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        "& fieldset": { border: "2px solid #a0a0a0" },
+                        "&:hover fieldset": { border: "2px solid #a0a0a0" },
+                        "&.Mui-focused fieldset": {
+                          border: "2px solid #a0a0a0",
+                        },
+                      },
+                    }}
+                  />
+                </FormControl>
 
-          <p className="font-semibold text-zenco-dark -mb-2">
-            What&apos;s their date of birth?
-          </p>
-          <TextField
-            type="date"
-            fullWidth
-            InputLabelProps={{ shrink: true }}
-            value={newPerson.dob}
-            onChange={(e) =>
-              setNewPerson({ ...newPerson, dob: e.target.value })
-            }
-          />
-
-          <p className="font-semibold text-zenco-dark -mb-2">
-            What is their relationship to you?
-          </p>
-          <FormControl fullWidth>
-            <InputLabel>Relationship</InputLabel>
-            <Select
-              value={newPerson.relationship}
-              label="Relationship"
-              onChange={(e) =>
-                setNewPerson({ ...newPerson, relationship: e.target.value })
-              }
-            >
-              <MenuItem value="partner">Partner</MenuItem>
-              <MenuItem value="parent">Parent</MenuItem>
-              <MenuItem value="child">Child</MenuItem>
-              <MenuItem value="sibling">Sibling</MenuItem>
-              <MenuItem value="friend">Friend</MenuItem>
-              <MenuItem value="other">Other</MenuItem>
-            </Select>
-          </FormControl>
-
-          <p className="font-semibold text-zenco-dark -mb-2">
-            What is their address?
-          </p>
-          <div className="grid grid-cols-1 gap-4">
-            <div className="flex gap-4 items-end">
-              <TextField
-                label="Postcode"
-                fullWidth
-                value={newPerson.postcode}
-                onChange={(e) =>
-                  setNewPerson({ ...newPerson, postcode: e.target.value })
-                }
-              />
-              <Button
-                variant="contained"
-                sx={{
-                  backgroundColor: "#08B9ED",
-                  textTransform: "none",
-                  borderRadius: "8px",
-                  height: "56px",
-                  "&:hover": { backgroundColor: "#07bdf5ff" },
-                }}
-              >
-                Search
-              </Button>
+                <FormControl fullWidth>
+                  <p>Last Name</p>
+                  <TextField
+                    fullWidth
+                    value={newPerson.lastName}
+                    onChange={(e) =>
+                      setNewPerson({ ...newPerson, lastName: e.target.value })
+                    }
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        "& fieldset": { border: "2px solid #a0a0a0" },
+                        "&:hover fieldset": { border: "2px solid #a0a0a0" },
+                        "&.Mui-focused fieldset": {
+                          border: "2px solid #a0a0a0",
+                        },
+                      },
+                    }}
+                  />
+                </FormControl>
+              </div>
             </div>
+            <FormControl fullWidth>
+              <p className="text-[#6B7588]">Middle names</p>
+              <TextField
+                fullWidth
+                value={newPerson.middleName}
+                onChange={(e) =>
+                  setNewPerson({ ...newPerson, middleName: e.target.value })
+                }
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { border: "2px solid #a0a0a0" },
+                    "&:hover fieldset": { border: "2px solid #a0a0a0" },
+                    "&.Mui-focused fieldset": { border: "2px solid #a0a0a0" },
+                  },
+                }}
+              />
+            </FormControl>
 
-            {!showManualAddress && (
-              <button
-                type="button"
-                onClick={() => setShowManualAddress(true)}
-                className="text-cyan-500 font-semibold text-sm hover:underline text-left w-fit"
-              >
-                Enter address manually
-              </button>
-            )}
+            <div className="flex flex-col">
+              <p className="text-xl font-medium text-zenco-dark -mb-2">
+                What&apos;s their date of birth?
+              </p>
+              <div className="space-y-4  leading-loose">
+                <h3 className="font-semibold text-lg text-zenco-dark">
+                  Date of birth
+                </h3>
 
-            {showManualAddress && (
-              <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
-                <TextField
-                  label="Address Line 1"
-                  fullWidth
-                  value={newPerson.addressLine1}
-                  onChange={(e) =>
-                    setNewPerson({ ...newPerson, addressLine1: e.target.value })
-                  }
-                />
-                <TextField
-                  label="Address Line 2 (Optional)"
-                  fullWidth
-                  value={newPerson.addressLine2}
-                  onChange={(e) =>
-                    setNewPerson({ ...newPerson, addressLine2: e.target.value })
-                  }
-                />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <TextField
-                    label="City"
-                    fullWidth
-                    value={newPerson.city}
-                    onChange={(e) =>
-                      setNewPerson({ ...newPerson, city: e.target.value })
-                    }
-                  />
-                  <TextField
-                    label="County (Optional)"
-                    fullWidth
-                    value={newPerson.county}
-                    onChange={(e) =>
-                      setNewPerson({ ...newPerson, county: e.target.value })
-                    }
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 text-[#6B7588]">
+                  <FormControl fullWidth>
+                    <TextField
+                      placeholder="DD"
+                      value={newPerson.day}
+                      //       onChange={(e) =>
+                      //   setNewPerson({ ...newPerson, middleName: e.target.value })
+                      // }
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^\d*$/.test(value) && value.length <= 2) {
+                          // handleChange("day", value);
+                          setNewPerson({ ...newPerson, day: e.target.value });
+                        }
+                      }}
+                      error={
+                        newPerson.day !== "" &&
+                        !/^(0?[1-9]|[12][0-9]|3[01])$/.test(newPerson.day)
+                      }
+                      inputProps={{ inputMode: "numeric" }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          "& fieldset": { border: "2px solid #a0a0a0" },
+                          "&:hover fieldset": { border: "2px solid #a0a0a0" },
+                          "&.Mui-focused fieldset": {
+                            border: "2px solid #a0a0a0",
+                          },
+                        },
+                      }}
+                    />
+                  </FormControl>
+
+                  <FormControl fullWidth>
+                    <TextField
+                      placeholder="MM"
+                      value={newPerson.month}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^\d*$/.test(value) && value.length <= 2) {
+                          setNewPerson({ ...newPerson, month: e.target.value });
+
+                          // handleChange("month", value);
+                        }
+                      }}
+                      error={
+                        newPerson.month !== "" &&
+                        !/^(0?[1-9]|1[0-2])$/.test(newPerson.month)
+                      }
+                      inputProps={{ inputMode: "numeric" }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          "& fieldset": { border: "2px solid #a0a0a0" },
+                          "&:hover fieldset": { border: "2px solid #a0a0a0" },
+                          "&.Mui-focused fieldset": {
+                            border: "2px solid #a0a0a0",
+                          },
+                        },
+                      }}
+                    />
+                  </FormControl>
+
+                  <FormControl fullWidth>
+                    <TextField
+                      placeholder="YYYY"
+                      value={newPerson.year}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^\d*$/.test(value) && value.length <= 4) {
+                          setNewPerson({ ...newPerson, year: e.target.value });
+
+                          // handleChange("year", value);
+                        }
+                      }}
+                      error={
+                        newPerson.year !== "" && !/^\d{4}$/.test(newPerson.year)
+                      }
+                      inputProps={{ inputMode: "numeric" }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          "& fieldset": { border: "2px solid #a0a0a0" },
+                          "&:hover fieldset": { border: "2px solid #a0a0a0" },
+                          "&.Mui-focused fieldset": {
+                            border: "2px solid #a0a0a0",
+                          },
+                        },
+                      }}
+                    />
+                  </FormControl>
                 </div>
               </div>
-            )}
-          </div>
-        </DialogContent>
-        <DialogActions className="p-4 gap-2">
-          <Button
-            onClick={() => setOpenModal(false)}
-            sx={{ color: "gray", textTransform: "none" }}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleAddPerson}
-            disabled={loading}
-            sx={{
-              backgroundColor: "#08B9ED",
-              textTransform: "none",
-              borderRadius: "8px",
-              padding: "10px 24px",
-              "&:hover": { backgroundColor: "#07bdf5ff" },
-            }}
-          >
-            {loading ? (
-              <CircularProgress size={24} color="inherit" />
-            ) : (
-              "Add Person"
-            )}
-          </Button>
-        </DialogActions>
+              <FormControl></FormControl>
+            </div>
+
+            {/* <TextField
+              type="date"
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+              value={newPerson.dob}
+              onChange={(e) =>
+                setNewPerson({ ...newPerson, dob: e.target.value })
+              }
+            /> */}
+
+            {/* <p className="font-semibold text-zenco-dark -mb-2">
+              What is their relationship to you?
+            </p>
+            <FormControl fullWidth>
+              <InputLabel>Relationship</InputLabel>
+              <Select
+                value={newPerson.relationship}
+                label="Relationship"
+                onChange={(e) =>
+                  setNewPerson({ ...newPerson, relationship: e.target.value })
+                }
+              >
+                <MenuItem value="partner">Partner</MenuItem>
+                <MenuItem value="parent">Parent</MenuItem>
+                <MenuItem value="child">Child</MenuItem>
+                <MenuItem value="sibling">Sibling</MenuItem>
+                <MenuItem value="friend">Friend</MenuItem>
+                <MenuItem value="other">Other</MenuItem>
+              </Select>
+            </FormControl>
+
+            <p className="font-semibold text-zenco-dark -mb-2">
+              What is their address?
+            </p>
+            <div className="grid grid-cols-1 gap-4">
+              <div className="flex gap-4 items-end">
+                <TextField
+                  label="Postcode"
+                  fullWidth
+                  value={newPerson.postcode}
+                  onChange={(e) =>
+                    setNewPerson({ ...newPerson, postcode: e.target.value })
+                  }
+                />
+                <Button
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "#08B9ED",
+                    textTransform: "none",
+                    borderRadius: "8px",
+                    height: "56px",
+                    "&:hover": { backgroundColor: "#07bdf5ff" },
+                  }}
+                >
+                  Search
+                </Button>
+              </div>
+
+              {!showManualAddress && (
+                <button
+                  type="button"
+                  onClick={() => setShowManualAddress(true)}
+                  className="text-cyan-500 font-semibold text-sm hover:underline text-left w-fit"
+                >
+                  Enter address manually
+                </button>
+              )}
+
+              {showManualAddress && (
+                <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                  <TextField
+                    label="Address Line 1"
+                    fullWidth
+                    value={newPerson.addressLine1}
+                    onChange={(e) =>
+                      setNewPerson({
+                        ...newPerson,
+                        addressLine1: e.target.value,
+                      })
+                    }
+                  />
+                  <TextField
+                    label="Address Line 2 (Optional)"
+                    fullWidth
+                    value={newPerson.addressLine2}
+                    onChange={(e) =>
+                      setNewPerson({
+                        ...newPerson,
+                        addressLine2: e.target.value,
+                      })
+                    }
+                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <TextField
+                      label="City"
+                      fullWidth
+                      value={newPerson.city}
+                      onChange={(e) =>
+                        setNewPerson({ ...newPerson, city: e.target.value })
+                      }
+                    />
+                    <TextField
+                      label="County (Optional)"
+                      fullWidth
+                      value={newPerson.county}
+                      onChange={(e) =>
+                        setNewPerson({ ...newPerson, county: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+              )}
+            </div> */}
+          </DialogContent>
+          <DialogActions className="p-4 gap-2">
+            <Button
+              onClick={() => setOpenModal(false)}
+              sx={{ color: "gray", textTransform: "none" }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleAddPerson}
+              disabled={loading}
+              sx={{
+                backgroundColor: "#08B9ED",
+                textTransform: "none",
+                borderRadius: "8px",
+                padding: "10px 24px",
+                "&:hover": { backgroundColor: "#07bdf5ff" },
+              }}
+            >
+              {loading ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                "Add Person"
+              )}
+            </Button>
+          </DialogActions>
+        </div>
       </Dialog>
     </div>
   );

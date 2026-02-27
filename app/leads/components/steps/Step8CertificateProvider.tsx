@@ -48,7 +48,15 @@ type Person = {
   county: string;
 };
 
-export default function CertificateProviderTab({ data, updateData, onNext,onBack, isSaving, allFormData, currentDonorIndex }: Props) {
+export default function CertificateProviderTab({
+  data,
+  updateData,
+  onNext,
+  onBack,
+  isSaving,
+  allFormData,
+  currentDonorIndex,
+}: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -64,13 +72,18 @@ export default function CertificateProviderTab({ data, updateData, onNext,onBack
       }
 
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
         if (!session) return;
         const token = session.access_token;
 
-        const donorsRes = await fetch(`/api/donors?applicationId=${applicationId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const donorsRes = await fetch(
+          `/api/donors?applicationId=${applicationId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
         const { data: fetchedDonors } = await donorsRes.json();
 
         let activeDonorId = allFormData?.["which-donor"]?.donorId;
@@ -95,9 +108,12 @@ export default function CertificateProviderTab({ data, updateData, onNext,onBack
           return;
         }
 
-        const lpaDocsRes = await fetch(`/api/lpa-documents?donorId=${activeDonorId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const lpaDocsRes = await fetch(
+          `/api/lpa-documents?donorId=${activeDonorId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
         const { data: lpaDocs } = await lpaDocsRes.json();
 
         if (lpaDocs && lpaDocs.length > 0) {
@@ -105,14 +121,21 @@ export default function CertificateProviderTab({ data, updateData, onNext,onBack
           setActiveLpaId(lpaId);
 
           // 2. Get existing Cert Provider
-          const cpRes = await fetch(`/api/certificate-providers?lpaDocId=${lpaId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const cpRes = await fetch(
+            `/api/certificate-providers?lpaDocId=${lpaId}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            },
+          );
           const { data: cpData } = await cpRes.json();
 
           if (cpData) {
             setChoice("yes");
-            setRelationship(cpData.certification_basis === 'personal_knowledge' ? 'Friend' : (cpData.professional_title || "GP")); // Fallback/default logic
+            setRelationship(
+              cpData.certification_basis === "personal_knowledge"
+                ? "Friend"
+                : cpData.professional_title || "GP",
+            ); // Fallback/default logic
 
             // Map DB fields to local Person type
             const person: Person & { id: string } = {
@@ -144,17 +167,17 @@ export default function CertificateProviderTab({ data, updateData, onNext,onBack
             }
           }
         } else {
-           // No LPA doc yet, restore from local cache
-           if (data?.hasProvider !== undefined) {
-             setChoice(data.hasProvider ? "yes" : "no");
-           }
-           if (data?.relationship) {
-             setRelationship(data.relationship);
-           }
-           if (data?.providers && data.providers.length > 0) {
-             setProviders(data.providers);
-             setSelectedProviderId(data.providers[0].id);
-           }
+          // No LPA doc yet, restore from local cache
+          if (data?.hasProvider !== undefined) {
+            setChoice(data.hasProvider ? "yes" : "no");
+          }
+          if (data?.relationship) {
+            setRelationship(data.relationship);
+          }
+          if (data?.providers && data.providers.length > 0) {
+            setProviders(data.providers);
+            setSelectedProviderId(data.providers[0].id);
+          }
         }
       } catch (err) {
         console.error("Error loading Step 8:", err);
@@ -165,19 +188,21 @@ export default function CertificateProviderTab({ data, updateData, onNext,onBack
     };
 
     init();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allFormData?.who, currentDonorIndex, applicationId, data?.hasProvider]);
 
   useEffect(() => {
     if (isSaving) {
       handleFinalSave();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSaving]);
   const [openModal, setOpenModal] = useState(false);
   const [choice, setChoice] = useState<"yes" | "no" | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
+  const [selectedProviderId, setSelectedProviderId] = useState<string | null>(
+    null,
+  );
   const [relationship, setRelationship] = useState<string>("");
   const [providers, setProviders] = useState<(Person & { id: string })[]>([]);
 
@@ -206,7 +231,10 @@ export default function CertificateProviderTab({ data, updateData, onNext,onBack
       return;
 
     // Use a temp ID if not already present
-    const personWithId = { ...newPerson, id: providers[0]?.id || `temp-${Date.now()}` };
+    const personWithId = {
+      ...newPerson,
+      id: providers[0]?.id || `temp-${Date.now()}`,
+    };
     setProviders([personWithId]);
     setSelectedProviderId(personWithId.id);
 
@@ -225,7 +253,7 @@ export default function CertificateProviderTab({ data, updateData, onNext,onBack
     setShowManualAddress(false);
   };
 
-   const handleBack = async () => {
+  const handleBack = async () => {
     setLoading(true);
     try {
       onBack();
@@ -248,13 +276,19 @@ export default function CertificateProviderTab({ data, updateData, onNext,onBack
 
     setIsSubmitting(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) return;
       const token = session.access_token;
 
       if (choice === "yes" && providers.length > 0 && activeLpaId) {
         const p = providers[0];
-        const isProfessional = ['GP', 'Social Worker', 'Registered Nurse'].includes(relationship);
+        const isProfessional = [
+          "GP",
+          "Social Worker",
+          "Registered Nurse",
+        ].includes(relationship);
 
         const body = {
           lpa_document_id: activeLpaId,
@@ -267,31 +301,39 @@ export default function CertificateProviderTab({ data, updateData, onNext,onBack
           city: p.city,
           county: p.county,
           postcode: p.postcode,
-          certification_basis: isProfessional ? 'professional' : 'personal_knowledge',
+          certification_basis: isProfessional
+            ? "professional"
+            : "personal_knowledge",
           professional_title: isProfessional ? relationship : null,
-          relationship_length_years: isProfessional ? null : 2
+          relationship_length_years: isProfessional ? null : 2,
         };
 
-        if (p.id && !p.id.startsWith('temp-')) {
+        if (p.id && !p.id.startsWith("temp-")) {
           await fetch("/api/certificate-providers", {
             method: "PATCH",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
             body: JSON.stringify({ id: p.id, ...body }),
           });
         } else {
           await fetch("/api/certificate-providers", {
             method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
             body: JSON.stringify(body),
           });
         }
       }
 
       // Add "providers" to the update so the local cache (localStorage) actually gets the array
-      updateData({ 
-        hasProvider: choice === "yes", 
+      updateData({
+        hasProvider: choice === "yes",
         relationship,
-        providers: choice === "yes" ? providers : []
+        providers: choice === "yes" ? providers : [],
       });
       onNext();
     } catch (err) {
@@ -318,23 +360,38 @@ export default function CertificateProviderTab({ data, updateData, onNext,onBack
     { label: "Sister -- (this person can't be used)", value: "Sister" },
     { label: "Father -- (this person can't be used)", value: "Father" },
     { label: "Mother -- (this person can't be used)", value: "Mother" },
-    { label: "Father-in-law -- (this person can't be used)", value: "Father-in-law" },
-    { label: "Mother-in-law -- (this person can't be used)", value: "Mother-in-law" },
+    {
+      label: "Father-in-law -- (this person can't be used)",
+      value: "Father-in-law",
+    },
+    {
+      label: "Mother-in-law -- (this person can't be used)",
+      value: "Mother-in-law",
+    },
   ];
 
-  if (loading) return <Box p={10} display="flex" justifyContent="center"><CircularProgress /></Box>;
+  if (loading)
+    return (
+      <Box p={10} display="flex" justifyContent="center">
+        <CircularProgress />
+      </Box>
+    );
 
   return (
     <>
       <section className="max-w-3xl mx-auto pb-10">
-        {error && <Alert severity="error" className="mb-6">{error}</Alert>}
+        {error && (
+          <Alert severity="error" className="mb-6">
+            {error}
+          </Alert>
+        )}
         <div className="flex flex-col gap-7">
           <div className="flex flex-col gap-9">
             <h4 className="text-center text-3xl font-bold text-[#334a5e]">
-              The <span className="text-cyan-400">Certificate Provider</span>
+              The <span className="text-[#08b9ed]">Certificate Provider</span>
             </h4>
 
-            <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-cyan-400 to-transparent"></div>
+            <div className="h-0.5 w-full bg-linear-to-r from-transparent via-cyan-400 to-transparent"></div>
 
             <div className="flex flex-col gap-5">
               <p className="text-gray-700 font-medium">
@@ -347,22 +404,24 @@ export default function CertificateProviderTab({ data, updateData, onNext,onBack
                 <p className="text-xl font-semibold">
                   Do you want to choose your certificate provider now?
                 </p>
-                <div className="flex flex-col gap-0 border-2 border-[#334a5e] rounded-md overflow-hidden">
+                <div className="flex flex-col gap-0 border-2 border-[#adb5bd] overflow-hidden">
                   <button
                     onClick={() => setChoice("no")}
-                    className={`leading-loose p-4 text-center font-semibold transition-colors ${choice === "no"
-                      ? "bg-[#334a5e] text-white"
-                      : "bg-white text-[#334a5e] hover:bg-gray-50"
-                      }`}
+                    className={`leading-loose p-4 text-center font-semibold transition-colors ${
+                      choice === "no"
+                        ? "bg-[#334a5e] text-white"
+                        : "bg-white text-black hover:bg-gray-50"
+                    }`}
                   >
                     No, I will add them when I sign the documents
                   </button>
                   <button
                     onClick={() => setChoice("yes")}
-                    className={`leading-loose p-4 text-center font-semibold border-t-2 border-[#334a5e] transition-colors ${choice === "yes"
-                      ? "bg-[#334a5e] text-white"
-                      : "bg-white text-[#334a5e] hover:bg-gray-50"
-                      }`}
+                    className={`leading-loose p-4 text-center font-semibold border-t-2 border-[#334a5e] transition-colors ${
+                      choice === "yes"
+                        ? "bg-[#334a5e] text-white"
+                        : "bg-white text-[#334a5e] hover:bg-gray-50"
+                    }`}
                   >
                     Yes, I know the details now
                   </button>
@@ -371,75 +430,162 @@ export default function CertificateProviderTab({ data, updateData, onNext,onBack
 
               {choice === "yes" && (
                 <div className="flex flex-col gap-6 animate-fadeIn">
-                  <div className="flex flex-col gap-5 bg-cyan-50 rounded p-6 border border-cyan-200">
-                    <div className="flex text-xl text-cyan-900 font-semibold items-center gap-3">
+                  <div className="flex flex-col gap-5 bg-[#cff4fc] text-[#055160] rounded p-6 border border-[#b6effb]">
+                    <div className="flex text-xl text-cyan-900 font-medium items-center gap-3">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
                         width="24"
                         height="24"
-                        className="text-cyan-500"
+                        className=""
                         fill="currentColor"
                       >
                         <path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM12 9.5C12.8284 9.5 13.5 8.82843 13.5 8C13.5 7.17157 12.8284 6.5 12 6.5C11.1716 6.5 10.5 7.17157 10.5 8C10.5 8.82843 11.1716 9.5 12 9.5ZM14 15H13V10.5H10V12.5H11V15H10V17H14V15Z"></path>
                       </svg>
                       <p>Please read the below carefully</p>
                     </div>
-                    <div className="flex flex-col gap-4 text-cyan-800 text-sm">
-                      <p className="text-lg font-bold">Recommended</p>
+                    <div className="flex flex-col gap-4 text-[#055160] text-sm">
+                      <p className="text-lg text-black font-medium">
+                        Recommended
+                      </p>
                       <div className="space-y-3 leading-relaxed">
-                        <p>We suggest using a friend or neighbour of the donor to be a certificate provider.</p>
-                        <p>This person signs to confirm they have discussed the Lasting Power of Attorney with the Donor.</p>
-                        <p>This person must be over 18 and have known the donor for a minimum of 2 years.</p>
-                        <p>This is very important: there are rules on who can&apos;t be a certificate provider, too.</p>
-                        <p>The certificate provider <u className="font-bold">must not</u> be:</p>
+                        <p>
+                          We suggest using a friend or neighbour of the donor to
+                          be a certificate provider.
+                        </p>
+                        <p>
+                          This person signs to confirm they have discussed the
+                          Lasting Power of Attorney with the Donor.
+                        </p>
+                        <p>
+                          This person must be over 18 and have known the donor
+                          for a minimum of 2 years.
+                        </p>
+                        <p>
+                          This is very important: there are rules on who
+                          can&apos;t be a certificate provider, too.
+                        </p>
+                        <p>
+                          The certificate provider{" "}
+                          <u className="font-bold">must not</u> be:
+                        </p>
                         <ul className="list-disc ps-6 space-y-2">
                           <li>An attorney or replacement attorney</li>
-                          <li>A relative, or someone who&apos;s related to an attorney - this includes civil partners, spouses, in-laws and step-relatives</li>
-                          <li>The Donor&apos;s (unmarried) partner, or the partner of one of your attorneys - whether they live together or not</li>
-                          <li>The Donor&apos;s, or attorney&apos;s business partner or employee</li>
-                          <li>Someone who owns, manages, is a director of or works at a care home where they live, or anyone related to them</li>
+                          <li>
+                            A relative, or someone who&apos;s related to an
+                            attorney - this includes civil partners, spouses,
+                            in-laws and step-relatives
+                          </li>
+                          <li>
+                            The Donor&apos;s (unmarried) partner, or the partner
+                            of one of your attorneys - whether they live
+                            together or not
+                          </li>
+                          <li>
+                            The Donor&apos;s, or attorney&apos;s business
+                            partner or employee
+                          </li>
+                          <li>
+                            Someone who owns, manages, is a director of or works
+                            at a care home where they live, or anyone related to
+                            them
+                          </li>
                         </ul>
                       </div>
-                      <p className="text-lg font-bold mt-2">Alternative</p>
-                      <p>You can also use a medical professional (doctor, social worker, nurse) to sign the document. They will sign in their professional capacity to ensure the donor has mental capacity.</p>
+                      <p className="text-lg text-black font-medium">
+                        Alternative
+                      </p>
+                      <p>
+                        You can also use a medical professional (doctor, social
+                        worker, nurse) to sign the document. They will sign in
+                        their professional capacity to ensure the donor has
+                        mental capacity.
+                      </p>
                     </div>
                   </div>
 
                   <div className="flex flex-col gap-4">
-                    <p className="text-lg font-semibold">Please add the certificate provider details below.</p>
+                    <p className="text-lg font-semibold">
+                      Please add the certificate provider details below.
+                    </p>
+
+                    <button
+                      // onClick={openAddModal}
+                      // disabled={people.length >= 5}
+                      onClick={() => setOpenModal(true)}
+                      className={`w-full py-4 rounded font-semibold border border-[#ced4da] 
+   bg-white text-[#35495e] flex justify-center items-center  gap-3 cursor-pointer
+  transition mb-6`}
+                    >
+                      <span>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 640 512"
+                          className="w-5 h-5 text-[#35495e] transition"
+                        >
+                          <path d="M285.7 304c98.5 0 178.3 79.8 178.3 178.3 0 16.4-13.3 29.7-29.7 29.7L77.7 512C61.3 512 48 498.7 48 482.3 48 383.8 127.8 304 226.3 304l59.4 0zM528 80c13.3 0 24 10.7 24 24l0 48 48 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-48 0 0 48c0 13.3-10.7 24-24 24s-24-10.7-24-24l0-48-48 0c-13.3 0-24-10.7-24-24s10.7-24 24-24l48 0 0-48c0-13.3 10.7-24 24-24zM256 248a120 120 0 1 1 0-240 120 120 0 1 1 0 240z" />
+                        </svg>
+                      </span>
+                      Add a Certificate Provider
+                    </button>
 
                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {providers.map((p: any) => (
-                      <div key={p.id} className="bg-[#3A4C5F] text-white rounded p-6 flex justify-between items-center ring-2 ring-blue-500">
+                      <div
+                        key={p.id}
+                        className="bg-[#3A4C5F] text-white rounded p-6 flex justify-between items-center ring-2 ring-blue-500"
+                      >
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 bg-gray-400 rounded-full flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
-                              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-6 w-6"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                clipRule="evenodd"
+                              />
                             </svg>
                           </div>
                           <div>
-                            <p className="font-bold text-lg">{p.firstName} {p.lastName}</p>
-                            <p className="text-gray-300 text-sm">{p.email || "No email provided"}</p>
+                            <p className="font-bold text-lg">
+                              {p.firstName} {p.lastName}
+                            </p>
+                            <p className="text-gray-300 text-sm">
+                              {p.email || "No email provided"}
+                            </p>
                             <button
                               onClick={() => setOpenModal(true)}
                               className="text-cyan-300 text-sm font-medium hover:underline flex items-center gap-1 mt-1"
                             >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-4 w-4"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
                                 <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                               </svg>
                               Change this person
                             </button>
                           </div>
                         </div>
-                        <input type="checkbox" checked className="w-6 h-6 accent-white" readOnly />
+                        <input
+                          type="checkbox"
+                          checked
+                          className="w-6 h-6 accent-white"
+                          readOnly
+                        />
                       </div>
                     ))}
 
                     {providers.length === 0 && (
                       <button
                         onClick={() => setOpenModal(true)}
-                        className="border-2 border-dashed border-gray-300 p-4 flex items-center justify-center gap-2 font-semibold text-gray-600 hover:border-cyan-400 hover:text-cyan-500 transition-all cursor-pointer rounded"
+                        className="border-2 border-dashed border-gray-300 p-4 flex items-center justify-center gap-2 font-semibold text-[#6B7588] hover:border-cyan-400 hover:text-cyan-500 transition-all cursor-pointer rounded"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -457,40 +603,91 @@ export default function CertificateProviderTab({ data, updateData, onNext,onBack
 
                   {providers.length > 0 && (
                     <div className="flex flex-col gap-3 animate-fadeIn">
-                      <p className="text-lg font-semibold">What relationship is this person to the Donor?</p>
+                      <p className="text-lg font-semibold">
+                        What relationship is this person to the Donor?
+                      </p>
                       <Select
                         value={relationship}
                         onChange={(e) => setRelationship(e.target.value)}
-                        fullWidth
                         displayEmpty
-                        className="bg-white border-2 border-gray-300 rounded-md outline-none"
+                        className="bg-white rounded-md outline-none"
                         renderValue={(selected) => {
-                          if (!selected) return <span className="text-gray-400">Choose Relationship...</span>;
-                          const all = [...allowedRelationships, ...disallowedRelationships];
-                          const match = all.find(r => r.value === selected);
-                          return <span className="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-500" viewBox="0 0 20 20" fill="currentColor">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                            {match?.label || selected}
-                          </span>;
+                          if (!selected)
+                            return (
+                              <span className="text-gray-400">
+                                Choose Relationship...
+                              </span>
+                            );
+                          const all = [
+                            ...allowedRelationships,
+                            ...disallowedRelationships,
+                          ];
+                          const match = all.find((r) => r.value === selected);
+                          return (
+                            <span className="flex items-center gap-2">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-4 w-4 text-green-500"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                              {match?.label || selected}
+                            </span>
+                          );
                         }}
                       >
-                        <MenuItem disabled value="" className="bg-[#2563eb] text-white font-bold opacity-100 italic">
+                        <MenuItem
+                          disabled
+                          value=""
+                          className="bg-[#2563eb] text-white font-bold opacity-100 italic"
+                        >
                           Choose Relationship...
                         </MenuItem>
                         {allowedRelationships.map((r) => (
-                          <MenuItem key={r.value} value={r.value} className="flex gap-2 items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-500" viewBox="0 0 20 20" fill="currentColor">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          <MenuItem
+                            key={r.value}
+                            value={r.value}
+                            className="flex gap-2 items-center"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-4 w-4 text-green-500"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clipRule="evenodd"
+                              />
                             </svg>
                             {r.label}
                           </MenuItem>
                         ))}
                         {disallowedRelationships.map((r) => (
-                          <MenuItem key={r.value} value={r.value} disabled className="flex gap-2 items-center bg-gray-100 text-gray-500 opacity-60">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                          <MenuItem
+                            key={r.value}
+                            value={r.value}
+                            disabled
+                            className="flex gap-2 items-center bg-gray-100 text-gray-500 opacity-60"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-4 w-4 text-red-500"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                clipRule="evenodd"
+                              />
                             </svg>
                             {r.label}
                           </MenuItem>
@@ -505,25 +702,35 @@ export default function CertificateProviderTab({ data, updateData, onNext,onBack
 
           <div className="flex items-center justify-between mt-12 mb-10">
             <button onClick={handleBack} className={`cursor-pointer`}>
-          ← back
-        </button>
+              ← back
+            </button>
 
             <button
               onClick={handleFinalSave}
               disabled={isSubmitting}
-              className="px-10 py-3 rounded text-white font-bold shadow-lg transition-all flex items-center justify-center min-w-[180px] bg-[#06b6d4] hover:bg-cyan-600 disabled:bg-gray-400"
+              className="p-4 rounded text-white font-bold text-lg transition-all flex items-center justify-center  bg-[#06b6d4] hover:bg-cyan-600 disabled:bg-gray-400  cursor-pointer"
             >
-              {isSubmitting ? <CircularProgress size={24} color="inherit" /> : "Save and continue"}
+              {isSubmitting ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                "Save and continue"
+              )}
             </button>
           </div>
         </div>
       </section>
 
-      <Dialog open={openModal} onClose={() => setOpenModal(false)} maxWidth="sm" fullWidth>
-        <div className="flex justify-between items-center px-6 py-4 bg-[#334a5e]">
-          <DialogTitle className="text-white p-0">Add person</DialogTitle>
+      <Dialog
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        {/* Header */}
+        <div className="flex justify-between items-center pe-3 bg-[#40688b]">
+          <DialogTitle className="text-white">Add person</DialogTitle>
           <button
-            className="text-white hover:text-gray-300 transition-colors"
+            className="hover:text-gray-300 transition-colors cursor-pointer"
             onClick={() => setOpenModal(false)}
           >
             <svg
@@ -533,199 +740,246 @@ export default function CertificateProviderTab({ data, updateData, onNext,onBack
               height="24"
               fill="currentColor"
             >
-              <path d="M11.9997 10.5865L16.9495 5.63672L18.3637 7.05093L13.4139 12.0007L18.3637 16.9504L16.9495 18.3646L11.9997 13.4149L7.04996 18.3646L5.63574 16.9504L10.5855 12.0007L5.63574 7.05093L7.04996 5.63672L11.9997 10.5865Z"></path>
+              <path d="M11.9997 10.5865L16.9495 5.63672L18.3637 7.05093L13.4139 12.0007L18.3637 16.9504L16.9495 18.3646L11.9997 13.4149L7.04996 18.3646L5.63574 16.9504L10.5855 12.0007L5.63574 7.05093L7.04996 5.63672L11.9997 10.5865Z" />
             </svg>
           </button>
         </div>
 
-        <DialogContent className="p-8 space-y-8">
+        <DialogContent className="p-6 md:p-8 space-y-10 bg-[#F8F8F9]">
+          {/* FULL LEGAL NAME */}
           <div className="space-y-6">
-            <p className="text-xl font-bold text-[#334a5e]">Full legal name</p>
+            <p className="text-xl font-medium text-black">Full legal name</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Title - Separate */}
+            <FormControl className="w-1/2">
+              <p className="text-sm font-semibold mb-2 text-[#6B7588]">Title</p>
+              <Select
+                value={newPerson.title}
+                onChange={(e) =>
+                  setNewPerson({ ...newPerson, title: e.target.value })
+                }
+                className="bg-white"
+                fullWidth
+              >
+                {[
+                  "Choose...",
+                  "Mr",
+                  "Mrs",
+                  "Miss",
+                  "Ms",
+                  "Mx",
+                  "Dr",
+                  "Rev",
+                  "Prof",
+                  "Lady",
+                  "Lord",
+                ].map((title) => (
+                  <MenuItem key={title} value={title}>
+                    {title}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* First + Last */}
+            <div className="grid grid-cols-1 md:grid-cols-2 mt-2 gap-6">
               <FormControl fullWidth>
-                <p className="text-sm font-semibold mb-2 text-gray-600">Title</p>
-                <Select
-                  value={newPerson.title}
-                  onChange={(e) =>
-                    setNewPerson({ ...newPerson, title: e.target.value })
-                  }
-                  className="bg-white"
-                >
-                  {["Mr", "Mrs", "Miss", "Ms", "Mx", "Dr", "Rev", "Prof", "Lady", "Lord"].map((title) => (
-                    <MenuItem key={title} value={title}>{title}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <div className="hidden md:block"></div>
-
-              <FormControl fullWidth>
-                <p className="text-sm font-semibold mb-2 text-gray-600">First Name</p>
+                <p className="text-sm font-semibold mb-2 text-[#6B7588]">
+                  First Name
+                </p>
                 <TextField
                   fullWidth
                   value={newPerson.firstName}
                   onChange={(e) =>
                     setNewPerson({ ...newPerson, firstName: e.target.value })
                   }
-                  variant="outlined"
+                  className="bg-white"
                 />
               </FormControl>
 
               <FormControl fullWidth>
-                <p className="text-sm font-semibold mb-2 text-gray-600">Last Name</p>
+                <p className="text-sm font-semibold mb-2 text-[#6B7588]">
+                  Last Name
+                </p>
                 <TextField
                   fullWidth
                   value={newPerson.lastName}
                   onChange={(e) =>
                     setNewPerson({ ...newPerson, lastName: e.target.value })
                   }
-                  variant="outlined"
+                  className="bg-white"
                 />
               </FormControl>
             </div>
 
+            {/* Middle Name Full Width */}
             <FormControl fullWidth>
-              <p className="text-sm font-semibold mb-2 text-gray-600">Middle Name (optional)</p>
+              <p className="text-sm font-semibold mb-2 text-[#6B7588]">
+                Middle Name (optional)
+              </p>
               <TextField
                 fullWidth
                 value={newPerson.middleName}
                 onChange={(e) =>
                   setNewPerson({ ...newPerson, middleName: e.target.value })
                 }
-                variant="outlined"
+                className="bg-white"
               />
             </FormControl>
           </div>
 
+          {/* ADDRESS SECTION */}
           <div className="space-y-6">
-            <p className="text-xl font-bold text-[#334a5e]">What&apos;s their address?</p>
-            <div className="flex gap-4 items-end">
-              <FormControl className="flex-grow">
-                <p className="text-sm font-semibold mb-2 text-gray-600">Postcode</p>
+            <p className="text-xl font-bold text-[#334a5e]">
+              What&apos;s their address?
+            </p>
+
+            {/* Postcode + Search Equal Width */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+              <FormControl fullWidth>
+                <p className="text-sm font-semibold mb-2 text-[#6B7588]">
+                  Postcode
+                </p>
                 <TextField
                   fullWidth
                   value={newPerson.postcode}
                   onChange={(e) =>
                     setNewPerson({ ...newPerson, postcode: e.target.value })
                   }
-                  variant="outlined"
+                  className="bg-white"
                 />
               </FormControl>
-              <Button
-                variant="contained"
-                className="bg-blue-500 hover:bg-blue-600 h-[56px] px-8 font-bold"
+
+              <button
+                type="button"
+                className="bg-[#08b9ed] hover:bg-cyan-600 w-full rounded p-3 text-lg font-bold text-white cursor-pointer"
               >
                 Search
-              </Button>
+              </button>
             </div>
+
+            {/* TOGGLE BUTTON */}
             {!showManualAddress && (
               <button
                 type="button"
                 onClick={() => setShowManualAddress(true)}
-                className="text-cyan-500 font-semibold hover:underline"
+                className="text-[#08b9ed] cursor-pointer"
               >
-                Enter address manually
+                <u>Enter address manually</u>
               </button>
             )}
 
+            {/* MANUAL ADDRESS FIELDS */}
             {showManualAddress && (
               <div className="space-y-6 animate-fadeIn">
-                <FormControl fullWidth>
-                  <p className="text-sm font-semibold mb-2 text-gray-600">Address Line 1</p>
-                  <TextField
-                    fullWidth
-                    value={newPerson.addressLine1}
-                    onChange={(e) =>
-                      setNewPerson({ ...newPerson, addressLine1: e.target.value })
-                    }
-                    variant="outlined"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <p className="text-sm font-semibold mb-2 text-gray-600">Address Line 2 (optional)</p>
-                  <TextField
-                    fullWidth
-                    value={newPerson.addressLine2}
-                    onChange={(e) =>
-                      setNewPerson({ ...newPerson, addressLine2: e.target.value })
-                    }
-                    variant="outlined"
-                  />
-                </FormControl>
-
+                {/* Address Line 1 + 2 */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormControl fullWidth>
-                    <p className="text-sm font-semibold mb-2 text-gray-600">City</p>
+                    <p className="text-sm font-semibold mb-2 text-[#6B7588]">
+                      Address Line 1
+                    </p>
+                    <TextField
+                      fullWidth
+                      value={newPerson.addressLine1}
+                      onChange={(e) =>
+                        setNewPerson({
+                          ...newPerson,
+                          addressLine1: e.target.value,
+                        })
+                      }
+                      className="bg-white"
+                    />
+                  </FormControl>
+
+                  <FormControl fullWidth>
+                    <p className="text-sm font-semibold mb-2 text-[#6B7588]">
+                      Address Line 2 (optional)
+                    </p>
+                    <TextField
+                      fullWidth
+                      value={newPerson.addressLine2}
+                      onChange={(e) =>
+                        setNewPerson({
+                          ...newPerson,
+                          addressLine2: e.target.value,
+                        })
+                      }
+                      className="bg-white"
+                    />
+                  </FormControl>
+                </div>
+
+                {/* City + County */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormControl fullWidth>
+                    <p className="text-sm font-semibold mb-2 text-[#6B7588]">
+                      City
+                    </p>
                     <TextField
                       fullWidth
                       value={newPerson.city}
                       onChange={(e) =>
                         setNewPerson({ ...newPerson, city: e.target.value })
                       }
-                      variant="outlined"
+                      className="bg-white"
                     />
                   </FormControl>
 
                   <FormControl fullWidth>
-                    <p className="text-sm font-semibold mb-2 text-gray-600">County (optional)</p>
+                    <p className="text-sm font-semibold mb-2 text-[#6B7588]">
+                      County (optional)
+                    </p>
                     <TextField
                       fullWidth
                       value={newPerson.county}
                       onChange={(e) =>
                         setNewPerson({ ...newPerson, county: e.target.value })
                       }
-                      variant="outlined"
+                      className="bg-white"
                     />
                   </FormControl>
                 </div>
+
+                {/* Toggle Back */}
+                <button
+                  type="button"
+                  onClick={() => setShowManualAddress(false)}
+                  className="text-[#08b9ed] cursor-pointer"
+                >
+                  <u>Search for address</u>
+                </button>
               </div>
             )}
+            <div className="space-y-4">
+              {" "}
+              <p className="text-xl font-bold text-[#334a5e]">Age</p>{" "}
+              <RadioGroup defaultValue="over18" name="age-group">
+                {" "}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  {" "}
+                  <FormControlLabel
+                    value="over18"
+                    control={<Radio color="primary" />}
+                    label={<span className="font-medium">Over 18</span>}
+                  />{" "}
+                  <FormControlLabel
+                    value="under18"
+                    control={<Radio color="primary" />}
+                    label={<span className="font-medium">Under 18</span>}
+                  />{" "}
+                </div>{" "}
+              </RadioGroup>{" "}
+            </div>
           </div>
 
-          <div className="hidden">
-            <p className="text-xl font-bold text-[#334a5e]">What&apos;s their email address? (optional)</p>
-            <TextField
-              fullWidth
-              value={""}
-              variant="outlined"
-              placeholder="email@example.com"
-            />
-          </div>
-
-          <div className="space-y-4">
-            <p className="text-xl font-bold text-[#334a5e]">Age</p>
-            <RadioGroup
-              defaultValue="over18"
-              name="age-group"
-              className="flex flex-row gap-8"
-            >
-              <FormControlLabel
-                value="over18"
-                control={<Radio color="primary" />}
-                label={<span className="font-medium">Over 18</span>}
-              />
-              <FormControlLabel
-                disabled
-                value="under18"
-                control={<Radio color="primary" />}
-                label={<span className="font-medium">Under 18 (Cannot be a provider)</span>}
-              />
-            </RadioGroup>
-          </div>
-        </DialogContent>
-
-        <DialogActions className="p-6 bg-gray-50 border-t">
-          <Button
-            variant="contained"
+          {/* SAVE BUTTON */}
+          <button
             onClick={handleAddPerson}
-            fullWidth
-            className="bg-blue-600 hover:bg-blue-700 py-4 text-lg font-bold shadow-lg text-white"
+            className="bg-[#08b9ed] hover:bg-cyan-600 w-full rounded p-4 text-lg font-bold shadow-lg text-white  cursor-pointer"
           >
             Save and continue
-          </Button>
-        </DialogActions>
+          </button>
+        </DialogContent>
       </Dialog>
     </>
   );

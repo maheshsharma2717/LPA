@@ -253,7 +253,7 @@ export default function PeopleToNotifyTab({
       setIsSubmitting(false);
     }
   };
- const handleBack = async () => {
+  const handleBack = async () => {
     setLoading(true);
     try {
       onBack();
@@ -297,42 +297,47 @@ export default function PeopleToNotifyTab({
 
   return (
     <>
-      <main className="grow flex justify-center">
-        <div className="max-w-6xl w-full grid grid-cols-1 gap-10">
+      <main>
+        <div className="flex flex-col">
+          <h4 className="text-center text-3xl">
+            People to <span className="text-[#08b9ed] font-medium">notify</span>
+          </h4>
+
+          <div className={styles.dividerZenco}></div>
+        </div>{" "}
+        <div className="grow grid grid-cols-1 lg:grid-cols-3 gap-7">
+          {" "}
           <div className="lg:col-span-2">
-            <h4 className={styles.stepHeading}>People to notify</h4>
+            <div className="lg:col-span-2">
+              <p className={styles.pZenco}>
+                You can let people know that you&apos;re going to register this
+                document. They can raise any concerns they have about the
+                Lasting Powers of Attorney-for example, if there was any
+                pressure or fraud in making it.
+              </p>
+              <p className={styles.pZenco}>
+                When the document is registered, the person applying to register
+                must send a notice to each &apos;person to notify&apos;.
+              </p>
+              <p className={styles.pZenco}>
+                You can&apos;t put any of the attorneys or replacement attorneys
+                here.
+              </p>
+              <p className={styles.pZenco}>
+                Choose people who care about your best interests and who would
+                be willing to speak up if they were concerned.
+              </p>
 
-            <div className={styles.dividerZenco}></div>
+              <div className="text-[#08b9ed] font-medium mb-8">
+                Most people choose &apos;No&apos; and do not enter anyone here.
+              </div>
 
-            <p className={styles.pZenco}>
-              You can let people know that you&apos;re going to register this
-              document. They can raise any concerns they have about the Lasting
-              Powers of Attorney-for example, if there was any pressure or fraud
-              in making it.
-            </p>
-            <p className={styles.pZenco}>
-              When the document is registered, the person applying to register
-              must send a notice to each &apos;person to notify&apos;.
-            </p>
-            <p className={styles.pZenco}>
-              You can&apos;t put any of the attorneys or replacement attorneys
-              here.
-            </p>
-            <p className={styles.pZenco}>
-              Choose people who care about your best interests and who would be
-              willing to speak up if they were concerned.
-            </p>
+              <div className="mx-auto">
+                <h2 className="font-bold text-lg my-4">
+                  Are there any people to notify?
+                </h2>
 
-            <div className="text-zenco-blue font-medium mb-8">
-              Most people choose &apos;No&apos; and do not enter anyone here.
-            </div>
-
-            <div className="mx-auto">
-              <h2 className="font-bold text-lg my-4">
-                Are there any people to notify?
-              </h2>
-
-              <div className="space-y-3">
+                {/* <div className="">
                 <button
                   onClick={() => setHasPeople(false)}
                   className={
@@ -349,82 +354,157 @@ export default function PeopleToNotifyTab({
                 >
                   Yes, there are people to notify
                 </button>
-              </div>
+              </div> */}
 
-              {hasPeople === true && (
-                <div className="mt-8 animate-in fade-in">
+                <div className="border border-[#ced4da]">
                   <button
-                    onClick={openAddModal}
-                    disabled={people.length >= 5}
-                    className={`${styles.btnWhite} mb-6 ${people.length >= 5 ? "opacity-50 cursor-not-allowed" : ""}`}
+                    onClick={() => setHasPeople(false)}
+                    className={`w-full py-4 font-semibold cursor-pointer transition
+      ${
+        hasPeople === false
+          ? "bg-[#35495e] text-white"
+          : "bg-white text-[#3A3A3C] shadow-sm flex justify-center items-center"
+      }
+    `}
                   >
-                    <UserPlus size={18} />
-                    Add new person to notify
+                    No, there are no people to notify
                   </button>
 
-                  {people.length >= 5 && (
-                    <Alert severity="warning" className="mb-4">
-                      You have reached the maximum limit of 5 people to notify.
-                    </Alert>
-                  )}
+                  <button
+                    onClick={() => setHasPeople(true)}
+                    className={`w-full py-4 font-semibold cursor-pointer transition
+      ${
+        hasPeople === true
+          ? "bg-[#35495e] text-white"
+          : "bg-white text-[#3A3A3C] shadow-sm flex justify-center items-center"
+      }
+    `}
+                  >
+                    Yes, there are people to notify
+                  </button>
+                </div>
 
-                  {people.length > 0 && (
-                    <>
-                      <h2 className="font-bold text-lg my-4">
-                        People to notify
-                      </h2>
+                {hasPeople === true && (
+                  <div className="mt-8 animate-in fade-in">
+                    <button
+                      onClick={openAddModal}
+                      disabled={people.length >= 5}
+                      className={`w-full py-4 rounded font-semibold border border-[#ced4da] 
+   bg-white text-[#35495e] flex justify-center items-center  gap-3
+  transition mb-6
+  ${
+    people.length >= 5
+      ? "opacity-50 cursor-not-allowed"
+      : "hover:bg-gray-50 cursor-pointer"
+  }`}
+                    >
+                      <span>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 640 512"
+                          className="w-5 h-5 text-[#35495e] transition"
+                        >
+                          <path d="M285.7 304c98.5 0 178.3 79.8 178.3 178.3 0 16.4-13.3 29.7-29.7 29.7L77.7 512C61.3 512 48 498.7 48 482.3 48 383.8 127.8 304 226.3 304l59.4 0zM528 80c13.3 0 24 10.7 24 24l0 48 48 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-48 0 0 48c0 13.3-10.7 24-24 24s-24-10.7-24-24l0-48-48 0c-13.3 0-24-10.7-24-24s10.7-24 24-24l48 0 0-48c0-13.3 10.7-24 24-24zM256 248a120 120 0 1 1 0-240 120 120 0 1 1 0 240z" />
+                        </svg>
+                      </span>
+                      Add new person to notify
+                    </button>
 
-                      <div className="space-y-3">
-                        {people.map((person) => (
-                          <div
-                            key={person.id}
-                            className="flex justify-between items-center p-4 border rounded-lg bg-white shadow-sm hover:shadow-md transition"
-                          >
-                            <div className="flex items-center gap-3">
-                              <UserRound size={30} className="text-gray-400" />
-                              <div>
-                                <p className="font-bold text-zenco-dark text-lg">
-                                  {person.title} {person.first_name}{" "}
-                                  {person.last_name}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  {person.address_line_1}, {person.city},{" "}
-                                  {person.postcode}
-                                </p>
+                    {people.length >= 5 && (
+                      <Alert severity="warning" className="mb-4">
+                        You have reached the maximum limit of 5 people to
+                        notify.
+                      </Alert>
+                    )}
 
-                                <div className="flex gap-4 mt-1">
-                                  <p
-                                    onClick={() => openEditModal(person)}
-                                    className="text-sm flex items-center gap-1 text-blue-600 hover:underline cursor-pointer"
-                                  >
-                                    <SquarePen size={13} />
-                                    Update details
-                                  </p>
-                                  <p
-                                    onClick={() =>
-                                      handleDeletePerson(person.id)
-                                    }
-                                    className="text-sm flex items-center gap-1 text-red-600 hover:underline cursor-pointer"
-                                  >
-                                    <Trash2 size={13} />
-                                    Remove
-                                  </p>
+                    {people.length > 0 && (
+                      <>
+                        <h2 className="font-medium text-2xl my-4">
+                          Select People to notify
+                        </h2>
+
+                        <div className="space-y-3">
+                          {people.map((person) => (
+                            <div
+                              key={person.id}
+                              className="flex justify-between items-center p-4 border border-[#adb5bd] bg-white transition"
+                            >
+                              <div className="flex justify-between items-center w-full p-3">
+                                {/* <UserRound size={30} className="text-gray-400" /> */}
+
+                                <div className="flex items-center gap-5">
+                                  <span>
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      viewBox="0 0 448 512"
+                                      fill="currentColor"
+                                      className="w-10 h-10 text-black"
+                                    >
+                                      <path d="M224 248a120 120 0 1 0 0-240 120 120 0 1 0 0 240zm-29.7 56C95.8 304 16 383.8 16 482.3 16 498.7 29.3 512 45.7 512h356.6c16.4 0 29.7-13.3 29.7-29.7 0-98.5-79.8-178.3-178.3-178.3h-59.4z" />
+                                    </svg>
+                                  </span>
+                                  <div>
+                                    <p className="font-bold text-black text-lg">
+                                      {/* {person.title}  */}
+                                      {person.first_name} {person.last_name}
+                                    </p>
+                                    {/* <p className="text-sm text-gray-600">
+                                    {person.address_line_1}, {person.city},{" "}
+                                    {person.postcode}
+                                  </p> */}
+
+                                    <div className="flex gap-4 mt-1">
+                                      <p
+                                        onClick={() => openEditModal(person)}
+                                        className="text-lg flex items-center gap-1 black hover:underline cursor-pointer"
+                                      >
+                                        <span>
+                                          <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 512 512"
+                                            fill="currentColor"
+                                            className="w-5 h-5"
+                                            aria-hidden="true"
+                                          >
+                                            <path d="M471.6 21.7c-21.9-21.9-57.3-21.9-79.2 0L368 46.1 465.9 144 490.3 119.6c21.9-21.9 21.9-57.3 0-79.2L471.6 21.7zm-299.2 220c-6.1 6.1-10.8 13.6-13.5 21.9l-29.6 88.8c-2.9 8.6-.6 18.1 5.8 24.6s15.9 8.7 24.6 5.8l88.8-29.6c8.2-2.7 15.7-7.4 21.9-13.5L432 177.9 334.1 80 172.4 241.7zM96 64C43 64 0 107 0 160v256c0 53 43 96 96 96h256c53 0 96-43 96-96v-96c0-17.7-14.3-32-32-32s-32 14.3-32 32v96c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V160c0-17.7 14.3-32 32-32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H96z" />
+                                          </svg>
+                                        </span>
+                                        {/* <SquarePen size={13} /> */}
+                                        <u>Update this person's details</u>
+                                      </p>
+                                      <p
+                                        onClick={() =>
+                                          handleDeletePerson(person.id)
+                                        }
+                                        className="text-lg flex items-center gap-1 text-red-600 hover:underline cursor-pointer"
+                                      >
+                                        <Trash2 size={17} />
+                                        Remove
+                                      </p>
+                                    </div>
+                                  </div>
                                 </div>
+
+                                <input
+                                  type="checkbox"
+                                  // checked={whenCanAct === "loss_of_capacity"}
+                                  onChange={() => {}}
+                                  className="w-5 h-5 cursor-pointer accent-zenco-blue shrink-0"
+                                />
                               </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-            <div className="flex justify-between pt-4">
-              <button onClick={handleBack} className={`cursor-pointer`}>
-          ← back
-        </button>
-              {/* <Button
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className="flex justify-between pt-4">
+                <button onClick={handleBack} className={`cursor-pointer`}>
+                  <u>← Back</u>
+                </button>
+                {/* <Button
                 variant="contained"
                 onClick={handleSaveAndNext}
                 sx={{
@@ -436,16 +516,83 @@ export default function PeopleToNotifyTab({
               >
                 Save and Continue
               </Button> */}
-              <button
-                onClick={handleSaveAndNext}
-                className={`px-10 py-3 rounded text-white font-bold shadow-lg transition-all flex items-center justify-center min-w-45 
-               bg-[#06b6d4] hover:bg-cyan-600
+                <button
+                  onClick={handleSaveAndNext}
+                  className={`p-4 rounded text-lg text-white font-bold shadow-lg transition-all flex items-center justify-center min-w-45 
+               bg-[#08b9ed] hover:bg-cyan-600 cursor-pointer
               `}
-              >
-                Save and continue
-              </button>
-              
+                >
+                  Save and continue
+                </button>
+              </div>
             </div>
+          </div>
+          <div
+            className={`flex flex-col gap-5 transition-opacity duration-300 ${
+              hasPeople ? "opacity-100" : "opacity-0 pointer-events-none"
+            }`}
+          >
+            {hasPeople === true && (
+              <>
+                <p className="text-xl">Who can be a Person to Notify?</p>
+                <p>
+                  The Person to notify must be meet the following requirements:
+                </p>
+
+                <div className="">
+                  <div className="flex gap-2 items-center">
+                    <span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 512 512"
+                        fill="currentColor"
+                        className="w-4 h-4 text-[#28a745]"
+                      >
+                        <path d="M256 512a256 256 0 1 1 0-512 256 256 0 1 1 0 512zM374 145.7c-10.7-7.8-25.7-5.4-33.5 5.3L221.1 315.2 169 263.1c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l72 72c5 5 11.8 7.5 18.8 7s13.4-4.1 17.5-9.8L379.3 179.2c7.8-10.7 5.4-25.7-5.3-33.5z" />
+                      </svg>
+                    </span>
+                    <p>
+                      Aged <span className="font-medium">18 or over.</span>
+                    </p>
+                  </div>
+                  <div className="flex gap-2 items-start">
+                    <span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 512 512"
+                        fill="currentColor"
+                        className="w-4 h-4 text-[#28a745] mt-2"
+                      >
+                        <path d="M256 512a256 256 0 1 1 0-512 256 256 0 1 1 0 512zM374 145.7c-10.7-7.8-25.7-5.4-33.5 5.3L221.1 315.2 169 263.1c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l72 72c5 5 11.8 7.5 18.8 7s13.4-4.1 17.5-9.8L379.3 179.2c7.8-10.7 5.4-25.7-5.3-33.5z" />
+                      </svg>
+                    </span>
+                    <p>
+                      {" "}
+                      Have <span className="font-medium">
+                        mental capacity{" "}
+                      </span>{" "}
+                      to make decisions.
+                    </p>
+                  </div>
+                  <div className="flex gap-2 items-start">
+                    <span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 512 512"
+                        fill="currentColor"
+                        className="w-4 h-4 text-[#dc3545] mt-2"
+                      >
+                        <path d="M256 512a256 256 0 1 0 0-512 256 256 0 1 0 0 512zM167 167c9.4-9.4 24.6-9.4 33.9 0l55 55 55-55c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-55 55 55 55c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-55-55-55 55c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l55-55-55-55c-9.4-9.4-9.4-24.6 0-33.9z" />
+                      </svg>
+                    </span>
+                    <p>
+                      Must <span className="font-medium">not</span> be bankrupt,
+                      or subject to a debt relief order.
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </main>

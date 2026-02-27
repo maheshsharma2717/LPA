@@ -331,9 +331,13 @@ export default function InitialDetailsForm({
                 const value = e.target.value;
                 if (/^\d*$/.test(value) && value.length <= 4) {
                   handleChange("year", value);
+              
                 }
               }}
-              error={formData.year !== "" && !isValidYear}
+              error={formData.year !== "" &&
+(! /^\d{4}$/.test(formData.year))
+                //  !isValidYear
+                }
               inputProps={{ inputMode: "numeric" }}
               className="bg-white"
             />

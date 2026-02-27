@@ -40,9 +40,10 @@ export default function DonorTab({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [currentDonor, setCurrentDonor] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-
+  const [otherName, setOtherName] = useState(false);
   const [subStep, setSubStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [openPostCode, setopenPostCode] = useState(true);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -112,25 +113,32 @@ export default function DonorTab({
           let day = "",
             month = "",
             year = "";
+          // if (firstDonor.date_of_birth) {
+          //   const date = new Date(firstDonor.date_of_birth);
+          //   day = String(date.getDate());
+
+          //   const months = [
+          //     "January",
+          //     "February",
+          //     "March",
+          //     "April",
+          //     "May",
+          //     "June",
+          //     "July",
+          //     "August",
+          //     "September",
+          //     "October",
+          //     "November",
+          //     "December",
+          //   ];
+          //   month = months[date.getMonth()];
+          //   year = String(date.getFullYear());
+          // }
+
           if (firstDonor.date_of_birth) {
             const date = new Date(firstDonor.date_of_birth);
             day = String(date.getDate());
-
-            const months = [
-              "January",
-              "February",
-              "March",
-              "April",
-              "May",
-              "June",
-              "July",
-              "August",
-              "September",
-              "October",
-              "November",
-              "December",
-            ];
-            month = months[date.getMonth()];
+            month = String(date.getMonth() + 1);
             year = String(date.getFullYear());
           }
 
@@ -173,7 +181,7 @@ export default function DonorTab({
       setIsSubmitting(false);
     }
   };
-const handleBack = async () => {
+  const handleBack = async () => {
     setLoading(true);
     try {
       onBack();
@@ -198,24 +206,24 @@ const handleBack = async () => {
       if (!session) return;
       const token = session.access_token;
 
-      const monthIdx = [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-      ].indexOf(formData.month);
+      // const monthIdx = [
+      //   "January",
+      //   "February",
+      //   "March",
+      //   "April",
+      //   "May",
+      //   "June",
+      //   "July",
+      //   "August",
+      //   "September",
+      //   "October",
+      //   "November",
+      //   "December",
+      // ].indexOf(formData.month);
 
       let dob = null;
       if (formData.year && formData.month && formData.day) {
-        const m = String(monthIdx + 1).padStart(2, "0");
+        const m = String(formData.month).padStart(2, "0");
         const d = String(formData.day).padStart(2, "0");
         dob = `${formData.year}-${m}-${d}`;
       }
@@ -275,12 +283,12 @@ const handleBack = async () => {
         <h1
           className={`text-center text-3xl ${styles.headingBorderBottom} font-bold text-zenco-dark`}
         >
-          Details for <span className="text-zenco-blue">{donorName}</span> (The
-          Donor)
+          Contact Details for{" "}
+          <span className="text-[#08b9ed]">{donorName}</span> 
         </h1>
 
         {subStep === 0 && (
-          <div className="flex flex-col gap-3 text-gray-600">
+          <div className="flex flex-col gap-3 text-black">
             <p>
               The &apos;Donor&apos; is the person appointing other people to
               make decisions on their behalf and must be:
@@ -288,33 +296,23 @@ const handleBack = async () => {
             <ul className="list-none space-y-2">
               <li className="flex items-center gap-2">
                 <svg
-                  className="w-5 h-5 text-green-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 512 512"
+                  className="w-4 h-4 text-[#28a745]"
+                  fill="currentColor"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
+                  <path d="M256 512a256 256 0 1 1 0-512 256 256 0 1 1 0 512zM374 145.7c-10.7-7.8-25.7-5.4-33.5 5.3L221.1 315.2 169 263.1c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l72 72c5 5 11.8 7.5 18.8 7s13.4-4.1 17.5-9.8L379.3 179.2c7.8-10.7 5.4-25.7-5.3-33.5z" />
                 </svg>
                 Aged 18 or over.
               </li>
               <li className="flex items-center gap-2">
                 <svg
-                  className="w-5 h-5 text-green-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 512 512"
+                  className="w-4 h-4 text-[#28a745]"
+                  fill="currentColor"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
+                  <path d="M256 512a256 256 0 1 1 0-512 256 256 0 1 1 0 512zM374 145.7c-10.7-7.8-25.7-5.4-33.5 5.3L221.1 315.2 169 263.1c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l72 72c5 5 11.8 7.5 18.8 7s13.4-4.1 17.5-9.8L379.3 179.2c7.8-10.7 5.4-25.7-5.3-33.5z" />
                 </svg>
                 Have mental capacity to make decisions at the time their Lasting
                 Power of Attorney is being made.
@@ -331,16 +329,16 @@ const handleBack = async () => {
       <div className="space-y-8">
         {/* SUB-STEP 0: PERSONAL DETAILS */}
         {subStep === 0 && (
-          <div className="space-y-8 animate-in fade-in">
-            <h3 className="font-semibold text-lg text-zenco-dark border-b pb-2">
+          <div className="space-y-5 animate-in fade-in text-[#6B7588]">
+            <h3 className="text-xl font-medium text-zenco-dark pb-2">
               Full legal name
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <FormControl fullWidth>
-                <InputLabel>Title</InputLabel>
+                <p className="text-lg">Title</p>
                 <Select
                   value={formData.title}
-                  label="Title"
+                  // label="Title"
                   onChange={(e) => handleFormChange("title", e.target.value)}
                 >
                   {[
@@ -361,41 +359,100 @@ const handleBack = async () => {
                   ))}
                 </Select>
               </FormControl>
-              <TextField
-                label="First Name"
-                value={formData.firstName}
-                onChange={(e) => handleFormChange("firstName", e.target.value)}
-                fullWidth
-              />
-              <TextField
-                label="Last Name"
-                value={formData.lastName}
-                onChange={(e) => handleFormChange("lastName", e.target.value)}
-                fullWidth
-              />
+              <FormControl fullWidth>
+                <p className="text-lg">First Name</p>
+
+                <TextField
+                  // label="First Name"
+                  value={formData.firstName}
+                  onChange={(e) =>
+                    handleFormChange("firstName", e.target.value)
+                  }
+                  fullWidth
+                />
+              </FormControl>
+
+              <FormControl fullWidth>
+                <p className="text-lg">Last Name</p>
+
+                <TextField
+                  // label="Last Name"
+                  value={formData.lastName}
+                  onChange={(e) => handleFormChange("lastName", e.target.value)}
+                  fullWidth
+                />
+              </FormControl>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <TextField
-                label="Middle names (if any)"
-                value={formData.middleName}
-                onChange={(e) => handleFormChange("middleName", e.target.value)}
-                fullWidth
-              />
-              <TextField
-                label="Preferred Name (Optional)"
-                value={formData.preferredName}
-                onChange={(e) =>
-                  handleFormChange("preferredName", e.target.value)
-                }
-                fullWidth
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+              <FormControl>
+                <p className="text-lg">Their Middle names (if any)</p>
+                <TextField
+                  // label="Their Middle names (if any)"
+                  value={formData.middleName}
+                  onChange={(e) =>
+                    handleFormChange("middleName", e.target.value)
+                  }
+                />
+              </FormControl>
+            </div>
+            {otherName ? (
+              <>
+                <div className="flex flex-col w-[50%]">
+                  <p>
+                    If this person has been known by any other names enter them
+                    below separated by a comma, for example 'Mary Smith, Mary
+                    Smith-Cooper'.
+                  </p>
+                  <p>
+                    This is only for other names they are known by on any legal
+                    or medical forms, for example bank account or birth
+                    certificate.
+                  </p>
+                  <div className="flex flex-col gap-2">
+                    <p className="text-sm text-end">(Optional)</p>
+                    <FormControl fullWidth>
+                      <TextField
+                        // label="Their Middle names (if any)"
+                        // value={}
+                        // onChange={(e) =>
+                        //   handleFormChange("middleName", e.target.value)
+                        // }
+                        fullWidth
+                      />
+                    </FormControl>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <button
+                  className="cursor-pointer text-black"
+                  onClick={() => setOtherName(!otherName)}
+                >
+                  <u>Known by any other names? Click Here</u>
+                </button>
+              </>
+            )}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+              {" "}
+              <FormControl>
+                <p className="text-lg">Preferred Name (Optional)</p>
+                <TextField
+                  // label="Preferred Name (Optional)"
+                  value={formData.preferredName}
+                  onChange={(e) =>
+                    handleFormChange("preferredName", e.target.value)
+                  }
+                  fullWidth
+                />
+              </FormControl>
             </div>
 
-            <h3 className="font-semibold text-lg text-zenco-dark border-b pb-2 mt-8">
+            <h3 className="font-semibold text-lg text-zenco-dark pb-2 mt-8">
               Date of birth
             </h3>
-            <div className="grid grid-cols-3 gap-6">
+            {/* <div className="grid grid-cols-3 gap-6">
               <FormControl fullWidth>
                 <InputLabel>Day</InputLabel>
                 <Select
@@ -454,6 +511,68 @@ const handleBack = async () => {
                   })}
                 </Select>
               </FormControl>
+            </div> */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+              {/* DAY */}
+              <FormControl fullWidth>
+                <p className="text-lg">Day</p>
+
+                <TextField
+                  placeholder="DD"
+                  value={formData.day}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (/^\d*$/.test(value) && value.length <= 2) {
+                      handleFormChange("day", value);
+                    }
+                  }}
+                  error={
+                    formData.day !== "" &&
+                    !/^(0?[1-9]|[12][0-9]|3[01])$/.test(formData.day)
+                  }
+                  inputProps={{ inputMode: "numeric" }}
+                  fullWidth
+                />
+              </FormControl>
+
+              {/* MONTH (NUMERIC ONLY 1–12) */}
+              <FormControl fullWidth>
+                <p className="text-lg">Month</p>
+
+                <TextField
+                  placeholder="MM"
+                  value={formData.month}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (/^\d*$/.test(value) && value.length <= 2) {
+                      handleFormChange("month", value);
+                    }
+                  }}
+                  error={
+                    formData.month !== "" &&
+                    !/^(0?[1-9]|1[0-2])$/.test(formData.month)
+                  }
+                  inputProps={{ inputMode: "numeric" }}
+                  fullWidth
+                />
+              </FormControl>
+              {/* YEAR */}
+              <FormControl fullWidth>
+                <p className="text-lg">Year</p>
+                <TextField
+                  placeholder="YYYY"
+                  value={formData.year}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (/^\d*$/.test(value) && value.length <= 4) {
+                      handleFormChange("year", value);
+                    }
+                  }}
+                  error={formData.year !== "" && !/^\d{4}$/.test(formData.year)}
+                  inputProps={{ inputMode: "numeric" }}
+                  fullWidth
+                />
+              </FormControl>
             </div>
           </div>
         )}
@@ -461,78 +580,157 @@ const handleBack = async () => {
         {/* SUB-STEP 1: ADDRESS & CONTACT DETAILS */}
         {subStep === 1 && (
           <div className="space-y-8 animate-in fade-in">
-            <h3 className="font-semibold text-lg text-zenco-dark border-b pb-2">
-              Address & Contact
+            <h3 className="font-semibold text-lg text-zenco-dark">
+              What's Their Address?
             </h3>
-            <div className="space-y-4">
-              <div className="flex gap-4 items-end">
-                <TextField
-                  label="Postcode"
-                  value={formData.postcode || ""}
-                  onChange={(e) => handleFormChange("postcode", e.target.value)}
-                  fullWidth
-                />
-                <Button
-                  variant="contained"
-                  sx={{
-                    backgroundColor: "#08B9ED",
-                    color: "white",
-                    padding: "10px 24px",
-                    height: "56px",
-                    textTransform: "none",
-                    fontWeight: 600,
-                    "&:hover": { backgroundColor: "#07bdf5ff" },
-                  }}
-                >
-                  Search
-                </Button>
-              </div>
 
-              {!showManualAddress && (
-                <button
-                  type="button"
-                  onClick={() => setShowManualAddress(true)}
-                  className="text-cyan-500 font-semibold text-sm hover:underline text-left w-fit"
-                >
-                  Enter address manually
-                </button>
+            <div className="space-y-6">
+              {openPostCode ? (
+                <>
+                  {" "}
+                  {/* POSTCODE + SEARCH */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 items-end">
+                    <FormControl fullWidth>
+                      <p className="mb-1 text-sm font-medium text-[#6B7588]">
+                        Enter postcode to search for address
+                      </p>
+                      <TextField
+                        value={formData.postcode || ""}
+                        onChange={(e) =>
+                          handleFormChange("postcode", e.target.value)
+                        }
+                        fullWidth
+                      />
+                    </FormControl>
+
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      sx={{
+                        backgroundColor: "#08B9ED",
+                        color: "white",
+                        height: "56px",
+                        textTransform: "none",
+                        fontWeight: 600,
+                        "&:hover": { backgroundColor: "#07bdf5ff" },
+                      }}
+                    >
+                      Search
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                ""
               )}
 
+              {/* MANUAL ADDRESS GRID */}
               {showManualAddress && (
-                <div className="flex flex-col gap-4 md:gap-6 animate-in fade-in slide-in-from-top-2">
-                  <TextField
-                    label="Address Line 1"
-                    value={formData.address || ""}
-                    onChange={(e) =>
-                      handleFormChange("address", e.target.value)
-                    }
-                    fullWidth
-                  />
-                  <TextField
-                    label="Address Line 2 (Optional)"
-                    value={formData.addressLine2 || ""}
-                    onChange={(e) =>
-                      handleFormChange("addressLine2", e.target.value)
-                    }
-                    fullWidth
-                  />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                  <FormControl fullWidth>
+                    <p className="mb-1 text-sm font-medium text-[#6B7588]">
+                      Address Line 1
+                    </p>
                     <TextField
-                      label="City"
-                      value={formData.city || ""}
-                      onChange={(e) => handleFormChange("city", e.target.value)}
+                      value={formData.address || ""}
+                      onChange={(e) =>
+                        handleFormChange("address", e.target.value)
+                      }
                       fullWidth
                     />
+                  </FormControl>
+
+                  <FormControl fullWidth>
+                    <p className="mb-1 text-sm font-medium text-[#6B7588]">
+                      Address Line 2
+                    </p>
                     <TextField
-                      label="County (Optional)"
+                      value={formData.addressLine2 || ""}
+                      onChange={(e) =>
+                        handleFormChange("addressLine2", e.target.value)
+                      }
+                      fullWidth
+                    />
+                  </FormControl>
+
+                  <FormControl fullWidth>
+                    <p className="mb-1 text-sm font-medium text-[#6B7588]">
+                      County
+                    </p>
+                    <TextField
                       value={formData.county || ""}
                       onChange={(e) =>
                         handleFormChange("county", e.target.value)
                       }
                       fullWidth
                     />
-                  </div>
+                  </FormControl>
+
+                  <FormControl fullWidth>
+                    <p className="mb-1 text-sm font-medium text-[#6B7588]">
+                      Postcode
+                    </p>
+                    <TextField
+                      value={formData.postcode || ""}
+                      onChange={(e) =>
+                        handleFormChange("postcode", e.target.value)
+                      }
+                      fullWidth
+                    />
+                  </FormControl>
+
+                  <button
+                    className="text-start text-[#08b9ed] font-semibold text-sm w-fit cursor-pointer"
+                    onClick={() => {
+                      setShowManualAddress(false);
+                      setopenPostCode(true);
+                    }}
+                  >
+                    <u>Search for address</u>
+                  </button>
                 </div>
+              )}
+
+              {/* PHONE GRID */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                <FormControl fullWidth>
+                  <p className="mb-1 text-sm font-medium text-[#6B7588]">
+                    What's their Mobile Number?
+                  </p>
+                  <TextField
+                    value={formData.mobile || ""}
+                    onChange={(e) => handleFormChange("mobile", e.target.value)}
+                    fullWidth
+                    inputProps={{ inputMode: "numeric" }}
+                  />
+                </FormControl>
+
+                <FormControl fullWidth>
+                  <p className="mb-1 text-sm font-medium text-[#6B7588]">
+                    What's their Landline Number
+                  </p>
+                  <TextField
+                    value={formData.landline || ""}
+                    onChange={(e) =>
+                      handleFormChange("landline", e.target.value)
+                    }
+                    fullWidth
+                    inputProps={{ inputMode: "numeric" }}
+                  />
+                </FormControl>
+              </div>
+
+              {/* MANUAL ADDRESS BUTTON */}
+              {!showManualAddress && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowManualAddress(true);
+                    setopenPostCode(false);
+                  }}
+                  className="text-[#08b9ed] font-semibold text-sm w-fit cursor-pointer"
+                >
+                  <u> Enter address manually</u>
+                </button>
               )}
             </div>
           </div>
@@ -550,7 +748,7 @@ const handleBack = async () => {
           onClick={handleInternalNext}
           disabled={isSubmitting}
           sx={{
-            backgroundColor: "#08B9ED", // zenco-blue
+            backgroundColor: "#08B9ED", // [#08b9ed]
             textTransform: "none",
             borderRadius: "8px",
             padding: "8px 32px",
@@ -562,8 +760,8 @@ const handleBack = async () => {
         <button
           onClick={handleInternalNext}
           disabled={isSubmitting}
-          className={`px-10 py-3 rounded text-white font-bold shadow-lg transition-all flex items-center justify-center min-w-45 
-               bg-[#06b6d4] hover:bg-cyan-600 cursor-pointer
+          className={`p-4 rounded text-white font-bold transition-all flex items-center justify-center min-w-45 
+                       bg-[#08b9ed] hover:bg-cyan-600 cursor-pointer
               `}
         >
           {subStep === 1 ? (
