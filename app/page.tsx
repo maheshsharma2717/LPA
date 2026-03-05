@@ -18,6 +18,7 @@ export default function Home() {
           <Link href="#" className="hover:text-zenco-blue transition-colors">Contact</Link>
         </nav>
         <div className="flex items-center gap-4">
+          <Link href="/login" className="text-sm font-semibold text-zenco-blue hover:underline hidden sm:block">Login</Link>
           <Link href="tel:08081693475" className="text-sm font-semibold text-gray-700 hidden sm:block">0808 169 3475</Link>
           <button className="md:hidden text-gray-600">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
