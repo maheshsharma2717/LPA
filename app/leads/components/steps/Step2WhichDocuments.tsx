@@ -161,7 +161,7 @@ export default function Step2WhichDocuments({
       setLoading(false);
     }
   };
-  
+
   const handleContinue = async () => {
     setLoading(true);
     try {
@@ -379,38 +379,60 @@ export default function Step2WhichDocuments({
       </div>
 
       <div className="flex flex-col gap-6">
-        {donors.map((donor) => (
-          <div key={donor.id} className="">
-            <h3 className="text-xl font-medium text-black mb-4">
-              Which documents does{" "}
-              <span className="text-[#08b9ed]">
-                {donor.first_name} {donor.last_name}
-              </span>{" "}
-              need?
-            </h3>
-            <FormControl fullWidth>
-              <p>Document Selection</p>
-              <Select
-                value={selections[donor.id] || ""}
-                // label="Document Selection"
-                onChange={(e) =>
-                  handleSelectionChange(
-                    donor.id,
-                    e.target.value as DocumentSelection,
-                  )
-                }
-              >
-                <MenuItem value="Health and Welfare">
+        {donors.map((donor) => {
+          const selectedValue = selections[donor.id] || "";
+
+          return (
+            <div key={donor.id}>
+              <h3 className="text-xl font-medium text-black mb-4">
+                Which documents does{" "}
+                <span className="text-[#08b9ed]">
+                  {donor.first_name} {donor.last_name}
+                </span>{" "}
+                need?
+              </h3>
+
+              <div className="flex flex-col border border-[#adb5bd] overflow-hidden">
+                <button
+                  onClick={() =>
+                    handleSelectionChange(donor.id, "Health and Welfare")
+                  }
+                  className={`p-5 text-center text-lg transition ${
+                    selectedValue === "Health and Welfare"
+                      ? "bg-[#35495E] text-white"
+                      : "bg-white hover:bg-gray-100"
+                  }`}
+                >
                   Health and Welfare
-                </MenuItem>
-                <MenuItem value="Property and Finance">
+                </button>
+
+                <button
+                  onClick={() =>
+                    handleSelectionChange(donor.id, "Property and Finance")
+                  }
+                  className={`p-5 text-center text-lg transition ${
+                    selectedValue === "Property and Finance"
+                      ? "bg-[#35495E] text-white"
+                      : "bg-white hover:bg-gray-100"
+                  }`}
+                >
                   Property and Finance
-                </MenuItem>
-                <MenuItem value="Both">Both</MenuItem>
-              </Select>
-            </FormControl>
-          </div>
-        ))}
+                </button>
+
+                <button
+                  onClick={() => handleSelectionChange(donor.id, "Both")}
+                  className={`p-5 text-center text-lg transition ${
+                    selectedValue === "Both"
+                      ? "bg-[#35495E] text-white"
+                      : "bg-white hover:bg-gray-100"
+                  }`}
+                >
+                  Both
+                </button>
+              </div>
+            </div>
+          );
+        })}
 
         {donors.length === 0 && (
           <Alert severity="info">
@@ -424,11 +446,11 @@ export default function Step2WhichDocuments({
         </button>
         <button
           onClick={handleContinue}
-          className={`px-10 py-3 rounded text-white font-bold shadow-lg transition-all flex items-center justify-center min-w-45 
-                       bg-[#06b6d4] hover:bg-cyan-600 cursor-pointer
+          className={`p-4 rounded text-white font-bold transition-all flex items-center justify-center min-w-45 
+                       bg-[#08b9ed] hover:bg-cyan-600 cursor-pointer
                       `}
         >
-          Continue
+         Save and Continue
         </button>
       </div>
     </section>

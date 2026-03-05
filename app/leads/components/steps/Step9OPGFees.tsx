@@ -474,7 +474,7 @@ export default function OPGFeesTab({
       {/* Dynamic Heading */}
       <div className="text-center mb-10">
         <h4 className="text-3xl font-bold text-[#334a5e]">
-          Registration {currentView === "payment" ? "fees" : "fee"}{" "}
+          {/* Registration {currentView === "payment" ? "fees" : "fee"}{" "}
           <span className="text-cyan-400">
             {currentView === "payment"
               ? hasBenefits || incomeLess12k || hasUniversalCredit
@@ -483,7 +483,8 @@ export default function OPGFeesTab({
               : hasBenefits === false
                 ? "remission"
                 : "exemption"}
-          </span>
+          </span> */}
+          Registration fee <span className="text-[#08b9ed]">examption</span> 
         </h4>
         {(currentView === "evidence-exemption" ||
           currentView === "evidence-remission") && (
@@ -491,10 +492,10 @@ export default function OPGFeesTab({
             Evidence for {hasBenefits ? "exemption" : "remission"}
           </p>
         )}
-        <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-gray-200 to-transparent mt-6"></div>
+        <div className="h-0.5 w-full bg-linear-to-r from-transparent via-gray-200 to-transparent mt-6"></div>
       </div>
 
-      <div className="space-y-6 text-gray-700 leading-relaxed">
+      <div className="space-y-6 text-black leading-relaxed">
         {/* VIEW 1: EXEMPTION CHECK */}
         {currentView === "exemption-check" && (
           <div className="space-y-6 animate-fadeIn">
@@ -509,10 +510,10 @@ export default function OPGFeesTab({
               <span className="text-cyan-500 font-bold">{donorName}</span> are
               in receipt of.
             </p>
-            <p className="font-bold border-l-4 border-cyan-400 pl-4 py-1">
+            <p className="">
               You must be able to supply evidence for at least one if selected.
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="">
               Please note, if{" "}
               <span className="text-cyan-500 font-bold">{donorName}</span> have
               been awarded personal injury damages of more than £16,000 which
@@ -524,19 +525,19 @@ export default function OPGFeesTab({
               <p className="text-lg font-bold mb-4">
                 Are you in receipt of means tested benefits?
               </p>
-              <div className="flex flex-col border-2 border-[#334a5e] rounded-lg overflow-hidden shadow-sm">
+              <div className="flex flex-col border-2 border-[#334a5e] overflow-hidden shadow-sm">
                 <button
                   onClick={() => {
                     setHasBenefits(false);
                     setSelectedBenefits([]);
                   }}
-                  className={`p-5 text-xl font-semibold transition-all ${hasBenefits === false ? "bg-[#334a5e] text-white" : "bg-white text-gray-700 hover:bg-gray-50"}`}
+                  className={`p-5 text-xl transition-all ${hasBenefits === false ? "bg-[#334a5e] text-white" : "bg-white text-gray-700 hover:bg-gray-50"}`}
                 >
                   No, you do not receive benefits
                 </button>
                 <button
                   onClick={() => setHasBenefits(true)}
-                  className={`p-5 text-xl font-semibold border-t-2 border-[#334a5e] transition-all ${hasBenefits === true ? "bg-[#334a5e] text-white" : "bg-white text-gray-700 hover:bg-gray-50"}`}
+                  className={`p-5 text-xl border-t-2 border-[#334a5e] transition-all ${hasBenefits === true ? "bg-[#334a5e] text-white" : "bg-white text-gray-700 hover:bg-gray-50"}`}
                 >
                   Yes, you are in receipt of benefits
                 </button>
@@ -548,20 +549,20 @@ export default function OPGFeesTab({
                 <p className="text-xl font-bold mb-6 text-gray-800">
                   Which benefits do you get?
                 </p>
-                <div className="space-y-3">
+                <div className="space-y-1">
                   {benefitsOptions.map((opt) => (
                     <div
                       key={opt.id}
                       onClick={() => toggleBenefit(opt.id)}
-                      className={`flex justify-between items-center p-5 border-2 rounded-xl cursor-pointer transition-all ${selectedBenefits.includes(opt.id) ? "border-[#334a5e] bg-gray-50" : "border-gray-100 hover:border-cyan-200 bg-white"}`}
+                      className={`flex justify-between items-center p-5 border-2 cursor-pointer transition-all ${selectedBenefits.includes(opt.id) ? "border-[#334a5e] bg-[#334a5e]" : "border-gray-100 bg-white"}`}
                     >
                       <p
-                        className={`font-black text-lg ${selectedBenefits.includes(opt.id) ? "text-[#334a5e]" : "text-gray-700"}`}
+                        className={`font-black text-lg ${selectedBenefits.includes(opt.id) ? "text-white" : "text-black"}`}
                       >
                         {opt.label}
                       </p>
                       <div
-                        className={`w-7 h-7 border-2 rounded flex items-center justify-center ${selectedBenefits.includes(opt.id) ? "bg-[#334a5e] border-[#334a5e]" : "border-gray-300 bg-white"}`}
+                        className={`w-7 h-7 border-2 rounded flex items-center justify-center ${selectedBenefits.includes(opt.id) ? "bg-[#334a5e] border-white" : "border-gray-300 bg-white"}`}
                       >
                         {selectedBenefits.includes(opt.id) && (
                           <svg
@@ -936,7 +937,7 @@ export default function OPGFeesTab({
         {/* NAVIGATION BUTTONS */}
         <div className="flex items-center justify-between mt-16 pb-10">
           <button onClick={handleBack} className={`cursor-pointer`}>
-           ← back
+           ← <u>Back</u> 
           </button>
 
           <button
@@ -1025,7 +1026,7 @@ export default function OPGFeesTab({
                 paymentMethod === "Card" &&
                 !phoneNumber)
             }
-            className={`px-10 py-4 rounded text-white font-black shadow-lg transition-all flex items-center justify-center min-w-[240px] ${
+            className={`px-10 py-4 rounded text-white font-black transition-all flex items-center justify-center min-w-60 ${
               (currentView === "exemption-check" && hasBenefits === null) ||
               (currentView === "benefit-selection" &&
                 selectedBenefits.length === 0) ||
@@ -1038,7 +1039,7 @@ export default function OPGFeesTab({
                 paymentMethod === "Card" &&
                 !phoneNumber)
                 ? "bg-gray-400 cursor-not-allowed"
-                : "bg-[#06b6d4] hover:bg-cyan-600 active:scale-95 shadow-cyan-200"
+                : "bg-[#06b6d4] hover:bg-cyan-600 active:scale-95"
             } `}
           >
             {isSubmitting ? (

@@ -10,7 +10,7 @@ export default function NeedHelp() {
     <>
       <div
         onClick={() => setNeedHelp(!needHelp)}
-        className="flex justify-between mt-8 border border-[#ced4da] bg-white p-3"
+        className="flex justify-between mt-8 border border-[#ced4da] bg-white p-3 cursor-pointer"
       >
         <h3 className="text-md text-[#08b9ed] font-bold">NEED HELP?</h3>
         {needHelp ? (

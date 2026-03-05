@@ -367,6 +367,15 @@ export default function LoginPage() {
                          </form>
                     )}
 
+                        <button
+                            type="button"
+                            onClick={handleGoogleLogin}
+                            className="w-full flex items-center justify-center gap-3 border border-gray-300 py-3 rounded font-semibold text-sm cursor-pointer hover:bg-gray-50 transition"
+                        >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
+                            Continue with Google
+                        </button>
 
                 </div>
             </main>

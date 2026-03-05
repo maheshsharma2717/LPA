@@ -2,7 +2,7 @@
 
 import {useState, useEffect} from "react";
 import {useRouter, usePathname, useSearchParams} from "next/navigation";
-import {Stepper, Step, StepLabel, Button, CircularProgress} from "@mui/material";
+import {Stepper, Step, StepLabel} from "@mui/material";
 import {steps} from "../step-config";
 import WhoTab from "./steps/Step1Who";
 import WhichDoucmentsTab from "./steps/Step2WhichDocuments";
@@ -40,6 +40,7 @@ export default function WizardLayout({
   onFinish,
   currentDonorIndex
 }: Props) {
+  
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const stepComponentMap: Record<string, any> = {
     who: WhoTab,
