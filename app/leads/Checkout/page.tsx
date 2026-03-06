@@ -183,18 +183,18 @@ function CheckoutContent() {
                 <div className="pt-4 space-y-2">
                   <div className="flex justify-between text-sm text-gray-500">
                     <span>LPA Service Fees</span>
-                    <span>£{(fees?.our_fee_pence??0 / 100).toFixed(2)}</span>
+                    <span>£{((fees?.our_fee_pence??0 )/ 100).toFixed(2)}</span>
                   </div>
                   {fees!=null &&fees?.opg_fee_pence > 0 && (
                     <div className="flex justify-between text-sm text-gray-500">
                       <span>OPG Registration Fees</span>
-                      <span>£{(fees?.opg_fee_pence??0 / 100).toFixed(2)}</span>
+                      <span>£{((fees?.opg_fee_pence??0) / 100).toFixed(2)}</span>
                     </div>
                   )}
                   <hr className="border-gray-100" />
                   <div className="flex justify-between text-lg font-black text-[#334a5e]">
                     <span>Total Cost</span>
-                    <span>£{(fees?.total_pence??0 / 100).toFixed(2)}</span>
+                    <span>£{((fees?.total_pence??0 )/ 100).toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -240,7 +240,7 @@ function CheckoutContent() {
                 disabled={paying}
                 className="w-full bg-[#06b6d4] hover:bg-cyan-600 text-white font-black py-5 rounded-2xl transition-all shadow-lg shadow-cyan-100 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 text-lg"
               >
-                {paying ? <CircularProgress size={24} color="inherit" /> : `Pay £${(fees?.total_pence??0   / 100).toFixed(2)} now`}
+                {paying ? <CircularProgress size={24} color="inherit" /> : `Pay £${((fees?.total_pence??0 )  / 100).toFixed(2)} now`}
               </button>
 
               <p className="text-[10px] text-gray-400 text-center mt-6 leading-relaxed">

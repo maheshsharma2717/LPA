@@ -59,6 +59,13 @@ export default function PeopleToNotifyTab({
     postcode: "",
   });
 
+  const [modalError, setModalError] = useState<string | null>(null);
+  const [touchedModal, setTouchedModal] = useState<Record<string, boolean>>({});
+
+  const handleModalBlur = (field: string) => {
+    setTouchedModal((prev) => ({ ...prev, [field]: true }));
+  };
+
   useEffect(() => {
     const init = async () => {
       if (!donorId) {
@@ -178,6 +185,8 @@ export default function PeopleToNotifyTab({
       city: "",
       postcode: "",
     });
+    setModalError(null);
+    setTouchedModal({});
     setShowModal(true);
   };
 
@@ -191,15 +200,22 @@ export default function PeopleToNotifyTab({
       city: person.city,
       postcode: person.postcode,
     });
+    setModalError(null);
+    setTouchedModal({});
     setShowModal(true);
   };
 
   const handleSavePerson = async () => {
     if (!lpaDocId) return;
     if (!formData.first_name || !formData.last_name) {
-      alert("First and last name are required.");
+      setModalError("First and last name are required.");
       return;
     }
+    if (!formData.postcode || formData.postcode.trim() === "") {
+      setModalError("Postcode is required.");
+      return;
+    }
+    setModalError(null);
 
     setIsSubmitting(true);
     try {
@@ -226,7 +242,7 @@ export default function PeopleToNotifyTab({
         }
       } else {
         if (people.length >= 5) {
-          alert("Maximum 5 people to notify allowed per document.");
+          setModalError("Maximum 5 people to notify allowed per document.");
           setIsSubmitting(false);
           return;
         }
@@ -248,7 +264,7 @@ export default function PeopleToNotifyTab({
       setShowModal(false);
     } catch (err) {
       console.error("Error saving person:", err);
-      alert("Failed to save person.");
+      setModalError("Failed to save person. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -614,9 +630,7 @@ export default function PeopleToNotifyTab({
             {/* Body */}
             <div className="p-5 space-y-4">
               <div>
-                <label className="text-sm font-semibold block mb-1">
-                  Title
-                </label>
+                <label className="text-sm font-semibold block mb-1">Title</label>
                 <select
                   className="w-full border p-2 rounded mb-3 focus:ring-2 focus:ring-blue-500 outline-none"
                   value={formData.title}
@@ -644,71 +658,82 @@ export default function PeopleToNotifyTab({
 
                 <div className="flex gap-3">
                   <div className="flex-1">
-                    <label className="text-sm font-semibold block mb-1">
-                      First Name
-                    </label>
+                    <label className="text-sm font-semibold block mb-1">First Name</label>
                     <input
-                      className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                      className={`w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none ${
+                        touchedModal["first_name"] && formData.first_name.trim() === "" ? "border-red-500" : ""
+                      }`}
                       value={formData.first_name}
                       onChange={(e) =>
                         setFormData({ ...formData, first_name: e.target.value })
                       }
+                      onBlur={() => handleModalBlur("first_name")}
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="text-sm font-semibold block mb-1">
-                      Last Name
-                    </label>
+                    <label className="text-sm font-semibold block mb-1">Last Name</label>
                     <input
-                      className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                      className={`w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none ${
+                        touchedModal["last_name"] && formData.last_name.trim() === "" ? "border-red-500" : ""
+                      }`}
                       value={formData.last_name}
                       onChange={(e) =>
                         setFormData({ ...formData, last_name: e.target.value })
                       }
+                      onBlur={() => handleModalBlur("last_name")}
                     />
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="text-sm font-semibold block mb-1">
-                  Address Line 1
-                </label>
+                <label className="text-sm font-semibold block mb-1">Address Line 1</label>
                 <input
-                  className="w-full border p-2 rounded mb-3 focus:ring-2 focus:ring-blue-500 outline-none"
+                  className={`w-full border p-2 rounded mb-3 focus:ring-2 focus:ring-blue-500 outline-none ${
+                    touchedModal["address_line_1"] && formData.address_line_1.trim() === "" ? "border-red-500" : ""
+                  }`}
                   value={formData.address_line_1}
                   onChange={(e) =>
                     setFormData({ ...formData, address_line_1: e.target.value })
                   }
+                  onBlur={() => handleModalBlur("address_line_1")}
                 />
 
                 <div className="flex gap-3">
                   <div className="flex-1">
-                    <label className="text-sm font-semibold block mb-1">
-                      City
-                    </label>
+                    <label className="text-sm font-semibold block mb-1">City</label>
                     <input
-                      className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                      className={`w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none ${
+                        touchedModal["city"] && formData.city.trim() === "" ? "border-red-500" : ""
+                      }`}
                       value={formData.city}
                       onChange={(e) =>
                         setFormData({ ...formData, city: e.target.value })
                       }
+                      onBlur={() => handleModalBlur("city")}
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="text-sm font-semibold block mb-1">
-                      Postcode
-                    </label>
+                    <label className="text-sm font-semibold block mb-1">Postcode</label>
                     <input
-                      className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                      className={`w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none ${
+                        touchedModal["postcode"] && formData.postcode.trim() === "" ? "border-red-500" : ""
+                      }`}
                       value={formData.postcode}
                       onChange={(e) =>
                         setFormData({ ...formData, postcode: e.target.value })
                       }
+                      onBlur={() => handleModalBlur("postcode")}
                     />
                   </div>
                 </div>
               </div>
+
+              {modalError && (
+                <Alert severity="error" sx={{ mb: 1 }}>
+                  {modalError}
+                </Alert>
+              )}
 
               <button
                 onClick={handleSavePerson}

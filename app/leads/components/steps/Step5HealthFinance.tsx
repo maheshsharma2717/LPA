@@ -266,6 +266,11 @@ export default function HealthFinanceTab({
   }
 
   const handleBack = async () => {
+    if (subStep > 0) {
+      setSubStep(subStep - 1);
+      window.scrollTo(0, 0);
+      return;
+    }
     setLoading(true);
     try {
       onBack();
@@ -323,12 +328,6 @@ export default function HealthFinanceTab({
               treatment?
             </p>
 
-            {error && (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                {error}
-              </Alert>
-            )}
-
             <div className="flex flex-col border-2 border-gray-300">
               <button
                 onClick={() => setLifeSustaining(true)}
@@ -379,19 +378,27 @@ export default function HealthFinanceTab({
               <button onClick={handleBack} className={`cursor-pointer text-lg`}>
                 ← <u>Back</u>
               </button>
-              <button
-                onClick={handleInternalNext}
-                disabled={isSubmitting}
-                className={`p-4 text-lg rounded text-white font-bold transition-all flex items-center justify-center min-w-45 
-               bg-[#08b9ed] hover:bg-cyan-600 cursor-pointer
-              `}
-              >
-                {isSubmitting ? (
-                  <CircularProgress size={24} color="inherit" />
-                ) : (
-                  "Save and continue"
+
+              <div className="flex flex-col items-end gap-2">
+                {error && (
+                  <Alert severity="error" sx={{ mb: 1 }}>
+                    {error}
+                  </Alert>
                 )}
-              </button>
+                <button
+                  onClick={handleInternalNext}
+                  disabled={isSubmitting}
+                  className={`p-4 text-lg rounded text-white font-bold transition-all flex items-center justify-center min-w-45 
+                 bg-[#08b9ed] hover:bg-cyan-600 cursor-pointer
+               `}
+                >
+                  {isSubmitting ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : (
+                    "Save and continue"
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -432,12 +439,6 @@ export default function HealthFinanceTab({
             <p className="text-xl font-medium text-zenco-dark">
               When do you want the attorneys to be able to make decisions?
             </p>
-
-            {error && (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                {error}
-              </Alert>
-            )}
 
             <div className="flex flex-col gap-4 max-w-2xl">
               {/* Option 1: As soon as registered */}
@@ -563,19 +564,27 @@ export default function HealthFinanceTab({
                 <button onClick={handleBack} className={`cursor-pointer`}>
                   ← back
                 </button>
-                <button
-                  onClick={handleInternalNext}
-                  disabled={isSubmitting}
-                  className={`px-10 py-3 rounded text-white font-bold transition-all flex items-center justify-center min-w-45 
-               bg-[#06b6d4] hover:bg-cyan-600
-              `}
-                >
-                  {isSubmitting ? (
-                    <CircularProgress size={24} color="inherit" />
-                  ) : (
-                    "Save and continue"
+
+                <div className="flex flex-col items-end gap-2">
+                  {error && (
+                    <Alert severity="error" sx={{ mb: 1 }}>
+                      {error}
+                    </Alert>
                   )}
-                </button>
+                  <button
+                    onClick={handleInternalNext}
+                    disabled={isSubmitting}
+                    className={`px-10 py-3 rounded text-white font-bold transition-all flex items-center justify-center min-w-45 
+                 bg-[#06b6d4] hover:bg-cyan-600
+               `}
+                  >
+                    {isSubmitting ? (
+                      <CircularProgress size={24} color="inherit" />
+                    ) : (
+                      "Save and continue"
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

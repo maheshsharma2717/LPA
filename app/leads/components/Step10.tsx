@@ -51,6 +51,7 @@ export default function Step10({ allFormData, onEdit, currentDonorIndex }: Props
   const [attorneySameForBoth, setAttorneySameForBoth] = useState<boolean | null>(null);
   const [attorneyDocAssignments, setAttorneyDocAssignments] = useState<Record<string, string>>({});
   const [isSavingAttorneyPrefs, setIsSavingAttorneyPrefs] = useState(false);
+  const [totalDonors, setTotalDonors] = useState<number>(1);
 
   const applicationId = allFormData?.who?.applicationId;
 
@@ -104,6 +105,7 @@ export default function Step10({ allFormData, onEdit, currentDonorIndex }: Props
           // If active donors filtering returns empty, fall back to all donors
           const donorsList = activeDonors.length > 0 ? activeDonors : fetchedDonors;
           setDonorDetails(donorsList[currentDonorIndex] || donorsList[0]);
+          setTotalDonors(donorsList.length);
         }
 
         // Fetch attorneys from DB
@@ -604,9 +606,9 @@ export default function Step10({ allFormData, onEdit, currentDonorIndex }: Props
           </div>
 
           {/* RIGHT SIDE */}
-          <div className="space-y-6">
+          <div className="space-y-6 sticky">
             {/* Info Box */}
-            <div className="bg-white border-b-4 border-cyan-400 rounded-xl p-6 shadow-xl sticky top-24">
+            <div className="bg-white border-b-4 border-cyan-400 rounded-xl p-6 shadow-xl z-1 ">
               <h4 className="text-cyan-600 text-2xl font-black mb-4 uppercase tracking-tighter">
                 Check this information
               </h4>
@@ -617,7 +619,9 @@ export default function Step10({ allFormData, onEdit, currentDonorIndex }: Props
               </p>
 
               <p className="text-gray-600 mb-6 font-medium leading-normal">
-                When you are happy click the button below to continue.
+                {currentDonorIndex < totalDonors - 1
+                  ? "When you are happy, continue to fill in the next person's details."
+                  : "When you are happy, click below to continue to payment."}
               </p>
 
               <button
@@ -687,7 +691,9 @@ export default function Step10({ allFormData, onEdit, currentDonorIndex }: Props
                 }}
                 className="bg-[#06b6d4] hover:bg-cyan-600 shadow-lg shadow-cyan-100 cursor-pointer py-4 w-full text-white rounded-lg font-black text-lg transition-all active:scale-95"
               >
-                Continue to the next person
+                {currentDonorIndex < totalDonors - 1
+                  ? "Continue to next person →"
+                  : "Continue to payment →"}
               </button>
             </div>
 

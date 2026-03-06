@@ -184,7 +184,11 @@ function DetailsPageContent() {
         }
 
         // URL parameter takes precedence over localStorage
-        if (stepParam) {
+        if (stepParam === "10") {
+          // "10" means jump straight to the Step10 summary screen
+          setWizardCompleted(true);
+          setInitialCompleted(true);
+        } else if (stepParam) {
           const paramIndex = steps.findIndex(s => s.key === stepParam);
           if (paramIndex !== -1) restoredStep = paramIndex;
         }
@@ -224,17 +228,25 @@ function DetailsPageContent() {
   useEffect(() => {
     const idxStr = searchParams.get("currentDonorIndex");
     const newIndex = parseInt(idxStr || "0");
+    const stepStr = searchParams.get("step");
 
     if (newIndex !== currentDonorIndex) {
       setCurrentDonorIndex(newIndex);
 
-      // If it's a secondary donor, jump directly to Step 3 (index 2)
-      if (newIndex > 0) {
+      // step=10 means go straight to the summary view for this donor
+      if (stepStr === "10") {
+        setWizardCompleted(true);
+        setInitialCompleted(true);
+      } else if (newIndex > 0) {
+        // If it's a secondary donor, jump directly to Step 3 (index 2)
         setActiveStep(2); // Jump to "About You (Donor)" step
         setWizardCompleted(false);
         setCompletedSteps([0, 1]); // Mark Who and Which Document as completed
         setInitialCompleted(true);
       }
+    } else if (stepStr === "10" && !wizardCompleted) {
+      setWizardCompleted(true);
+      setInitialCompleted(true);
     }
   }, [searchParams, currentDonorIndex]);
 

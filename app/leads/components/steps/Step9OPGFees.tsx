@@ -143,6 +143,40 @@ export default function OPGFeesTab({
   }, [currentDonorIndex, applicationId, allFormData?.who]);
 
   const handleBack = async () => {
+    // Navigate backwards through sub-views before exiting the step
+    if (currentView === "payment") {
+      // Could have come from evidence-remission, evidence-exemption, or remission-check
+      // Default: go back to exemption-check as the entry point
+      setCurrentView("exemption-check");
+      window.scrollTo(0, 0);
+      return;
+    }
+    if (currentView === "evidence-remission") {
+      setCurrentView("remission-check");
+      window.scrollTo(0, 0);
+      return;
+    }
+    if (currentView === "evidence-exemption") {
+      setCurrentView("exemption-check");
+      window.scrollTo(0, 0);
+      return;
+    }
+    if (currentView === "benefit-selection") {
+      setCurrentView("exemption-check");
+      window.scrollTo(0, 0);
+      return;
+    }
+    if (currentView === "remission-check") {
+      if (remissionStep === 2) {
+        setRemissionStep(1);
+        window.scrollTo(0, 0);
+        return;
+      }
+      setCurrentView("exemption-check");
+      window.scrollTo(0, 0);
+      return;
+    }
+    // At "exemption-check" (first view) — exit to previous wizard step
     setLoading(true);
     try {
       onBack();
@@ -466,11 +500,6 @@ export default function OPGFeesTab({
 
   return (
     <main className="max-w-4xl mx-auto pb-20 px-4">
-      {error && (
-        <Alert severity="error" className="mb-6">
-          {error}
-        </Alert>
-      )}
       {/* Dynamic Heading */}
       <div className="text-center mb-10">
         <h4 className="text-3xl font-bold text-[#334a5e]">
@@ -940,52 +969,13 @@ export default function OPGFeesTab({
            ← <u>Back</u> 
           </button>
 
-          <button
-            onClick={() => {
-              if (currentView === "payment") {
-                if (hasBenefits) setCurrentView("evidence-exemption");
-                else if (incomeLess12k) {
-                  setCurrentView("remission-check");
-                  setRemissionStep(2);
-                } else {
-                  setCurrentView("remission-check");
-                  setRemissionStep(1);
-                }
-              } else if (currentView === "evidence-exemption")
-                setCurrentView("exemption-check");
-              else if (currentView === "remission-check") {
-                if (remissionStep === 2) setRemissionStep(1);
-                else setCurrentView("exemption-check");
-              } else if (currentView === "evidence-remission") {
-                if (incomeLess12k) {
-                  setCurrentView("remission-check");
-                  setRemissionStep(2);
-                } else {
-                  // This branch should ideally not be reached anymore given the forward logic,
-                  // but keeping for robustness.
-                  setCurrentView("remission-check");
-                  setRemissionStep(1);
-                }
-              } else if (currentView === "exemption-check") {
-                /* Step-level back handled by WizardLayout */
-              }
-            }}
-            className={`flex items-center gap-2 text-gray-400 font-bold hover:text-gray-600 transition-colors ${currentView === "exemption-check" ? "invisible" : ""}`}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <u>Back</u>
-          </button>
+          
+
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
 
           <button
             onClick={() => {

@@ -257,7 +257,7 @@ function AcknowledgementContent() {
                   </button>
                   <p
                     className="text-center text-cyan-500 text-sm mt-3 cursor-pointer hover:underline font-medium"
-                    onClick={() => router.back()}
+                    onClick={() => router.push(`/leads?currentDonorIndex=${finishedIndex}&step=10`)}
                   >
                     Review documents again
                   </p>

@@ -99,6 +99,7 @@ type State = {
   editingPersonId: string | null;
   formData: ModalFormData;
   showManualAddress: boolean;
+  touchedFields: Record<string, boolean>;
 };
 
 type Action =
@@ -120,6 +121,7 @@ type Action =
   | { type: "SET_MODAL_MODE"; payload: "attorney" | "replacement" }
   | { type: "SET_EDITING_PERSON_ID"; payload: string | null }
   | { type: "SET_FORM_DATA"; payload: ModalFormData }
+  | { type: "SET_TOUCHED_FIELD"; payload: string }
   | { type: "SET_SHOW_MANUAL_ADDRESS"; payload: boolean }
   | { type: "RESET_MODAL" }
   | { type: "SET_SAVED_DATA"; payload: Partial<AttorneyData> };
@@ -155,6 +157,7 @@ const initialState: State = {
   editingPersonId: null,
   formData: { ...EMPTY_FORM },
   showManualAddress: false,
+  touchedFields: {},
 };
 
 function reducer(state: State, action: Action): State {
@@ -212,6 +215,8 @@ function reducer(state: State, action: Action): State {
       return { ...state, editingPersonId: action.payload };
     case "SET_FORM_DATA":
       return { ...state, formData: action.payload };
+    case "SET_TOUCHED_FIELD":
+      return { ...state, touchedFields: { ...state.touchedFields, [action.payload]: true } };
     case "SET_SHOW_MANUAL_ADDRESS":
       return { ...state, showManualAddress: action.payload };
     case "RESET_MODAL":
@@ -527,6 +532,11 @@ export default function AttorneysTab({
 
   // ============= HANDLERS =============
   const handleBack = useCallback(async () => {
+    if (state.subStep > 0) {
+      dispatch({ type: "SET_SUBSTEP", payload: state.subStep - 1 });
+      window.scrollTo(0, 0);
+      return;
+    }
     dispatch({ type: "SET_LOADING", payload: true });
     try {
       onBack();
@@ -535,7 +545,7 @@ export default function AttorneysTab({
     } finally {
       dispatch({ type: "SET_LOADING", payload: false });
     }
-  }, [onBack]);
+  }, [onBack, state.subStep]);
 
   const toggleAttorney = useCallback((id: string) => {
     dispatch({ type: "TOGGLE_ATTORNEY", payload: id });
@@ -577,6 +587,7 @@ export default function AttorneysTab({
           email: person.email || "",
         },
       });
+      dispatch({ type: "SET_TOUCHED_FIELD", payload: "RESET" }); // Reset touched state when opening modal
       dispatch({ type: "SET_OPEN_MODAL", payload: true });
     },
     []
@@ -593,6 +604,16 @@ export default function AttorneysTab({
 
     if (!firstName || !lastName) {
       dispatch({ type: "SET_ERROR", payload: "First and last name are required." });
+      return;
+    }
+
+    if (!state.formData.postcode || state.formData.postcode.trim() === "") {
+      dispatch({ type: "SET_ERROR", payload: "Postcode is required." });
+      return;
+    }
+
+    if (state.formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.formData.email)) {
+      dispatch({ type: "SET_ERROR", payload: "Please enter a valid email address." });
       return;
     }
 
@@ -1368,6 +1389,8 @@ export default function AttorneysTab({
                   fullWidth
                   value={state.formData.firstName}
                   onChange={(e) => dispatch({ type: "SET_FORM_DATA", payload: { ...state.formData, firstName: e.target.value } })}
+                  onBlur={() => dispatch({ type: "SET_TOUCHED_FIELD", payload: "firstName" })}
+                  error={state.touchedFields["firstName"] && state.formData.firstName.trim() === ""}
                 />
               </div>
 
@@ -1377,6 +1400,8 @@ export default function AttorneysTab({
                   fullWidth
                   value={state.formData.lastName}
                   onChange={(e) => dispatch({ type: "SET_FORM_DATA", payload: { ...state.formData, lastName: e.target.value } })}
+                  onBlur={() => dispatch({ type: "SET_TOUCHED_FIELD", payload: "lastName" })}
+                  error={state.touchedFields["lastName"] && state.formData.lastName.trim() === ""}
                 />
               </div>
             </div>
@@ -1404,6 +1429,8 @@ export default function AttorneysTab({
                   fullWidth
                   value={state.formData.postcode}
                   onChange={(e) => dispatch({ type: "SET_FORM_DATA", payload: { ...state.formData, postcode: e.target.value } })}
+                  onBlur={() => dispatch({ type: "SET_TOUCHED_FIELD", payload: "postcode" })}
+                  error={state.touchedFields["postcode"] && state.formData.postcode.trim() === ""}
                 />
               </div>
 
@@ -1497,12 +1524,6 @@ export default function AttorneysTab({
           <div className="space-y-4">
             <p className="text-xl font-semibold text-zenco-dark">What&apos;s their date of birth?</p>
 
-            {state.error && (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                {state.error}
-              </Alert>
-            )}
-
             <div className="grid grid-cols-3 gap-4">
               {/* DAY */}
               <TextField
@@ -1560,8 +1581,15 @@ export default function AttorneysTab({
               fullWidth
               value={state.formData.email}
               onChange={(e) => dispatch({ type: "SET_FORM_DATA", payload: { ...state.formData, email: e.target.value } })}
+              error={state.formData.email !== "" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.formData.email)}
             />
           </div>
+
+          {state.error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {state.error}
+            </Alert>
+          )}
 
           <Button
             fullWidth

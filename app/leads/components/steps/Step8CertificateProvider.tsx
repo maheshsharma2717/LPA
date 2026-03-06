@@ -218,17 +218,38 @@ export default function CertificateProviderTab({
     county: "",
   });
   const [showManualAddress, setShowManualAddress] = useState(false);
+  const [ageGroup, setAgeGroup] = useState<"over18" | "under18">("over18");
+
+  // Form validations for Add Modal
+  const [modalError, setModalError] = useState<string | null>(null);
+  const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
+
+  const handleBlur = (field: string) => {
+    setTouchedFields((prev) => ({ ...prev, [field]: true }));
+  };
 
   const handleAddPerson = () => {
-    if (
-      !newPerson.title ||
-      !newPerson.firstName ||
-      !newPerson.lastName ||
-      !newPerson.postcode ||
-      !newPerson.addressLine1 ||
-      !newPerson.city
-    )
+    if (!newPerson.firstName || !newPerson.lastName) {
+      setModalError("First and last name are required.");
       return;
+    }
+    
+    if (!newPerson.postcode || newPerson.postcode.trim() === "") {
+      setModalError("Postcode is required.");
+      return;
+    }
+
+    if (!newPerson.addressLine1 || !newPerson.city) {
+      setModalError("Address Line 1 and City are required.");
+      return;
+    }
+
+    if (ageGroup === "under18") {
+      setModalError("The certificate provider must be over 18 years old.");
+      return;
+    }
+
+    setModalError(null);
 
     // Use a temp ID if not already present
     const personWithId = {
@@ -249,6 +270,9 @@ export default function CertificateProviderTab({
       city: "",
       county: "",
     });
+    setTouchedFields({});
+    setModalError(null);
+    setAgeGroup("over18");
     setOpenModal(false);
     setShowManualAddress(false);
   };
@@ -380,11 +404,6 @@ export default function CertificateProviderTab({
   return (
     <>
       <section className="max-w-3xl mx-auto pb-10">
-        {error && (
-          <Alert severity="error" className="mb-6">
-            {error}
-          </Alert>
-        )}
         <div className="flex flex-col gap-7">
           <div className="flex flex-col gap-9">
             <h4 className="text-center text-3xl font-bold text-[#334a5e]">
@@ -705,17 +724,24 @@ export default function CertificateProviderTab({
               ← back
             </button>
 
-            <button
-              onClick={handleFinalSave}
-              disabled={isSubmitting}
-              className="p-4 rounded text-white font-bold text-lg transition-all flex items-center justify-center  bg-[#06b6d4] hover:bg-cyan-600 disabled:bg-gray-400  cursor-pointer"
-            >
-              {isSubmitting ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                "Save and continue"
+            <div className="flex flex-col items-end gap-2">
+              {error && (
+                <Alert severity="error" sx={{ mb: 1 }}>
+                  {error}
+                </Alert>
               )}
-            </button>
+              <button
+                onClick={handleFinalSave}
+                disabled={isSubmitting}
+                className="p-4 rounded text-white font-bold text-lg transition-all flex items-center justify-center  bg-[#06b6d4] hover:bg-cyan-600 disabled:bg-gray-400  cursor-pointer"
+              >
+                {isSubmitting ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  "Save and continue"
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -746,6 +772,12 @@ export default function CertificateProviderTab({
         </div>
 
         <DialogContent className="p-6 md:p-8 space-y-10 bg-[#F8F8F9]">
+          {modalError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {modalError}
+            </Alert>
+          )}
+
           {/* FULL LEGAL NAME */}
           <div className="space-y-6">
             <p className="text-xl font-medium text-black">Full legal name</p>
@@ -793,6 +825,8 @@ export default function CertificateProviderTab({
                   onChange={(e) =>
                     setNewPerson({ ...newPerson, firstName: e.target.value })
                   }
+                  onBlur={() => handleBlur("firstName")}
+                  error={touchedFields["firstName"] && newPerson.firstName.trim() === ""}
                   className="bg-white"
                 />
               </FormControl>
@@ -807,6 +841,8 @@ export default function CertificateProviderTab({
                   onChange={(e) =>
                     setNewPerson({ ...newPerson, lastName: e.target.value })
                   }
+                  onBlur={() => handleBlur("lastName")}
+                  error={touchedFields["lastName"] && newPerson.lastName.trim() === ""}
                   className="bg-white"
                 />
               </FormControl>
@@ -846,6 +882,8 @@ export default function CertificateProviderTab({
                   onChange={(e) =>
                     setNewPerson({ ...newPerson, postcode: e.target.value })
                   }
+                  onBlur={() => handleBlur("postcode")}
+                  error={touchedFields["postcode"] && newPerson.postcode.trim() === ""}
                   className="bg-white"
                 />
               </FormControl>
@@ -887,6 +925,8 @@ export default function CertificateProviderTab({
                           addressLine1: e.target.value,
                         })
                       }
+                      onBlur={() => handleBlur("addressLine1")}
+                      error={touchedFields["addressLine1"] && newPerson.addressLine1.trim() === ""}
                       className="bg-white"
                     />
                   </FormControl>
@@ -921,6 +961,8 @@ export default function CertificateProviderTab({
                       onChange={(e) =>
                         setNewPerson({ ...newPerson, city: e.target.value })
                       }
+                      onBlur={() => handleBlur("city")}
+                      error={touchedFields["city"] && newPerson.city.trim() === ""}
                       className="bg-white"
                     />
                   </FormControl>
@@ -953,7 +995,11 @@ export default function CertificateProviderTab({
             <div className="space-y-4">
               {" "}
               <p className="text-xl font-bold text-[#334a5e]">Age</p>{" "}
-              <RadioGroup defaultValue="over18" name="age-group">
+              <RadioGroup
+                value={ageGroup}
+                onChange={(e) => setAgeGroup(e.target.value as "over18" | "under18")}
+                name="age-group"
+              >
                 {" "}
                 <div className="flex flex-col sm:flex-row gap-3">
                   {" "}
@@ -969,6 +1015,11 @@ export default function CertificateProviderTab({
                   />{" "}
                 </div>{" "}
               </RadioGroup>{" "}
+              {ageGroup === "under18" && (
+                <p className="text-red-500 text-sm font-medium">
+                  ⚠ The certificate provider must be over 18 years old.
+                </p>
+              )}
             </div>
           </div>
 

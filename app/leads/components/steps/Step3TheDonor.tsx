@@ -56,12 +56,16 @@ export default function DonorTab({
     year: "",
     postcode: "",
     address: "",
-    mobile: "",
-    landline: "",
     city: "",
     county: "",
     addressLine2: "",
   });
+
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const handleBlur = (field: string) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+  };
 
   const applicationId = allFormData?.who?.applicationId;
 
@@ -156,8 +160,6 @@ export default function DonorTab({
             addressLine2: firstDonor.address_line_2 || "",
             city: firstDonor.city || "",
             county: firstDonor.county || "",
-            mobile: "",
-            landline: "",
           });
         }
       } catch (err) {
@@ -173,18 +175,27 @@ export default function DonorTab({
 
   const handleInternalNext = async () => {
     if (subStep === 0) {
+      setIsSubmitting(true);
+      await handleSave();
+      setIsSubmitting(false);
       setSubStep(1);
       window.scrollTo(0, 0);
     } else {
       setIsSubmitting(true);
       await handleSave();
       setIsSubmitting(false);
+      onNext();
     }
   };
   const handleBack = async () => {
+    if (subStep === 1) {
+      setSubStep(0);
+      window.scrollTo(0, 0);
+    } else {
+      onBack();
+    }
     setLoading(true);
     try {
-      onBack();
     } catch (err) {
       console.error("Error saving reversing step:", err);
     } finally {
@@ -205,21 +216,6 @@ export default function DonorTab({
       } = await supabase.auth.getSession();
       if (!session) return;
       const token = session.access_token;
-
-      // const monthIdx = [
-      //   "January",
-      //   "February",
-      //   "March",
-      //   "April",
-      //   "May",
-      //   "June",
-      //   "July",
-      //   "August",
-      //   "September",
-      //   "October",
-      //   "November",
-      //   "December",
-      // ].indexOf(formData.month);
 
       let dob = null;
       if (formData.year && formData.month && formData.day) {
@@ -253,8 +249,6 @@ export default function DonorTab({
       });
 
       updateData({ donorId: currentDonor.id });
-
-      onNext();
     } catch (err) {
       console.error("Error saving donor:", err);
       setError("Failed to save details.");
@@ -276,6 +270,27 @@ export default function DonorTab({
     return <Alert severity="info">No donor found. Please go back.</Alert>;
 
   const donorName = `${currentDonor.first_name} ${currentDonor.last_name}`;
+
+  const isValidUKMobile = (phone: string) => {
+    if (!phone) return false;
+    return /^07\d{9}$/.test(phone)||/^7\d{9}$/.test(phone);
+  };
+
+  const isValidUKLandline = (phone: string) => {
+    if (!phone) return true;
+    return /^(01|02|03|08|09)\d{8,9}$/.test(phone);
+  };
+
+  const isSubStep0Valid = Boolean(
+    formData.title &&
+    formData.firstName.trim() &&
+    formData.lastName.trim() &&
+    /^(0?[1-9]|[12][0-9]|3[01])$/.test(formData.day) &&
+    /^(0?[1-9]|1[0-2])$/.test(formData.month) &&
+    /^\d{4}$/.test(formData.year)
+  );
+
+  const isCurrentStepValid = subStep === 0 ? isSubStep0Valid : true;
 
   return (
     <section className="space-y-8  p-2 animate-in fade-in slide-in-from-top-4">
@@ -340,6 +355,8 @@ export default function DonorTab({
                   value={formData.title}
                   // label="Title"
                   onChange={(e) => handleFormChange("title", e.target.value)}
+                  onBlur={() => handleBlur("title")}
+                  error={touched.title && formData.title.trim() === ""}
                 >
                   {[
                     "Mr",
@@ -368,6 +385,8 @@ export default function DonorTab({
                   onChange={(e) =>
                     handleFormChange("firstName", e.target.value)
                   }
+                  onBlur={() => handleBlur("firstName")}
+                  error={touched.firstName && formData.firstName.trim() === ""}
                   fullWidth
                 />
               </FormControl>
@@ -379,6 +398,8 @@ export default function DonorTab({
                   // label="Last Name"
                   value={formData.lastName}
                   onChange={(e) => handleFormChange("lastName", e.target.value)}
+                  onBlur={() => handleBlur("lastName")}
+                  error={touched.lastName && formData.lastName.trim() === ""}
                   fullWidth
                 />
               </FormControl>
@@ -599,6 +620,7 @@ export default function DonorTab({
                         onChange={(e) =>
                           handleFormChange("postcode", e.target.value)
                         }
+                        error={formData.postcode !== "" && formData.postcode.trim() === ""}
                         fullWidth
                       />
                     </FormControl>
@@ -635,6 +657,7 @@ export default function DonorTab({
                       onChange={(e) =>
                         handleFormChange("address", e.target.value)
                       }
+                      error={formData.address !== "" && formData.address.trim() === ""}
                       fullWidth
                     />
                   </FormControl>
@@ -674,6 +697,7 @@ export default function DonorTab({
                       onChange={(e) =>
                         handleFormChange("postcode", e.target.value)
                       }
+                      error={formData.postcode !== "" && formData.postcode.trim() === ""}
                       fullWidth
                     />
                   </FormControl>
@@ -689,35 +713,6 @@ export default function DonorTab({
                   </button>
                 </div>
               )}
-
-              {/* PHONE GRID */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                <FormControl fullWidth>
-                  <p className="mb-1 text-sm font-medium text-[#6B7588]">
-                    What's their Mobile Number?
-                  </p>
-                  <TextField
-                    value={formData.mobile || ""}
-                    onChange={(e) => handleFormChange("mobile", e.target.value)}
-                    fullWidth
-                    inputProps={{ inputMode: "numeric" }}
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <p className="mb-1 text-sm font-medium text-[#6B7588]">
-                    What's their Landline Number
-                  </p>
-                  <TextField
-                    value={formData.landline || ""}
-                    onChange={(e) =>
-                      handleFormChange("landline", e.target.value)
-                    }
-                    fullWidth
-                    inputProps={{ inputMode: "numeric" }}
-                  />
-                </FormControl>
-              </div>
 
               {/* MANUAL ADDRESS BUTTON */}
               {!showManualAddress && (
@@ -759,9 +754,13 @@ export default function DonorTab({
         </Button> */}
         <button
           onClick={handleInternalNext}
-          disabled={isSubmitting}
-          className={`p-4 rounded text-white font-bold transition-all flex items-center justify-center min-w-45 
-                       bg-[#08b9ed] hover:bg-cyan-600 cursor-pointer
+          disabled={isSubmitting || !isCurrentStepValid}
+          className={`p-4 rounded text-white font-bold transition-all flex items-center justify-center min-w-[180px] 
+                       ${
+                         isSubmitting || !isCurrentStepValid
+                           ? "bg-gray-400 cursor-not-allowed opacity-70"
+                           : "bg-[#08b9ed] hover:bg-cyan-600 cursor-pointer"
+                       }
               `}
         >
           {subStep === 1 ? (

@@ -90,7 +90,6 @@ export default function Step1Who({
     firstName: "",
     lastName: "",
     middleName: "",
-    // dob: "",
     day: "",
     month: "",
     year: "",
@@ -173,9 +172,10 @@ export default function Step1Who({
                 lastName: lead.last_name,
                 middleName: lead.middle_name,
                 // dob: lead.date_of_birth,
-                day: lead.day,
-                month: lead.month,
-                year: lead.year,
+                day: lead.date_of_birth ? new Date(lead.date_of_birth).getDate() : "",// get day from date_of_birth
+                month: lead.date_of_birth ? new Date(lead.date_of_birth).getMonth() : "",// get month from date_of_birth
+                year: lead.date_of_birth ? new Date(lead.date_of_birth).getFullYear() : "",// get year from date_of_birth
+
                 isLead: true,
                 relationship: "self",
                 addressLine1: lead.address_line_1,
@@ -234,9 +234,9 @@ export default function Step1Who({
               lastName: lead.last_name,
               middleName: lead.middle_name,
               // dob: lead.date_of_birth,
-              day: lead.day,
-              month: lead.month,
-              year: lead.year,
+              day: lead.date_of_birth ? new Date(lead.date_of_birth).getDate().toString() : "",// get day from date_of_birth
+              month: lead.date_of_birth ? new Date(lead.date_of_birth).getMonth().toString() : "",// get month from date_of_birth
+              year: lead.date_of_birth ? new Date(lead.date_of_birth).getFullYear().toString() : "",// get year from date_of_birth
               isLead: true,
               relationship: "self",
               addressLine1: lead.address_line_1,
@@ -260,9 +260,9 @@ export default function Step1Who({
             lastName: lead.last_name,
             middleName: lead.middle_name,
             // dob: lead.date_of_birth,
-            day: lead.day,
-            month: lead.month,
-            year: lead.year,
+            day: lead.date_of_birth ? new Date(lead.date_of_birth).getDate().toString() : "",// get day from date_of_birth
+            month: lead.date_of_birth ? new Date(lead.date_of_birth).getMonth().toString() : "",// get month from date_of_birth
+            year: lead.date_of_birth ? new Date(lead.date_of_birth).getFullYear().toString() : "",// get year from date_of_birth
             isLead: true,
             relationship: "self",
             addressLine1: lead.address_line_1,
@@ -516,10 +516,7 @@ export default function Step1Who({
           first_name: p.firstName,
           last_name: p.lastName,
           middle_name: p.middleName,
-          // date_of_birth: p.dob,
-          day: p.day,
-          month: p.month,
-          year: p.year,
+          date_of_birth: `${p.year}-${p.month}-${p.day}`,
           relationship_to_lead: p.relationship,
           address_line_1: p.addressLine1,
           address_line_2: p.addressLine2,
@@ -530,9 +527,9 @@ export default function Step1Who({
 
         const existingRecord = p.isLead
           ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            currentDonors?.find((cd: any) => cd.is_lead)
+          currentDonors?.find((cd: any) => cd.is_lead)
           : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            currentDonors?.find((cd: any) => cd.id === p.id);
+          currentDonors?.find((cd: any) => cd.id === p.id);
 
         if (existingRecord) {
           await fetch("/api/donors", {
@@ -582,8 +579,8 @@ export default function Step1Who({
             key={option}
             onClick={() => setSelected(option)}
             className={`p-5 text-center border-0 transition-all ${selected === option
-                ? "border-[#08b9ed] bg-[#35495E] text-white font-semibold shadow-sm"
-                : "border-gray-100 hover:border-blue-100 text-black"
+              ? "border-[#08b9ed] bg-[#35495E] text-white font-semibold shadow-sm"
+              : "border-gray-100 hover:border-blue-100 text-black"
               }`}
           >
             {option}
@@ -724,13 +721,12 @@ export default function Step1Who({
               key={person.id}
               disabled={disabled}
               onClick={() => togglePerson(person.id!)}
-              className={`w-full flex items-center justify-between p-5 border transition-all border-[#adb5bd] cursor-pointer ${
-                isSelected
+              className={`w-full flex items-center justify-between p-5 border transition-all border-[#adb5bd] cursor-pointer ${isSelected
                   ? "bg-[#35495e]"
                   : disabled
                     ? " opacity-50 cursor-not-allowed"
                     : "border-gray-200 bg-white"
-              }`}
+                }`}
             >
               <div className="flex items-center gap-3">
                 {/* <div
@@ -755,9 +751,9 @@ export default function Step1Who({
               </div>
               <div
                 className={`w-6 h-6 border-2 flex items-center justify-center transition-all ${isSelected
-                    ? "border-white border-3 rounded"
-                    : "border-[#6B7588] rounded bg-white border-3"
-                }`}
+                  ? "border-white border-3 rounded"
+                  : "border-[#6B7588] rounded bg-white border-3"
+                  }`}
               >
                 {isSelected && (
                   <svg
@@ -938,7 +934,7 @@ export default function Step1Who({
                 <Select
                   value={newPerson.title}
                   onChange={(e) =>
-                    setNewPerson({ ...newPerson, title: e.target.value })
+                    setNewPerson({...newPerson, title: e.target.value})
                   }
                   fullWidth
                 >
@@ -958,12 +954,12 @@ export default function Step1Who({
                     fullWidth
                     value={newPerson.firstName}
                     onChange={(e) =>
-                      setNewPerson({ ...newPerson, firstName: e.target.value })
+                      setNewPerson({...newPerson, firstName: e.target.value})
                     }
                     sx={{
                       "& .MuiOutlinedInput-root": {
-                        "& fieldset": { border: "2px solid #a0a0a0" },
-                        "&:hover fieldset": { border: "2px solid #a0a0a0" },
+                        "& fieldset": {border: "2px solid #a0a0a0"},
+                        "&:hover fieldset": {border: "2px solid #a0a0a0"},
                         "&.Mui-focused fieldset": {
                           border: "2px solid #a0a0a0",
                         },
@@ -978,12 +974,12 @@ export default function Step1Who({
                     fullWidth
                     value={newPerson.lastName}
                     onChange={(e) =>
-                      setNewPerson({ ...newPerson, lastName: e.target.value })
+                      setNewPerson({...newPerson, lastName: e.target.value})
                     }
                     sx={{
                       "& .MuiOutlinedInput-root": {
-                        "& fieldset": { border: "2px solid #a0a0a0" },
-                        "&:hover fieldset": { border: "2px solid #a0a0a0" },
+                        "& fieldset": {border: "2px solid #a0a0a0"},
+                        "&:hover fieldset": {border: "2px solid #a0a0a0"},
                         "&.Mui-focused fieldset": {
                           border: "2px solid #a0a0a0",
                         },
@@ -999,13 +995,13 @@ export default function Step1Who({
                 fullWidth
                 value={newPerson.middleName}
                 onChange={(e) =>
-                  setNewPerson({ ...newPerson, middleName: e.target.value })
+                  setNewPerson({...newPerson, middleName: e.target.value})
                 }
                 sx={{
                   "& .MuiOutlinedInput-root": {
-                    "& fieldset": { border: "2px solid #a0a0a0" },
-                    "&:hover fieldset": { border: "2px solid #a0a0a0" },
-                    "&.Mui-focused fieldset": { border: "2px solid #a0a0a0" },
+                    "& fieldset": {border: "2px solid #a0a0a0"},
+                    "&:hover fieldset": {border: "2px solid #a0a0a0"},
+                    "&.Mui-focused fieldset": {border: "2px solid #a0a0a0"},
                   },
                 }}
               />
@@ -1032,18 +1028,18 @@ export default function Step1Who({
                         const value = e.target.value;
                         if (/^\d*$/.test(value) && value.length <= 2) {
                           // handleChange("day", value);
-                          setNewPerson({ ...newPerson, day: e.target.value });
+                          setNewPerson({...newPerson, day: e.target.value});
                         }
                       }}
                       error={
                         newPerson.day !== "" &&
                         !/^(0?[1-9]|[12][0-9]|3[01])$/.test(newPerson.day)
                       }
-                      inputProps={{ inputMode: "numeric" }}
+                      inputProps={{inputMode: "numeric"}}
                       sx={{
                         "& .MuiOutlinedInput-root": {
-                          "& fieldset": { border: "2px solid #a0a0a0" },
-                          "&:hover fieldset": { border: "2px solid #a0a0a0" },
+                          "& fieldset": {border: "2px solid #a0a0a0"},
+                          "&:hover fieldset": {border: "2px solid #a0a0a0"},
                           "&.Mui-focused fieldset": {
                             border: "2px solid #a0a0a0",
                           },
@@ -1059,7 +1055,7 @@ export default function Step1Who({
                       onChange={(e) => {
                         const value = e.target.value;
                         if (/^\d*$/.test(value) && value.length <= 2) {
-                          setNewPerson({ ...newPerson, month: e.target.value });
+                          setNewPerson({...newPerson, month: e.target.value});
 
                           // handleChange("month", value);
                         }
@@ -1068,11 +1064,11 @@ export default function Step1Who({
                         newPerson.month !== "" &&
                         !/^(0?[1-9]|1[0-2])$/.test(newPerson.month)
                       }
-                      inputProps={{ inputMode: "numeric" }}
+                      inputProps={{inputMode: "numeric"}}
                       sx={{
                         "& .MuiOutlinedInput-root": {
-                          "& fieldset": { border: "2px solid #a0a0a0" },
-                          "&:hover fieldset": { border: "2px solid #a0a0a0" },
+                          "& fieldset": {border: "2px solid #a0a0a0"},
+                          "&:hover fieldset": {border: "2px solid #a0a0a0"},
                           "&.Mui-focused fieldset": {
                             border: "2px solid #a0a0a0",
                           },
@@ -1088,7 +1084,7 @@ export default function Step1Who({
                       onChange={(e) => {
                         const value = e.target.value;
                         if (/^\d*$/.test(value) && value.length <= 4) {
-                          setNewPerson({ ...newPerson, year: e.target.value });
+                          setNewPerson({...newPerson, year: e.target.value});
 
                           // handleChange("year", value);
                         }
@@ -1096,11 +1092,11 @@ export default function Step1Who({
                       error={
                         newPerson.year !== "" && !/^\d{4}$/.test(newPerson.year)
                       }
-                      inputProps={{ inputMode: "numeric" }}
+                      inputProps={{inputMode: "numeric"}}
                       sx={{
                         "& .MuiOutlinedInput-root": {
-                          "& fieldset": { border: "2px solid #a0a0a0" },
-                          "&:hover fieldset": { border: "2px solid #a0a0a0" },
+                          "& fieldset": {border: "2px solid #a0a0a0"},
+                          "&:hover fieldset": {border: "2px solid #a0a0a0"},
                           "&.Mui-focused fieldset": {
                             border: "2px solid #a0a0a0",
                           },
@@ -1230,7 +1226,7 @@ export default function Step1Who({
           <DialogActions className="p-4 gap-2">
             <Button
               onClick={() => setOpenModal(false)}
-              sx={{ color: "gray", textTransform: "none" }}
+              sx={{color: "gray", textTransform: "none"}}
             >
               Cancel
             </Button>
@@ -1243,7 +1239,7 @@ export default function Step1Who({
                 textTransform: "none",
                 borderRadius: "8px",
                 padding: "10px 24px",
-                "&:hover": { backgroundColor: "#07bdf5ff" },
+                "&:hover": {backgroundColor: "#07bdf5ff"},
               }}
             >
               {loading ? (

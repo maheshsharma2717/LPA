@@ -261,15 +261,15 @@ export default function LoginPage() {
                                 <div className="grow border-t border-gray-200"></div>
                             </div>
 
-                            <button
-                                type="button"
-                                onClick={handleGoogleLogin}
-                                className="w-full flex items-center justify-center gap-3 border border-gray-300 py-3 rounded-xl font-semibold text-sm cursor-pointer hover:bg-gray-50 transition"
-                            >
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
-                                Continue with Google
-                            </button>
+                        <button
+                            type="button"
+                            onClick={handleGoogleLogin}
+                            className="w-full flex items-center justify-center gap-3 border border-gray-300 py-3 rounded font-semibold text-sm cursor-pointer hover:bg-gray-50 transition"
+                        >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
+                            Continue with Google
+                        </button>
 
                             <p className="text-sm text-center text-[#212529] mt-6">
                                 Don&apos;t have an account?{" "}
@@ -366,17 +366,6 @@ export default function LoginPage() {
                             </button>
                          </form>
                     )}
-
-                        <button
-                            type="button"
-                            onClick={handleGoogleLogin}
-                            className="w-full flex items-center justify-center gap-3 border border-gray-300 py-3 rounded font-semibold text-sm cursor-pointer hover:bg-gray-50 transition"
-                        >
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
-                            Continue with Google
-                        </button>
-
                 </div>
             </main>
 
