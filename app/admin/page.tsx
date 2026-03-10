@@ -45,7 +45,7 @@ export default function AdminPage() {
         const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
         
         const response = await fetch(functionUrl, {
-          method: 'GET',
+          method: 'post',
           headers: {
             Authorization: `Bearer ${session.access_token}`,
             apikey: anonKey,
@@ -190,6 +190,7 @@ export default function AdminPage() {
                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paid At</th>
+                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
                      </tr>
                    </thead>
                    <tbody className="bg-white divide-y divide-gray-200">
@@ -219,11 +220,16 @@ export default function AdminPage() {
                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                            {app.paid_at ? new Date(app.paid_at).toLocaleDateString() : '-'}
                          </td>
+                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                           <Link href={`/admin/applications/${app.id}`} className="text-[#08B9ED] hover:text-[#069dc9] font-medium">
+                             View
+                           </Link>
+                         </td>
                        </tr>
                      ))}
                      {data.recent_applications.length === 0 && (
                        <tr>
-                         <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                         <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
                            No applications found
                          </td>
                        </tr>

@@ -26,20 +26,24 @@ serve(async (req: Request) => {
       });
     }
 
-    // Check MFA assurance level
-    const { data: mfaData, error: mfaError } =
-      await userClient.auth.mfa.getAuthenticatorAssuranceLevel();
-
-    if (mfaError || !mfaData) {
-      return new Response(JSON.stringify({ error: "Failed to check MFA status" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    // Decode JWT to check MFA claim (getUser already verified the token is valid)
+    const token = authHeader.replace("Bearer ", "");
+    let currentLevel = "aal1";
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      const payload = JSON.parse(jsonPayload);
+      currentLevel = payload.aal || "aal1";
+    } catch (e) {
+      console.error("Error decoding JWT:", e);
     }
 
-    if (mfaData.currentLevel !== "aal2") {
+    if (currentLevel !== "aal2") {
       return new Response(
-        JSON.stringify({ error: "MFA verification required", current_level: mfaData.currentLevel }),
+        JSON.stringify({ error: "MFA verification required", current_level: currentLevel }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }

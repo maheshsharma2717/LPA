@@ -57,7 +57,7 @@ export default function LoginPage() {
                 setRequiresMfa(true);
                 setLoading(false);
                 return; // Stop here, wait for MFA code
-            } else if (data.user?.app_metadata?.role === 'admin' || formData.email.includes('admin')) {
+        } else if (data.user?.app_metadata?.role === 'admin' || formData.email.includes('admin')) {
                 // If the user *needs* MFA (e.g. they are an admin) but hasn't enrolled, let's offer enrollment.
                 // We assume anyone accessing the admin panel needs this. For now we will allow anyone to enroll if they want,
                 // but admins MUST enroll to access /admin anyway. 
@@ -78,7 +78,11 @@ export default function LoginPage() {
             }
 
             if (data.session) {
-                router.push("/leads");
+                if (data.user?.app_metadata?.role === 'admin' || formData.email.includes('admin')) {
+                    router.push("/admin");
+                } else {
+                    router.push("/leads");
+                }
             }
         } catch (err: unknown) {
             console.error("Login error:", err);
@@ -104,9 +108,21 @@ export default function LoginPage() {
             });
 
             if (verifyError) throw verifyError;
+debugger;
+            // Check assurance level explicitly
+            const { data: mfaData, error: mfaError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+            
+            if (mfaError) throw mfaError;
+            if (mfaData.currentLevel !== 'aal2') {
+                throw new Error("MFA verification failed. Please try again.");
+            }
 
             // If we are here, AAL2 is achieved!
-            router.push("/leads"); // or /admin based on preference. Let's go to leads by default like before.
+            if (formData.email.includes('admin')) {
+                router.push("/admin");
+            } else {
+                router.push("/leads");
+            }
         } catch (err: unknown) {
              console.error("MFA Verify error:", err);
              setError(err instanceof Error ? err.message : "Invalid authentication code");
@@ -138,8 +154,20 @@ export default function LoginPage() {
 
             if (verifyError) throw verifyError;
 
+            // Check assurance level explicitly
+            const { data: mfaData, error: mfaError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+            
+            if (mfaError) throw mfaError;
+            if (mfaData.currentLevel !== 'aal2') {
+                throw new Error("MFA verification failed. Please try again.");
+            }
+
              // Enrollment complete!
-             router.push("/leads");
+             if (formData.email.includes('admin')) {
+                 router.push("/admin");
+             } else {
+                 router.push("/leads");
+             }
         } catch (err: unknown) {
             console.error("MFA Enroll error:", err);
             setError(err instanceof Error ? err.message : "Invalid authentication code");
